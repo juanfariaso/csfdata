@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "csfdata"
+version = "0.1.0"
+description = "Provenance-first registry for clustered star formation simulations."
+readme = "Readme.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Juan Farias" },
+]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "mkdocs>=1.6",
+  "mkdocstrings[python]",
+  "mkdocs-api-autonav",
+  "mkdocs-material",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
