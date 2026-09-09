@@ -75,6 +75,40 @@ class SimulationAdapter(ABC):
         """
 
     @abstractmethod
+    def checkpoint_times(self) -> tuple[float, ...]:
+        """Return model times recorded for output checkpoints.
+
+        Returns:
+            Checkpoint model times in canonical ``Myr``, in the order recorded
+                by the simulation.
+
+        Raises:
+            ValueError: If checkpoint records exist but their times cannot be
+                read reliably.
+        """
+
+    @abstractmethod
+    def snapshot_paths(self) -> tuple[Path, ...]:
+        """Return primary snapshot files in checkpoint order.
+
+        Returns:
+            Paths to primary snapshot files, ordered as their checkpoints occur
+                in the simulation output.
+        """
+
+    @abstractmethod
+    def snapshot_time(self, snapshot_path: Path) -> float | None:
+        """Return the model time stored in one snapshot when available.
+
+        Args:
+            snapshot_path: Path returned by ``snapshot_paths()``.
+
+        Returns:
+            The snapshot's model time in canonical ``Myr``, or ``None`` when
+                the simulation format does not store it accessibly.
+        """
+
+    @abstractmethod
     def validate_simulation(self) -> tuple[str, ...]:
         """Inspect the run for format-specific structural or scientific issues.
 

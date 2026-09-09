@@ -1,8 +1,12 @@
 from pathlib import Path
 
+import h5py
 from pytest import CaptureFixture
 
 from csfdata.cli import main
+
+
+_MYR_IN_SECONDS = 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
 
 
 def test_discover_command_reports_grid_status(
@@ -34,4 +38,11 @@ def _write_dcaf_run(run_root: Path, final_time: float) -> None:
         f"0.0 5000\n{final_time} 60000\n",
         encoding="utf-8",
     )
-    (output_root / "stars_000.amuse").touch()
+    _write_snapshot(output_root / "stars_000.amuse", 0.0)
+    _write_snapshot(output_root / "stars_001.amuse", final_time)
+
+
+def _write_snapshot(path: Path, time_myr: float) -> None:
+    with h5py.File(path, "w") as snapshot_file:
+        group = snapshot_file.create_group("data/0000000001")
+        group.attrs["model_time"] = time_myr * _MYR_IN_SECONDS

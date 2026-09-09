@@ -17,6 +17,7 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
+  "h5py>=3.0",
   "PyYAML>=6.0",
 ]
 
