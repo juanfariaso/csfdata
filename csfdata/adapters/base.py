@@ -109,8 +109,12 @@ class SimulationAdapter(ABC):
         """
 
     @abstractmethod
-    def validate_simulation(self) -> tuple[str, ...]:
+    def validate_simulation(self, detailed: bool = False) -> tuple[str, ...]:
         """Inspect the run for format-specific structural or scientific issues.
+
+        Args:
+            detailed: Whether to perform potentially expensive validation of
+                primary output contents.
 
         Returns:
             A tuple of human-readable issue descriptions. An empty tuple means

@@ -30,6 +30,29 @@ def test_discover_command_reports_grid_status(
     assert "configured t_end" in output
 
 
+def test_validate_command_writes_a_clean_report(
+    tmp_path: Path,
+    capsys: CaptureFixture[str],
+) -> None:
+    grid_root = tmp_path / "grid"
+    _write_dcaf_run(grid_root / "valid", final_time=15.0)
+    _write_dcaf_run(grid_root / "invalid", final_time=10.0)
+    report_path = tmp_path / "validation-report.txt"
+
+    exit_code = main(["validate", str(grid_root), "--report", str(report_path)])
+
+    output = capsys.readouterr().out
+    report = report_path.read_text(encoding="utf-8")
+    assert exit_code == 0
+    assert f"Report saved: {report_path}" in output
+    assert report.startswith(f"D-CAF validation report for: {grid_root}\n")
+    assert f"OK: {grid_root / 'valid'}" in report
+    assert f"ISSUE: {grid_root / 'invalid'}" in report
+    assert "Checked: 2" in report
+    assert "No issues: 1" in report
+    assert "With issues: 1" in report
+
+
 def _write_dcaf_run(run_root: Path, final_time: float) -> None:
     output_root = run_root / "dcaf_output"
     output_root.mkdir(parents=True)

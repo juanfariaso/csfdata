@@ -167,18 +167,21 @@ class DcafAdapter(SimulationAdapter):
         except (OSError, ValueError):
             return None
 
-    def validate_simulation(self) -> tuple[str, ...]:
+    def validate_simulation(self, detailed: bool = False) -> tuple[str, ...]:
         """Validate the D-CAF configuration and raw-output structure.
+
+        Args:
+            detailed: Whether to read every stellar snapshot and compare its
+                HDF5 model time with the matching background-gas record.
 
         Returns:
             A tuple of human-readable validation issues. An empty tuple means
                 no issue was found.
 
         Notes:
-            Validation checks contiguous output and background-gas segments,
-            snapshot presence and names, snapshot/checkpoint agreement within
-            one segment, duplicate segment timelines, and agreement between
-            the final model time and ``t_end`` within ``tolerance_myr``.
+            Basic validation checks file structure and final model time. Detailed
+            validation additionally checks snapshot/checkpoint agreement within
+            one segment and duplicate segment timelines.
         """
         try:
             configuration = self.read_configuration()
@@ -210,47 +213,48 @@ class DcafAdapter(SimulationAdapter):
                 if not _SNAPSHOT_PATTERN.fullmatch(snapshot.name):
                     issues.append(f"Invalid snapshot filename: {snapshot.name}.")
 
-        timelines: list[_SegmentTimeline] = []
-        for segment in sorted(gas_by_segment.keys() & output_by_segment.keys()):
-            gas_path = gas_by_segment[segment]
-            output_folder = output_by_segment[segment]
-            try:
-                gas_records = _gas_time_records(gas_path)
-            except ValueError as error:
-                issues.append(str(error))
-                continue
-            if not gas_records:
-                issues.append(f"No time records found in {gas_path.name}.")
-                continue
-
-            snapshot_records: list[_SnapshotTimeRecord] = []
-            for snapshot_path in self._snapshot_paths_in_folder(output_folder):
+        if detailed:
+            timelines: list[_SegmentTimeline] = []
+            for segment in sorted(gas_by_segment.keys() & output_by_segment.keys()):
+                gas_path = gas_by_segment[segment]
+                output_folder = output_by_segment[segment]
                 try:
-                    snapshot_records.append(
-                        _SnapshotTimeRecord(snapshot_path, _snapshot_time_myr(snapshot_path))
-                    )
-                except (OSError, ValueError) as error:
-                    issues.append(
-                        "Cannot read model time from "
-                        f"{self._relative_path(snapshot_path)}: {error}"
+                    gas_records = _gas_time_records(gas_path)
+                except ValueError as error:
+                    issues.append(str(error))
+                    continue
+                if not gas_records:
+                    issues.append(f"No time records found in {gas_path.name}.")
+                    continue
+
+                snapshot_records: list[_SnapshotTimeRecord] = []
+                for snapshot_path in self._snapshot_paths_in_folder(output_folder):
+                    try:
+                        snapshot_records.append(
+                            _SnapshotTimeRecord(snapshot_path, _snapshot_time_myr(snapshot_path))
+                        )
+                    except (OSError, ValueError) as error:
+                        issues.append(
+                            "Cannot read model time from "
+                            f"{self._relative_path(snapshot_path)}: {error}"
+                        )
+
+                segment_issues = [
+                    *self._time_order_issues(segment, gas_records, "background-gas record"),
+                    *self._time_order_issues(segment, snapshot_records, "snapshot"),
+                    *self._checkpoint_match_issues(segment, gas_records, snapshot_records),
+                ]
+                issues.extend(segment_issues)
+                if not segment_issues:
+                    timelines.append(
+                        _SegmentTimeline(
+                            segment=segment,
+                            checkpoint_times=tuple(record.time_myr for record in gas_records),
+                            snapshot_times=tuple(record.time_myr for record in snapshot_records),
+                        )
                     )
 
-            segment_issues = [
-                *self._time_order_issues(segment, gas_records, "background-gas record"),
-                *self._time_order_issues(segment, snapshot_records, "snapshot"),
-                *self._checkpoint_match_issues(segment, gas_records, snapshot_records),
-            ]
-            issues.extend(segment_issues)
-            if not segment_issues:
-                timelines.append(
-                    _SegmentTimeline(
-                        segment=segment,
-                        checkpoint_times=tuple(record.time_myr for record in gas_records),
-                        snapshot_times=tuple(record.time_myr for record in snapshot_records),
-                    )
-                )
-
-        issues.extend(self._duplicate_timeline_issues(timelines))
+            issues.extend(self._duplicate_timeline_issues(timelines))
 
         try:
             times = self._gas_times()

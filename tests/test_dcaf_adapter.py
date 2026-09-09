@@ -68,7 +68,7 @@ def test_dcaf_adapter_reports_time_mismatch_and_missing_segment(tmp_path: Path) 
     _write_snapshot(output_root / "stars_021.amuse", 10.0)
     _write_snapshot(resumed_output_root / "stars_022.amuse", 20.0)
 
-    issues = DcafAdapter(run_root).validate_simulation()
+    issues = DcafAdapter(run_root).validate_simulation(detailed=True)
 
     assert "Missing background-gas segment(s): 1." in issues
     assert "Missing output segment(s): 1." in issues
@@ -84,7 +84,7 @@ def test_dcaf_adapter_reports_precise_mismatches_and_duplicate_segments(tmp_path
     _write_segment(run_root, 1, (0.0, 1.0), (0.0, 1.0))
     _write_segment(run_root, 2, (2.0,), (2.5,))
 
-    issues = DcafAdapter(run_root).validate_simulation()
+    issues = DcafAdapter(run_root).validate_simulation(detailed=True)
 
     assert (
         "Segment 1 is fully duplicated by segment 0: checkpoint and snapshot time "
