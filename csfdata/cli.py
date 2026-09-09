@@ -5,11 +5,13 @@ from __future__ import annotations
 import argparse
 from collections.abc import Sequence
 from pathlib import Path
+import socket
 import sys
+
+import yaml
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.discovery.local import LocalGridDiscoverer
-from csfdata.discovery.report import DiscoveryReport
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -24,56 +26,33 @@ def main(argv: Sequence[str] | None = None) -> int:
     """
     parser = argparse.ArgumentParser(prog="csfdata")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    discover_parser = subparsers.add_parser(
-        "discover",
-        help="Report D-CAF simulations below a local directory.",
-    )
-    discover_parser.add_argument("root", type=Path, help="Grid directory to scan.")
     validate_parser = subparsers.add_parser(
         "validate",
-        help="Perform detailed D-CAF validation and save a report.",
+        help="Validate a D-CAF grid and save a YAML report.",
     )
     validate_parser.add_argument("root", type=Path, help="Grid directory to validate.")
     validate_parser.add_argument(
         "--report",
         type=Path,
         required=True,
-        help="Path for the plain-text validation report.",
+        help="Path for the YAML validation report.",
     )
 
     args = parser.parse_args(argv)
-    if args.command == "discover":
-        try:
-            report = LocalGridDiscoverer(args.root, DcafAdapter).discover()
-        except NotADirectoryError as error:
-            parser.error(str(error))
-        _print_discovery_report(report)
-        return 0
-    if args.command == "validate":
-        return _validate_grid(args.root, args.report, parser)
-
-    raise AssertionError(f"Unknown command: {args.command}")
-
-
-def _print_discovery_report(report: DiscoveryReport) -> None:
-    """Print a human-readable discovery report."""
-    print(f"Grid: {report.root}")
-    print(f"Simulations found: {len(report.simulations)}")
-    print(f"Valid: {len(report.valid_simulations)}")
-    print(f"Invalid: {len(report.invalid_simulations)}")
-
-    if not report.invalid_simulations:
-        return
-
-    print("\nInvalid simulations:")
-    for simulation in report.invalid_simulations:
-        print(f"- {simulation.run_root}")
-        for issue in simulation.validation_issues:
-            print(f"  - {issue}")
+    return _validate_grid(args.root, args.report, validate_parser)
 
 
 def _validate_grid(root: Path, report_path: Path, parser: argparse.ArgumentParser) -> int:
-    """Validate a grid in stages and write a persistent plain-text report."""
+    """Validate a grid in stages and write a persistent YAML report.
+
+    Args:
+        root: Grid directory to scan and validate.
+        report_path: Destination path for the portable validation report.
+        parser: Argument parser used to present filesystem errors.
+
+    Returns:
+        Zero after successfully writing the validation report.
+    """
     try:
         discovery_report = LocalGridDiscoverer(root, DcafAdapter).discover()
     except NotADirectoryError as error:
@@ -101,37 +80,56 @@ def _validate_grid(root: Path, report_path: Path, parser: argparse.ArgumentParse
             print(f"{prefix}[{index:>4}/{total}] OK: {run_root}          ")
 
     try:
-        report_path.write_text(_validation_report_text(root, results), encoding="utf-8")
+        report_path.write_text(
+            yaml.safe_dump(
+                _validation_report_data(root, results),
+                allow_unicode=False,
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
     except OSError as error:
         parser.error(f"Cannot write report {report_path}: {error}")
+    issue_count = sum(bool(issues) for _, issues in results)
+    print(f"Validated: {len(results)} simulations")
+    print(f"Valid for transfer: {len(results) - issue_count}")
+    print(f"With issues: {issue_count}")
     print(f"Report saved: {report_path}")
     return 0
 
 
-def _validation_report_text(
+def _validation_report_data(
     root: Path,
     results: Sequence[tuple[Path, tuple[str, ...]]],
-) -> str:
-    """Format detailed-validation results as a stable plain-text report."""
-    lines = [f"D-CAF validation report for: {root}", ""]
-    for run_root, issues in results:
-        if not issues:
-            lines.append(f"OK: {run_root}")
-            continue
-        lines.append(f"ISSUE: {run_root}")
-        lines.extend(f"  - {issue}" for issue in issues)
+) -> dict[str, object]:
+    """Create the minimal portable data structure for a validation report.
 
-    issue_count = sum(bool(issues) for _, issues in results)
-    lines.extend(
-        (
-            "",
-            f"Checked: {len(results)}",
-            f"No issues: {len(results) - issue_count}",
-            f"With issues: {issue_count}",
-            "",
-        )
-    )
-    return "\n".join(lines)
+    Args:
+        root: Grid root used for validation.
+        results: Absolute or root-relative run paths paired with their issues.
+
+    Returns:
+        YAML-serializable report data with valid relative paths and invalid
+        paths mapped to their human-readable validation issues.
+    """
+    valid_simulations: list[str] = []
+    simulations_with_issues: dict[str, list[str]] = {}
+    for run_root, issues in results:
+        relative_path = str(run_root.relative_to(root))
+        if not issues:
+            valid_simulations.append(relative_path)
+            continue
+        simulations_with_issues[relative_path] = list(issues)
+
+    return {
+        "schema_version": 1,
+        "source": {
+            "hostname": socket.gethostname(),
+            "root": str(root.resolve()),
+        },
+        "valid_simulations": valid_simulations,
+        "simulations_with_issues": simulations_with_issues,
+    }
 
 
 if __name__ == "__main__":
