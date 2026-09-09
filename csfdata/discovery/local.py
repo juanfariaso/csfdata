@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from os import walk
 
 from csfdata.adapters.base import SimulationAdapter
 from csfdata.discovery.base import GridDiscoverer
@@ -37,18 +38,16 @@ class LocalGridDiscoverer(GridDiscoverer):
             NotADirectoryError: If ``root`` is not an existing directory.
 
         Notes:
-            Every directory is presented to the adapter, but only directories
-            for which ``is_simulation()`` returns ``True`` enter the report.
+            Directories are traversed until an adapter-recognized simulation
+            root is found. Its subdirectories are then not inspected.
         """
         if not self.root.is_dir():
             raise NotADirectoryError(f"Discovery root is not a directory: {self.root}")
 
         simulations: list[DiscoveredSimulation] = []
-        candidate_paths = (
-            self.root,
-            *sorted(path for path in self.root.rglob("*") if path.is_dir()),
-        )
-        for candidate_path in candidate_paths:
+        for directory, subdirectories, _ in walk(self.root, topdown=True):
+            subdirectories.sort()
+            candidate_path = Path(directory)
             simulation = self.adapter(candidate_path)
             if not simulation.is_simulation():
                 continue
@@ -58,5 +57,6 @@ class LocalGridDiscoverer(GridDiscoverer):
                     validation_issues=simulation.validate_simulation(),
                 )
             )
+            subdirectories.clear()
 
         return DiscoveryReport(root=self.root, simulations=tuple(simulations))
