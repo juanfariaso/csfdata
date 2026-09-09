@@ -39,6 +39,7 @@ plugins:
 
 nav:
   - Home: index.md
+  - Command Line: command-line.md
 
 extra_css:
    - stylesheets/api-reference.css

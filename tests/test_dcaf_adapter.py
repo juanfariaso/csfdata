@@ -76,6 +76,30 @@ def test_dcaf_adapter_reports_time_mismatch_and_missing_segment(tmp_path: Path) 
     assert DcafAdapter(run_root, tolerance_myr=5.0).validate_simulation()[:2] == issues[:2]
 
 
+def test_dcaf_adapter_fast_validation_reports_segment_count_mismatch(tmp_path: Path) -> None:
+    run_root = tmp_path / "run"
+    output_root = run_root / "dcaf_output"
+    output_root.mkdir(parents=True)
+    (run_root / "config.yaml").write_text("t_end: 1.0 Myr\n", encoding="utf-8")
+    (run_root / "background_gas.dat").write_text("0.0 5000\n1.0 6000\n", encoding="utf-8")
+    (output_root / "stars_000.amuse").touch()
+
+    issues = DcafAdapter(run_root).validate_simulation()
+
+    assert (
+        "Segment 0: background_gas.dat has 2 time records but dcaf_output has 1 stellar snapshots."
+    ) in issues
+
+
+def test_dcaf_adapter_accepts_background_gas_time_rounding(tmp_path: Path) -> None:
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+    (run_root / "config.yaml").write_text("t_end: 123.456789 Myr\n", encoding="utf-8")
+    _write_segment(run_root, 0, (123.457,), (123.456789,))
+
+    assert DcafAdapter(run_root).validate_simulation(detailed=True) == ()
+
+
 def test_dcaf_adapter_reports_precise_mismatches_and_duplicate_segments(tmp_path: Path) -> None:
     run_root = tmp_path / "run"
     run_root.mkdir()

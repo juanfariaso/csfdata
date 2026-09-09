@@ -18,7 +18,8 @@ _BACKGROUND_GAS_PATTERN = re.compile(r"background_gas(?:_(\d+))?\.dat$")
 _OUTPUT_FOLDER_PATTERN = re.compile(r"dcaf_output(?:_(\d+))?$")
 _SNAPSHOT_PATTERN = re.compile(r"stars_\d+\.amuse$")
 _MYR_IN_SECONDS = 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
-_CHECKPOINT_TOLERANCE_MYR = 1.0e-6
+_CHECKPOINT_ABSOLUTE_TOLERANCE_MYR = 1.0e-8
+_CHECKPOINT_RELATIVE_TOLERANCE = 1.0e-5
 
 
 @dataclass(frozen=True)
@@ -213,6 +214,40 @@ class DcafAdapter(SimulationAdapter):
                 if not _SNAPSHOT_PATTERN.fullmatch(snapshot.name):
                     issues.append(f"Invalid snapshot filename: {snapshot.name}.")
 
+        gas_records_by_segment: dict[int, tuple[_GasTimeRecord, ...]] = {}
+        for segment in sorted(gas_by_segment.keys() & output_by_segment.keys()):
+            gas_path = gas_by_segment[segment]
+            try:
+                gas_records = _gas_time_records(gas_path)
+            except ValueError as error:
+                issues.append(str(error))
+                continue
+            if not gas_records:
+                issues.append(f"No time records found in {gas_path.name}.")
+                continue
+
+            gas_records_by_segment[segment] = gas_records
+            snapshot_count = len(self._snapshot_paths_in_folder(output_by_segment[segment]))
+            if len(gas_records) != snapshot_count:
+                issues.append(
+                    f"Segment {segment}: {gas_path.name} has {len(gas_records)} time records "
+                    f"but {output_by_segment[segment].name} has {snapshot_count} stellar snapshots."
+                )
+
+        segments_with_records = sorted(gas_records_by_segment)
+        for previous_segment, segment in zip(
+            segments_with_records, segments_with_records[1:]
+        ):
+            previous_records = gas_records_by_segment[previous_segment]
+            records = gas_records_by_segment[segment]
+            if records[0].time_myr < previous_records[-1].time_myr - _time_tolerance_myr(
+                records[0].time_myr, previous_records[-1].time_myr
+            ):
+                issues.append(
+                    f"Background-gas segment {segment} starts at {records[0].time_myr:g} Myr "
+                    f"before segment {previous_segment} ends at {previous_records[-1].time_myr:g} Myr."
+                )
+
         if detailed:
             timelines: list[_SegmentTimeline] = []
             for segment in sorted(gas_by_segment.keys() & output_by_segment.keys()):
@@ -368,7 +403,9 @@ class DcafAdapter(SimulationAdapter):
         """Report time decreases within one output segment."""
         issues: list[str] = []
         for previous, current in zip(records, records[1:]):
-            if current.time_myr < previous.time_myr - _CHECKPOINT_TOLERANCE_MYR:
+            if current.time_myr < previous.time_myr - _time_tolerance_myr(
+                previous.time_myr, current.time_myr
+            ):
                 issues.append(
                     f"Segment {segment}: {label} time decreases from "
                     f"{self._record_location(previous)} at {previous.time_myr:g} Myr to "
@@ -390,7 +427,7 @@ class DcafAdapter(SimulationAdapter):
             gas_record = gas_records[gas_index]
             snapshot_record = snapshot_records[snapshot_index]
             difference = snapshot_record.time_myr - gas_record.time_myr
-            if abs(difference) <= _CHECKPOINT_TOLERANCE_MYR:
+            if _times_match(snapshot_record.time_myr, gas_record.time_myr):
                 gas_index += 1
                 snapshot_index += 1
             elif difference < 0:
@@ -553,6 +590,23 @@ def _snapshot_time_myr(path: Path) -> float:
         raise ValueError("snapshot model_time is not numeric") from error
 
 
+def _time_tolerance_myr(*times: float) -> float:
+    """Return a comparison tolerance for D-CAF's rounded time-series output.
+
+    D-CAF writes background-gas times with six significant figures, while HDF5
+    snapshots retain the underlying floating-point value.
+    """
+    return max(
+        _CHECKPOINT_ABSOLUTE_TOLERANCE_MYR,
+        _CHECKPOINT_RELATIVE_TOLERANCE * max(abs(time) for time in times),
+    )
+
+
+def _times_match(left: float, right: float) -> bool:
+    """Return whether two D-CAF output times agree within text rounding."""
+    return abs(left - right) <= _time_tolerance_myr(left, right)
+
+
 def _timeline_is_contained(candidate: _SegmentTimeline, reference: _SegmentTimeline) -> bool:
     """Return whether both candidate time sequences occur in a reference timeline."""
     return _time_sequence_is_contained(
@@ -569,7 +623,7 @@ def _time_sequence_is_contained(
     for start in range(len(reference) - len(candidate) + 1):
         window = reference[start : start + len(candidate)]
         if all(
-            abs(candidate_time - reference_time) <= _CHECKPOINT_TOLERANCE_MYR
+            _times_match(candidate_time, reference_time)
             for candidate_time, reference_time in zip(candidate, window)
         ):
             return True

@@ -73,7 +73,7 @@ def _print_discovery_report(report: DiscoveryReport) -> None:
 
 
 def _validate_grid(root: Path, report_path: Path, parser: argparse.ArgumentParser) -> int:
-    """Perform detailed validation and write a persistent plain-text report."""
+    """Validate a grid in stages and write a persistent plain-text report."""
     try:
         discovery_report = LocalGridDiscoverer(root, DcafAdapter).discover()
     except NotADirectoryError as error:
@@ -87,7 +87,10 @@ def _validate_grid(root: Path, report_path: Path, parser: argparse.ArgumentParse
         if interactive:
             print(f"\r[{index:>4}/{total}] Checking {run_root} ...", end="", flush=True)
 
-        issues = DcafAdapter(run_root).validate_simulation(detailed=True)
+        issues = discovered_simulation.validation_issues
+        if issues:
+            # Open HDF5 snapshots only after the inexpensive structural screen flags a run.
+            issues = DcafAdapter(run_root).validate_simulation(detailed=True)
         results.append((run_root, issues))
         prefix = "\r" if interactive else ""
         if issues:
