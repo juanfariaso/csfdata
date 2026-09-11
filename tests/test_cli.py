@@ -32,6 +32,11 @@ def test_validate_command_writes_a_portable_yaml_report(
     assert report["schema_version"] == 1
     assert report["source"]["root"] == str(grid_root.resolve())
     assert report["source"]["hostname"]
+    assert report["summary"] == {
+        "total_simulations": 2,
+        "valid_simulations": 1,
+        "simulations_with_issues": 1,
+    }
     assert report["valid_simulations"] == ["valid"]
     assert "invalid" in report["simulations_with_issues"]
     assert any(
@@ -65,6 +70,11 @@ def test_import_command_creates_a_local_catalogue_entry(
             {
                 "schema_version": 1,
                 "source": {"hostname": "trillium", "root": str(source_root)},
+                "summary": {
+                    "total_simulations": 1,
+                    "valid_simulations": 1,
+                    "simulations_with_issues": 0,
+                },
                 "valid_simulations": ["M1000/tff3.0/07"],
                 "simulations_with_issues": {},
             },

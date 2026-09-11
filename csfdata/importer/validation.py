@@ -88,6 +88,30 @@ def read_validation_report(report_path: Path) -> ValidatedSource:
     if not isinstance(paths, list) or not all(isinstance(path, str) for path in paths):
         raise ValueError("Validation report valid_simulations must be a list of strings.")
 
+    issues = contents.get("simulations_with_issues")
+    if not isinstance(issues, dict) or not all(
+        isinstance(path, str)
+        and isinstance(messages, list)
+        and all(isinstance(message, str) for message in messages)
+        for path, messages in issues.items()
+    ):
+        raise ValueError("Validation report simulations_with_issues must map paths to messages.")
+
+    summary = contents.get("summary")
+    if summary is not None:
+        if not isinstance(summary, dict):
+            raise ValueError("Validation report summary must be a mapping.")
+        total = summary.get("total_simulations")
+        valid = summary.get("valid_simulations")
+        with_issues = summary.get("simulations_with_issues")
+        if any(
+            isinstance(value, bool) or not isinstance(value, int) or value < 0
+            for value in (total, valid, with_issues)
+        ):
+            raise ValueError("Validation report summary counts must be non-negative integers.")
+        if valid != len(paths) or with_issues != len(issues) or total != valid + with_issues:
+            raise ValueError("Validation report summary does not match its simulation lists.")
+
     return ValidatedSource(
         hostname=hostname,
         root=Path(root),

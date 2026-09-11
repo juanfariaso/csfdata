@@ -175,6 +175,11 @@ def validation_report_data(
             "hostname": socket.gethostname(),
             "root": str(root.resolve()),
         },
+        "summary": {
+            "total_simulations": len(results),
+            "valid_simulations": len(valid_simulations),
+            "simulations_with_issues": len(simulations_with_issues),
+        },
         "valid_simulations": valid_simulations,
         "simulations_with_issues": simulations_with_issues,
     }
