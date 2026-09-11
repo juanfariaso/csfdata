@@ -43,9 +43,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     import_parser = subparsers.add_parser(
         "import",
-        help="Import a reviewed D-CAF manifest into a local catalogue.",
+        help="Import a reviewed D-CAF validation report into a local catalogue.",
+        description=(
+            "Import simulations approved by a validation report into a local "
+            "catalogue. The collection.yaml id selects the destination "
+            "collection; its directory is created on the first successful import."
+        ),
+        epilog=(
+            "The catalogue root must already exist. Run with --dry-run first "
+            "to check source files, collection requirements, and destination "
+            "conflicts without creating catalogue files."
+        ),
     )
-    import_parser.add_argument("root", type=Path, help="Existing catalogue root directory.")
+    import_parser.add_argument(
+        "root",
+        type=Path,
+        help="Existing catalogue root; collection folders are created below it.",
+    )
     import_parser.add_argument(
         "--report",
         type=Path,
@@ -56,7 +70,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--collection",
         type=Path,
         required=True,
-        help="YAML collection configuration.",
+        help="YAML collection configuration; its id names the destination collection.",
     )
     import_parser.add_argument(
         "--dry-run",
@@ -227,6 +241,7 @@ def import_collection(
             collection_path,
             DcafAdapter,
             dry_run=dry_run,
+            show_progress=not dry_run,
         )
     except (OSError, ValueError, yaml.YAMLError) as error:
         if parser is None:

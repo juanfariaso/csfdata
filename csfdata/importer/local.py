@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 import shutil
+import sys
 
 from csfdata.adapters.base import SimulationAdapter
 from csfdata.catalogue.collection import (
@@ -30,6 +31,7 @@ def import_manifest(
     collection_path: Path,
     adapter: type[SimulationAdapter],
     dry_run: bool = False,
+    show_progress: bool = False,
 ) -> tuple[Path, ...]:
     """Import one reviewed manifest into a local catalogue collection.
 
@@ -40,6 +42,8 @@ def import_manifest(
             requirements for this collection.
         adapter: Adapter class used to inspect each source simulation.
         dry_run: Whether to stop after preflight without changing the catalogue.
+        show_progress: Whether to print one updating progress line for each
+            simulation while copying.
 
     Returns:
         Final destination directories promoted during this import, in manifest
@@ -90,7 +94,7 @@ def import_manifest(
 
     simulations_root = collection_root / "simulations"
     staging_root = collection_root / ".staging"
-    prepared: list[tuple[ImportItem, SimulationConfiguration, tuple[Path, ...]]] = []
+    prepared: list[tuple[ImportItem, SimulationConfiguration, tuple[Path, ...], int]] = []
 
     # Preflight every item before creating catalogue files or copying raw data.
     for item in manifest.items:
@@ -121,10 +125,12 @@ def import_manifest(
             raise FileExistsError(f"Destination simulation already exists: {destination_path}")
         if staging_path.exists():
             raise FileExistsError(f"Retained staging directory already exists: {staging_path}")
-        prepared.append((item, configuration, raw_paths))
+        prepared.append(
+            (item, configuration, raw_paths, sum(raw_path.stat().st_size for raw_path in raw_paths))
+        )
 
     if dry_run:
-        return tuple(simulations_root / item.simulation_id for item, _, _ in prepared)
+        return tuple(simulations_root / item.simulation_id for item, _, _, _ in prepared)
 
     collection_root.mkdir(parents=True, exist_ok=True)
     if not destination_collection_path.exists():
@@ -134,12 +140,24 @@ def import_manifest(
     staging_root.mkdir(exist_ok=True)
 
     destinations: list[Path] = []
-    for item, configuration, raw_paths in prepared:
+    total_simulations = len(prepared)
+    for simulation_index, (item, configuration, raw_paths, total_bytes) in enumerate(
+        prepared, start=1
+    ):
         source_root = manifest.source_path(item)
         staging_path = staging_root / item.simulation_id
         destination_path = simulations_root / item.simulation_id
         raw_root = staging_path / "raw"
         raw_root.mkdir(parents=True)
+        copied_bytes = 0
+
+        if show_progress:
+            print(
+                f"\r[{simulation_index:>4}/{total_simulations}] Importing "
+                f"{item.source_relative_path} -> {item.simulation_id}: 0.0%",
+                end="",
+                flush=True,
+            )
 
         # Preserve each approved source path below raw/ with its original layout.
         for raw_path in raw_paths:
@@ -148,6 +166,15 @@ def import_manifest(
             shutil.copy2(raw_path, destination_raw_path)
             if destination_raw_path.stat().st_size != raw_path.stat().st_size:
                 raise OSError(f"Copied file size does not match source: {raw_path}")
+            copied_bytes += raw_path.stat().st_size
+            if show_progress:
+                percentage = 100.0 if total_bytes == 0 else 100.0 * copied_bytes / total_bytes
+                print(
+                    f"\r[{simulation_index:>4}/{total_simulations}] Importing "
+                    f"{item.source_relative_path} -> {item.simulation_id}: {percentage:5.1f}%",
+                    end="",
+                    flush=True,
+                )
 
         write_simulation_configuration(configuration, staging_path / "config.yaml")
         metadata = SimulationMetadata(
@@ -173,5 +200,13 @@ def import_manifest(
             raise FileExistsError(f"Destination simulation already exists: {destination_path}")
         staging_path.rename(destination_path)
         destinations.append(destination_path)
+        if show_progress:
+            print(
+                f"\r[{simulation_index:>4}/{total_simulations}] OK: "
+                f"{item.source_relative_path} -> {item.simulation_id}          "
+            )
+
+    if show_progress and total_simulations == 0 and sys.stdout.isatty():
+        print("No simulations approved for import.")
 
     return tuple(destinations)
