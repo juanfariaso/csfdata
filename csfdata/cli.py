@@ -11,7 +11,11 @@ import sys
 import yaml
 
 from csfdata.adapters.dcaf import DcafAdapter
+from csfdata.catalogue.collection import read_collection_configuration
 from csfdata.discovery.local import LocalGridDiscoverer
+from csfdata.importer.local import import_manifest
+from csfdata.importer.manifest import create_import_manifest
+from csfdata.importer.validation import read_validation_report
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -37,25 +41,67 @@ def main(argv: Sequence[str] | None = None) -> int:
         required=True,
         help="Path for the YAML validation report.",
     )
+    import_parser = subparsers.add_parser(
+        "import",
+        help="Import a reviewed D-CAF manifest into a local catalogue.",
+    )
+    import_parser.add_argument("root", type=Path, help="Existing catalogue root directory.")
+    import_parser.add_argument(
+        "--report",
+        type=Path,
+        required=True,
+        help="Reviewed YAML validation report.",
+    )
+    import_parser.add_argument(
+        "--collection",
+        type=Path,
+        required=True,
+        help="YAML collection configuration.",
+    )
+    import_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Check the import without changing the catalogue.",
+    )
 
     args = parser.parse_args(argv)
-    return _validate_grid(args.root, args.report, validate_parser)
+    if args.command == "validate":
+        return validate_grid(args.root, args.report, parser=validate_parser)
+    return import_collection(
+        args.root,
+        args.report,
+        args.collection,
+        parser=import_parser,
+        dry_run=args.dry_run,
+    )
 
 
-def _validate_grid(root: Path, report_path: Path, parser: argparse.ArgumentParser) -> int:
+def validate_grid(
+    root: Path,
+    report_path: Path,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
     """Validate a grid in stages and write a persistent YAML report.
 
     Args:
         root: Grid directory to scan and validate.
         report_path: Destination path for the portable validation report.
-        parser: Argument parser used to present filesystem errors.
+        parser: Optional CLI parser used to present filesystem errors. Omit it
+            when calling this function from Python.
 
     Returns:
         Zero after successfully writing the validation report.
+
+    Raises:
+        NotADirectoryError: If ``root`` is not a directory and no ``parser``
+            is provided.
+        OSError: If the report cannot be written and no ``parser`` is provided.
     """
     try:
         discovery_report = LocalGridDiscoverer(root, DcafAdapter).discover()
     except NotADirectoryError as error:
+        if parser is None:
+            raise
         parser.error(str(error))
 
     results: list[tuple[Path, tuple[str, ...]]] = []
@@ -82,13 +128,15 @@ def _validate_grid(root: Path, report_path: Path, parser: argparse.ArgumentParse
     try:
         report_path.write_text(
             yaml.safe_dump(
-                _validation_report_data(root, results),
+                validation_report_data(root, results),
                 allow_unicode=False,
                 sort_keys=False,
             ),
             encoding="utf-8",
         )
     except OSError as error:
+        if parser is None:
+            raise
         parser.error(f"Cannot write report {report_path}: {error}")
     issue_count = sum(bool(issues) for _, issues in results)
     print(f"Validated: {len(results)} simulations")
@@ -98,7 +146,7 @@ def _validate_grid(root: Path, report_path: Path, parser: argparse.ArgumentParse
     return 0
 
 
-def _validation_report_data(
+def validation_report_data(
     root: Path,
     results: Sequence[tuple[Path, tuple[str, ...]]],
 ) -> dict[str, object]:
@@ -130,6 +178,63 @@ def _validation_report_data(
         "valid_simulations": valid_simulations,
         "simulations_with_issues": simulations_with_issues,
     }
+
+
+def import_collection(
+    catalogue_root: Path,
+    report_path: Path,
+    collection_path: Path,
+    parser: argparse.ArgumentParser | None = None,
+    dry_run: bool = False,
+) -> int:
+    """Import one reviewed D-CAF manifest into a local catalogue.
+
+    Args:
+        catalogue_root: Existing root directory of the destination catalogue.
+        report_path: Reviewed YAML validation report path.
+        collection_path: YAML collection configuration path.
+        parser: Optional CLI parser used to present errors. Omit it when
+            calling this function from Python.
+        dry_run: Whether to stop after preflight without changing the catalogue.
+
+    Returns:
+        Zero after every manifest item has been imported.
+
+    Raises:
+        OSError: If an input cannot be read or an import filesystem operation
+            fails and no ``parser`` is provided.
+        ValueError: If an input is invalid, the collection is not D-CAF, or
+            import preflight fails and no ``parser`` is provided.
+        yaml.YAMLError: If an input YAML file is invalid and no ``parser`` is
+            provided.
+    """
+    try:
+        validated_source = read_validation_report(report_path)
+        collection = read_collection_configuration(collection_path)
+        if collection.importer != "dcaf":
+            raise ValueError(
+                "The import command currently supports only collection importer: dcaf."
+            )
+        manifest = create_import_manifest(validated_source, collection.collection_id)
+        destinations = import_manifest(
+            manifest,
+            catalogue_root,
+            collection_path,
+            DcafAdapter,
+            dry_run=dry_run,
+        )
+    except (OSError, ValueError, yaml.YAMLError) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
+
+    if dry_run:
+        print(f"Dry run: {len(destinations)} simulations ready to import")
+    else:
+        print(f"Imported: {len(destinations)} simulations")
+    print(f"Collection: {collection.collection_id}")
+    print(f"Catalogue root: {catalogue_root}")
+    return 0
 
 
 if __name__ == "__main__":

@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
+
+from csfdata.catalogue.collection import CollectionConfiguration
+from csfdata.catalogue.configuration import SimulationConfiguration
+
 
 class SimulationAdapter(ABC):
-    """Define the read-only contract for one simulation run.
+    """Define the read-only and import-preparation contract for one run.
 
     Each adapter represents one candidate run. It identifies the run, exposes
-    its authoritative configuration and raw output files, reports its final
-    model time in canonical Myr, and returns validation issues without changing
-    any source files.
+    its raw files, reports its final model time in canonical Myr, and returns
+    validation issues without changing source files. It also converts its own
+    source format into a canonical catalogue configuration.
     """
 
     @abstractmethod
@@ -37,28 +39,6 @@ class SimulationAdapter(ABC):
             ``True`` only when the adapter has sufficient format-specific
                 evidence that the candidate is one simulation run. ``False``
                 means it must not be imported as that format.
-        """
-
-    @abstractmethod
-    def configuration_path(self) -> Path:
-        """Locate the authoritative scientific configuration.
-
-        Returns:
-            The expected path of the configuration file. The returned path may
-                not exist when ``is_simulation()`` is ``False``.
-        """
-
-    @abstractmethod
-    def read_configuration(self) -> dict[str, Any]:
-        """Read the authoritative configuration without normalizing its meaning.
-
-        Returns:
-            A dictionary containing the parsed configuration in the simulation
-                format's own field names and values.
-
-        Notes:
-            Adapters must not silently infer, replace, or rewrite scientific
-            parameters while reading the raw configuration.
         """
 
     @abstractmethod
@@ -126,16 +106,51 @@ class SimulationAdapter(ABC):
         """
 
     @abstractmethod
-    def raw_data_paths(self) -> Iterable[Path]:
-        """List raw simulation-output files that are eligible for copying.
+    def raw_data_paths(self) -> tuple[Path, ...]:
+        """Return raw source files that are eligible for copying.
 
         Returns:
-            Paths to source snapshots, time series, and other primary output
-                files in a deterministic order. Derived artifacts and scheduler
-                markers must be omitted.
+            Complete source-file payload in deterministic order. Derived
+                artifacts and scheduler markers must be omitted.
 
         Notes:
-            The authoritative configuration is supplied separately by
-            ``configuration_path()`` so an importer can preserve it alongside
-            the raw outputs.
+            A code-specific adapter decides which filenames are scientific
+            source inputs or outputs. Generic copy code does not know them.
         """
+
+    @abstractmethod
+    def build_configuration(self) -> SimulationConfiguration:
+        """Build this run's canonical top-level catalogue configuration.
+
+        Returns:
+            Canonical configuration derived from source files without changing
+            those files.
+        """
+
+    def prepare_configuration(
+        self,
+        collection: CollectionConfiguration,
+    ) -> SimulationConfiguration:
+        """Build configuration and check the destination collection requirements.
+
+        Args:
+            collection: Destination collection whose required parameters must
+                be known for this simulation.
+
+        Returns:
+            The canonical configuration when collection requirements are met.
+
+        Raises:
+            ValueError: If a required collection parameter is absent, unknown,
+                or not applicable for this simulation.
+        """
+        configuration = self.build_configuration()
+        missing = configuration.missing_required_parameters(
+            collection.required_parameters
+        )
+        if missing:
+            names = ", ".join(missing)
+            raise ValueError(
+                f"Simulation {self.run_root} does not provide required parameters: {names}."
+            )
+        return configuration

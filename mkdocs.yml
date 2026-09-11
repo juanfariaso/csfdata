@@ -39,7 +39,9 @@ plugins:
 
 nav:
   - Home: index.md
+  - Units: units.md
   - Command Line: command-line.md
+  - Catalogue Workflow: catalogue-workflow.md
 
 extra_css:
    - stylesheets/api-reference.css

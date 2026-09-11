@@ -3,6 +3,7 @@ from pathlib import Path
 import h5py
 
 from csfdata.adapters.dcaf import DcafAdapter
+from csfdata.catalogue.collection import CollectionConfiguration
 
 
 _MYR_IN_SECONDS = 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
@@ -14,7 +15,12 @@ def test_dcaf_adapter_reads_resumed_background_gas_segments(tmp_path: Path) -> N
     resumed_output_root = run_root / "dcaf_output_1"
     output_root.mkdir(parents=True)
     resumed_output_root.mkdir()
-    (run_root / "config.yaml").write_text("seed_index: 0\nt_end: 15.0 Myr\n", encoding="utf-8")
+    (run_root / "config.yaml").write_text(
+        "seed_index: 0\ntff: 3.0 Myr\nRcl: 10.0 parsec\nMstars: 5000.0 MSun\nsfe: 0.3\nt_end: 15.0 Myr\n",
+        encoding="utf-8",
+    )
+    code_output = run_root / "code.out"
+    code_output.touch()
     (run_root / "background_gas.dat").write_text(
         "# Time [Myr] mtot [MSun]\n0.0 5000\n10.0 55000\n",
         encoding="utf-8",
@@ -44,7 +50,9 @@ def test_dcaf_adapter_reads_resumed_background_gas_segments(tmp_path: Path) -> N
     )
     assert adapter.snapshot_time(snapshot) == 0.0
     assert adapter.validate_simulation() == ()
-    assert tuple(adapter.raw_data_paths()) == (
+    assert adapter.raw_data_paths() == (
+        run_root / "config.yaml",
+        code_output,
         run_root / "background_gas.dat",
         run_root / "background_gas_1.dat",
         snapshot,
@@ -53,6 +61,23 @@ def test_dcaf_adapter_reads_resumed_background_gas_segments(tmp_path: Path) -> N
         resumed_output_root / "stars_023.amuse",
     )
     assert derived not in adapter.raw_data_paths()
+    configuration = adapter.build_configuration()
+    assert configuration.parameters == ()
+    assert configuration.parameter("tff") is not None
+    assert configuration.parameter("tff").value == 3.0
+    assert configuration.parameter("tff").unit == "Myr"
+    assert configuration.parameter("Mstars").value == 5000.0
+    assert configuration.parameter("Mstars").unit == "Msun"
+    assert configuration.parameter("Rcl").unit == "pc"
+    assert adapter.prepare_configuration(
+        CollectionConfiguration(
+            collection_id="dcaf-tff-grid-v1",
+            importer="dcaf",
+            config_schema_version=1,
+            required_parameters=("seed_index", "tff", "Mstars", "sfe"),
+            optional_parameters=(),
+        )
+    ) == configuration
 
 
 def test_dcaf_adapter_reports_time_mismatch_and_missing_segment(tmp_path: Path) -> None:
