@@ -41,6 +41,7 @@ nav:
   - Home: index.md
   - Units: units.md
   - Command Line: command-line.md
+  - Catalogue: catalogue.md
   - Catalogue Workflow: catalogue-workflow.md
   - Analysis Add-Ons: analysis-add-ons.md
 

@@ -8,6 +8,8 @@ truth for simulation identity, provenance, and scientific parameters.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import product
+from math import prod
 from pathlib import Path
 import sqlite3
 
@@ -271,8 +273,10 @@ def summarize_catalogue(
         sqlite3.Error: If the registry cannot be read.
 
     Notes:
-        This function reads only the SQLite registry. Run :func:`index_catalogue`
-        after importing or changing simulations before relying on the summary.
+        This function reads the SQLite registry and each selected collection's
+        small ``collection.yaml`` file for optional grid axes. Run
+        :func:`index_catalogue` after importing or changing simulations before
+        relying on the summary.
     """
     catalogue_root = catalogue_root.resolve()
     registry_path = catalogue_root / "registry.sqlite"
@@ -285,21 +289,29 @@ def summarize_catalogue(
         if collection_id is None:
             collections = connection.execute(
                 """
-                SELECT collections.collection_id, collections.importer, COUNT(simulations.simulation_id)
+                SELECT
+                    collections.collection_id,
+                    collections.importer,
+                    collections.relative_path,
+                    COUNT(simulations.simulation_id)
                 FROM collections
                 LEFT JOIN simulations USING (collection_id)
-                GROUP BY collections.collection_id, collections.importer
+                GROUP BY collections.collection_id, collections.importer, collections.relative_path
                 ORDER BY collections.collection_id
                 """
             ).fetchall()
         else:
             collections = connection.execute(
                 """
-                SELECT collections.collection_id, collections.importer, COUNT(simulations.simulation_id)
+                SELECT
+                    collections.collection_id,
+                    collections.importer,
+                    collections.relative_path,
+                    COUNT(simulations.simulation_id)
                 FROM collections
                 LEFT JOIN simulations USING (collection_id)
                 WHERE collections.collection_id = ?
-                GROUP BY collections.collection_id, collections.importer
+                GROUP BY collections.collection_id, collections.importer, collections.relative_path
                 """,
                 (collection_id,),
             ).fetchall()
@@ -307,7 +319,7 @@ def summarize_catalogue(
             raise ValueError(f"Collection is not indexed: {collection_id}")
 
         lines = [f"Registry: {registry_path}", f"Collections: {len(collections)}"]
-        for indexed_collection_id, importer, simulation_count in collections:
+        for indexed_collection_id, importer, relative_path, simulation_count in collections:
             lines.append(f"{indexed_collection_id} ({importer})")
             lines.append(f"  Simulations: {simulation_count}")
             parameters = connection.execute(
@@ -330,25 +342,110 @@ def summarize_catalogue(
             ).fetchall()
             if not parameters:
                 lines.append("  Parameters: none")
-                continue
-            lines.append("  Parameters:")
-            for (
-                name,
-                section,
-                value_type,
-                unit,
-                available_count,
-                minimum,
-                maximum,
-                distinct_text_count,
-            ) in parameters:
-                unit_label = f" [{unit}]" if unit is not None else ""
-                available = f"{available_count}/{simulation_count}"
-                if value_type == "number":
-                    detail = f"range {minimum:g} to {maximum:g}"
-                else:
-                    detail = f"{distinct_text_count} distinct values"
-                lines.append(
-                    f"    {name}{unit_label}: {available}; {detail} ({section}, {value_type})"
-                )
+            else:
+                lines.append("  Parameters:")
+                for (
+                    name,
+                    section,
+                    value_type,
+                    unit,
+                    available_count,
+                    minimum,
+                    maximum,
+                    distinct_text_count,
+                ) in parameters:
+                    unit_label = f" [{unit}]" if unit is not None else ""
+                    available = f"{available_count}/{simulation_count}"
+                    if value_type == "number":
+                        detail = f"range {minimum:g} to {maximum:g}"
+                    else:
+                        detail = f"{distinct_text_count} distinct values"
+                    lines.append(
+                        f"    {name}{unit_label}: {available}; {detail} "
+                        f"({section}, {value_type})"
+                    )
+            collection = read_collection_configuration(
+                catalogue_root / relative_path / "collection.yaml"
+            )
+            if collection.grid_axes:
+                expected_count = prod(len(values) for _, values in collection.grid_axes)
+                missing_count = len(missing_combinations(catalogue_root, indexed_collection_id))
+                lines.append("  Grid coverage:")
+                lines.append(f"    Expected combinations: {expected_count}")
+                lines.append(f"    Indexed combinations: {expected_count - missing_count}")
+                lines.append(f"    Missing combinations: {missing_count}")
     return "\n".join(lines)
+
+
+def missing_combinations(
+    catalogue_root: Path,
+    collection_id: str,
+) -> tuple[dict[str, str | int | float | bool], ...]:
+    """Return declared grid parameter combinations absent from one collection.
+
+    Args:
+        catalogue_root: Existing catalogue root containing ``registry.sqlite``.
+        collection_id: Indexed collection ID that declares ``grid_axes``.
+
+    Returns:
+        Missing parameter combinations in the order defined by
+        ``collection.yaml``. Each dictionary maps a grid-axis name to one
+        expected value.
+
+    Raises:
+        FileNotFoundError: If the catalogue has not been indexed yet.
+        ValueError: If the collection is not indexed or does not declare
+            ``grid_axes``.
+        sqlite3.Error: If the registry cannot be read.
+
+    Notes:
+        ``grid_axes`` represents a full Cartesian product. The function does
+        not infer intended combinations from existing simulations.
+    """
+    catalogue_root = catalogue_root.resolve()
+    registry_path = catalogue_root / "registry.sqlite"
+    if not registry_path.is_file():
+        raise FileNotFoundError(
+            f"Catalogue has not been indexed: {registry_path}. Run index-catalogue first."
+        )
+    with sqlite3.connect(registry_path) as connection:
+        row = connection.execute(
+            "SELECT relative_path FROM collections WHERE collection_id = ?",
+            (collection_id,),
+        ).fetchone()
+        if row is None:
+            raise ValueError(f"Collection is not indexed: {collection_id}")
+        collection = read_collection_configuration(catalogue_root / row[0] / "collection.yaml")
+        if not collection.grid_axes:
+            raise ValueError(f"Collection does not declare grid_axes: {collection_id}")
+        axis_names = tuple(name for name, _ in collection.grid_axes)
+        placeholders = ", ".join("?" for _ in axis_names)
+        rows = connection.execute(
+            f"""
+            SELECT simulation_id, name, value_type, numeric_value, text_value
+            FROM parameter_values
+            WHERE collection_id = ? AND name IN ({placeholders})
+            """,
+            (collection_id, *axis_names),
+        ).fetchall()
+
+    values_by_simulation: dict[str, dict[str, str | int | float | bool]] = {}
+    for simulation_id, name, value_type, numeric_value, text_value in rows:
+        if value_type == "boolean":
+            value: str | int | float | bool = bool(numeric_value)
+        elif value_type == "number":
+            value = float(numeric_value)
+        else:
+            value = text_value
+        values_by_simulation.setdefault(simulation_id, {})[name] = value
+
+    observed = {
+        tuple(values[name] for name in axis_names)
+        for values in values_by_simulation.values()
+        if all(name in values for name in axis_names)
+    }
+    return tuple(
+        dict(zip(axis_names, combination, strict=True))
+        for combination in product(*(values for _, values in collection.grid_axes))
+        if combination not in observed
+    )

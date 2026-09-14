@@ -17,6 +17,9 @@ required_parameters:
   - tff
 optional_parameters:
   - sfe
+grid_axes:
+  tff: [0.5, 1.0]
+  sfe: [0.1, 0.3]
 """,
         encoding="utf-8",
     )
@@ -27,6 +30,7 @@ optional_parameters:
     assert configuration.importer == "dcaf"
     assert configuration.required_parameters == ("Mstars", "tff")
     assert configuration.optional_parameters == ("sfe",)
+    assert configuration.grid_axes == (("tff", (0.5, 1.0)), ("sfe", (0.1, 0.3)))
 
 
 def test_collection_configuration_rejects_shared_parameter() -> None:

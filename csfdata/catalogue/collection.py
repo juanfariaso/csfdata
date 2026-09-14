@@ -24,6 +24,9 @@ class CollectionConfiguration:
             provide.
         optional_parameters: Parameter names that may be provided when
             applicable.
+        grid_axes: Optional expected parameter values for a complete Cartesian
+            simulation grid. Each pair contains one parameter name and its
+            declared values, in YAML declaration order.
 
     Notes:
         This object represents one whole collection, not an individual
@@ -37,6 +40,7 @@ class CollectionConfiguration:
     config_schema_version: int
     required_parameters: tuple[str, ...]
     optional_parameters: tuple[str, ...]
+    grid_axes: tuple[tuple[str, tuple[str | int | float | bool, ...]], ...] = ()
 
     def __post_init__(self) -> None:
         """Validate the collection identity and declared parameter vocabulary.
@@ -69,6 +73,16 @@ class CollectionConfiguration:
         if shared_parameters:
             names = ", ".join(sorted(shared_parameters))
             raise ValueError(f"Parameters cannot be both required and optional: {names}.")
+        axis_names = [name for name, _ in self.grid_axes]
+        if len(axis_names) != len(set(axis_names)) or any(not name for name in axis_names):
+            raise ValueError("grid_axes must use unique non-empty parameter names.")
+        for name, values in self.grid_axes:
+            if not values:
+                raise ValueError(f"Grid axis {name} must declare at least one value.")
+            if len(values) != len(set(values)):
+                raise ValueError(f"Grid axis {name} must not contain duplicate values.")
+            if any(not isinstance(value, (str, int, float, bool)) for value in values):
+                raise ValueError(f"Grid axis {name} must contain scalar values.")
 
 
 def read_collection_configuration(path: Path) -> CollectionConfiguration:
@@ -116,10 +130,26 @@ def read_collection_configuration(path: Path) -> CollectionConfiguration:
             )
         parameter_names[field_name] = tuple(value)
 
+    grid_axes = contents.get("grid_axes", {})
+    if not isinstance(grid_axes, dict):
+        raise ValueError("Collection configuration grid_axes must be a mapping.")
+    parsed_grid_axes: list[tuple[str, tuple[str | int | float | bool, ...]]] = []
+    for name, values in grid_axes.items():
+        if not isinstance(name, str) or not name:
+            raise ValueError("Collection configuration grid_axes has an invalid parameter name.")
+        if not isinstance(values, list) or not values:
+            raise ValueError(f"Collection configuration grid axis {name} must be a non-empty list.")
+        if any(not isinstance(value, (str, int, float, bool)) for value in values):
+            raise ValueError(
+                f"Collection configuration grid axis {name} must contain scalar values."
+            )
+        parsed_grid_axes.append((name, tuple(values)))
+
     return CollectionConfiguration(
         collection_id=collection_id,
         importer=importer,
         config_schema_version=config_schema_version,
         required_parameters=parameter_names["required_parameters"],
         optional_parameters=parameter_names["optional_parameters"],
+        grid_axes=tuple(parsed_grid_axes),
     )

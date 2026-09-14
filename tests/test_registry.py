@@ -11,7 +11,11 @@ from csfdata.catalogue.configuration import (
     write_simulation_configuration,
 )
 from csfdata.catalogue.metadata import SimulationMetadata, write_simulation_metadata
-from csfdata.catalogue.registry import index_catalogue, summarize_catalogue
+from csfdata.catalogue.registry import (
+    index_catalogue,
+    missing_combinations,
+    summarize_catalogue,
+)
 from csfdata.cli import main
 
 
@@ -28,6 +32,9 @@ importer: dcaf
 config_schema_version: 1
 required_parameters: []
 optional_parameters: []
+grid_axes:
+  tff: [3.0, 4.0]
+  sfe: [0.3]
 """,
         encoding="utf-8",
     )
@@ -67,6 +74,12 @@ optional_parameters: []
     assert "Simulations: 1" in summary
     assert "tff [Myr]: 1/1; range 3 to 3 (parameters, number)" in summary
     assert "label: 1/1; 1 distinct values (code_parameters, text)" in summary
+    assert "Expected combinations: 2" in summary
+    assert "Indexed combinations: 1" in summary
+    assert "Missing combinations: 1" in summary
+    assert missing_combinations(catalogue_root, "dcaf-grid-v1") == (
+        {"tff": 4.0, "sfe": 0.3},
+    )
     with sqlite3.connect(catalogue_root / "registry.sqlite") as connection:
         assert connection.execute("SELECT COUNT(*) FROM collections").fetchone() == (1,)
         assert connection.execute("SELECT COUNT(*) FROM simulations").fetchone() == (1,)
@@ -93,6 +106,8 @@ importer: dcaf
 config_schema_version: 1
 required_parameters: []
 optional_parameters: []
+grid_axes:
+  tff: [1.0]
 """,
         encoding="utf-8",
     )
@@ -111,3 +126,21 @@ optional_parameters: []
     assert "Collections: 1" in output
     assert "empty-grid (dcaf)" in output
     assert "Parameters: none" in output
+    assert "Expected combinations: 1" in output
+    assert "Missing combinations: 1" in output
+
+    missing_path = tmp_path / "missing.csv"
+    assert (
+        main(
+            [
+                "missing-combinations",
+                str(catalogue_root),
+                "--collection",
+                "empty-grid",
+                "--output",
+                str(missing_path),
+            ]
+        )
+        == 0
+    )
+    assert missing_path.read_text(encoding="utf-8") == "tff\n1.0\n"

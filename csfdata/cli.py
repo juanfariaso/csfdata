@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+import csv
 from pathlib import Path
 import socket
 import sqlite3
@@ -14,7 +15,11 @@ import yaml
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import read_collection_configuration
-from csfdata.catalogue.registry import index_catalogue, summarize_catalogue
+from csfdata.catalogue.registry import (
+    index_catalogue,
+    missing_combinations,
+    summarize_catalogue,
+)
 from csfdata.discovery.local import LocalGridDiscoverer
 from csfdata.importer.local import import_manifest
 from csfdata.importer.manifest import create_import_manifest
@@ -120,6 +125,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--collection",
         help="Collection ID to summarize; omit to summarize every collection.",
     )
+    missing_parser = subparsers.add_parser(
+        "missing-combinations",
+        help="Write declared but absent grid combinations to CSV.",
+    )
+    missing_parser.add_argument("root", type=Path, help="Existing indexed catalogue root.")
+    missing_parser.add_argument(
+        "--collection",
+        required=True,
+        help="Indexed collection ID that declares grid_axes.",
+    )
+    missing_parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="CSV path to create or replace.",
+    )
 
     args = parser.parse_args(argv)
     if args.command == "validate":
@@ -136,6 +157,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         return index_catalogue_command(args.root, args.collection, parser=index_parser)
     if args.command == "catalogue-summary":
         return catalogue_summary_command(args.root, args.collection, parser=summary_parser)
+    if args.command == "missing-combinations":
+        return missing_combinations_command(
+            args.root,
+            args.collection,
+            args.output,
+            parser=missing_parser,
+        )
     return run_analysis(args.arguments, parser=analysis_parser)
 
 
@@ -239,6 +267,56 @@ def catalogue_summary_command(
         if parser is None:
             raise
         parser.error(str(error))
+    return 0
+
+
+def missing_combinations_command(
+    catalogue_root: Path,
+    collection_id: str,
+    output_path: Path,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Write missing declared grid combinations as a CSV file.
+
+    Args:
+        catalogue_root: Existing catalogue root containing ``registry.sqlite``.
+        collection_id: Indexed collection ID that declares ``grid_axes``.
+        output_path: CSV destination path. Existing files are replaced because
+            this is a regenerated report.
+        parser: Optional CLI parser used to present errors. Omit it when
+            calling this function from Python.
+
+    Returns:
+        int: Zero after the CSV report has been written.
+
+    Raises:
+        FileNotFoundError: If the registry is absent and no ``parser`` is
+            provided.
+        ValueError: If the selected collection has no declared grid and no
+            ``parser`` is provided.
+        OSError: If the CSV cannot be written and no ``parser`` is provided.
+        sqlite3.Error: If the registry cannot be read and no ``parser`` is
+            provided.
+    """
+    try:
+        combinations = missing_combinations(catalogue_root, collection_id)
+        if combinations:
+            fieldnames = tuple(combinations[0])
+        else:
+            collection = read_collection_configuration(
+                catalogue_root / "collections" / collection_id / "collection.yaml"
+            )
+            fieldnames = tuple(name for name, _ in collection.grid_axes)
+        with output_path.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(combinations)
+    except (FileNotFoundError, OSError, ValueError, sqlite3.Error) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
+    print(f"Missing combinations: {len(combinations)}")
+    print(f"Report: {output_path}")
     return 0
 
 
