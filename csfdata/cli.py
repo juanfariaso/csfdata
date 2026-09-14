@@ -160,7 +160,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     export_lite_parser.add_argument(
         "destination",
         type=Path,
-        help="New destination directory for the lite catalogue.",
+        nargs="?",
+        default=Path("."),
+        help=(
+            "Parent directory for an automatic COLLECTION_ID folder, or a "
+            "new explicit lite-catalogue path. Defaults to the current directory."
+        ),
     )
 
     args = parser.parse_args(argv)
@@ -206,7 +211,8 @@ def export_lite_command(
     Args:
         source_catalogue: Existing full catalogue containing the collection.
         collection_id: ID of the one collection to export.
-        destination: New directory for the resulting lite catalogue.
+        destination: Existing parent directory for an automatic collection-ID
+            folder, or a new explicit lite-catalogue path.
         parser: Optional CLI parser used to present filesystem errors.
 
     Returns:
@@ -217,7 +223,8 @@ def export_lite_command(
         ValueError: If the source collection is invalid and no parser is supplied.
     """
     try:
-        report = export_lite_collection(source_catalogue, collection_id, destination)
+        output_path = destination / collection_id if destination.is_dir() else destination
+        report = export_lite_collection(source_catalogue, collection_id, output_path)
     except (OSError, ValueError) as error:
         if parser is None:
             raise
