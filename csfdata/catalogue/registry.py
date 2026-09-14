@@ -7,6 +7,7 @@ truth for simulation identity, provenance, and scientific parameters.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from itertools import product
 from math import prod
@@ -36,6 +37,23 @@ class IndexReport:
     collection_ids: tuple[str, ...]
     simulation_count: int
     parameter_count: int
+
+
+@dataclass(frozen=True)
+class CatalogueSimulation:
+    """One simulation selected from the indexed catalogue.
+
+    Args:
+        collection_id: Stable ID of the containing collection.
+        simulation_id: Permanent ID within the collection.
+        path: Absolute path to the imported simulation directory.
+        importer: Name of the adapter that imported this simulation.
+    """
+
+    collection_id: str
+    simulation_id: str
+    path: Path
+    importer: str
 
 
 def index_catalogue(
@@ -248,6 +266,123 @@ def index_catalogue(
         collection_ids=tuple(row[0] for row in collection_rows),
         simulation_count=len(simulation_rows),
         parameter_count=len(parameter_rows),
+    )
+
+
+def find_simulations(
+    catalogue_root: Path,
+    collection_id: str | None = None,
+    filters: Mapping[str, str | int | float | bool | tuple[float | None, float | None]] | None = None,
+) -> tuple[CatalogueSimulation, ...]:
+    """Return catalogue simulations matching indexed parameter filters.
+
+    Args:
+        catalogue_root: Existing catalogue root containing ``registry.sqlite``.
+        collection_id: Optional collection ID to restrict the search.
+        filters: Parameter filters keyed by canonical configuration name. A
+            scalar requires an exact match. A two-value tuple gives an inclusive
+            numeric range, where ``None`` means no lower or upper bound.
+
+    Returns:
+        Matching simulations ordered by collection ID and simulation ID.
+
+    Raises:
+        FileNotFoundError: If the catalogue has not been indexed yet.
+        ValueError: If a range is invalid or a filter value is unsupported.
+        sqlite3.Error: If the registry cannot be read.
+
+    Examples:
+        ```python
+        find_simulations(
+            catalogue_root,
+            collection_id="dcaf-grid-v1",
+            filters={"tff": (0.5, 3.0), "sfe": 0.3},
+        )
+        ```
+    """
+    catalogue_root = catalogue_root.resolve()
+    registry_path = catalogue_root / "registry.sqlite"
+    if not registry_path.is_file():
+        raise FileNotFoundError(
+            f"Catalogue has not been indexed: {registry_path}. Run index-catalogue first."
+        )
+
+    query = [
+        "SELECT simulations.collection_id, simulations.simulation_id, ",
+        "simulations.relative_path, collections.importer ",
+        "FROM simulations JOIN collections USING (collection_id)",
+    ]
+    conditions: list[str] = []
+    join_values: list[str | float] = []
+    condition_values: list[str | float] = []
+    if collection_id is not None:
+        conditions.append("simulations.collection_id = ?")
+        condition_values.append(collection_id)
+
+    for index, (name, filter_value) in enumerate((filters or {}).items()):
+        alias = f"parameter_{index}"
+        if isinstance(filter_value, tuple):
+            if len(filter_value) != 2:
+                raise ValueError(f"Range filter {name} must contain exactly two bounds.")
+            lower, upper = filter_value
+            if lower is not None and upper is not None and lower > upper:
+                raise ValueError(f"Range filter {name} has a lower bound above its upper bound.")
+            query.append(
+                f" JOIN parameter_values AS {alias} ON "
+                f"{alias}.collection_id = simulations.collection_id AND "
+                f"{alias}.simulation_id = simulations.simulation_id AND "
+                f"{alias}.name = ? AND {alias}.value_type = 'number'"
+            )
+            join_values.append(name)
+            if lower is not None:
+                conditions.append(f"{alias}.numeric_value >= ?")
+                condition_values.append(float(lower))
+            if upper is not None:
+                conditions.append(f"{alias}.numeric_value <= ?")
+                condition_values.append(float(upper))
+        elif isinstance(filter_value, bool):
+            query.append(
+                f" JOIN parameter_values AS {alias} ON "
+                f"{alias}.collection_id = simulations.collection_id AND "
+                f"{alias}.simulation_id = simulations.simulation_id AND "
+                f"{alias}.name = ? AND {alias}.value_type = 'boolean' AND "
+                f"{alias}.numeric_value = ?"
+            )
+            join_values.extend((name, float(filter_value)))
+        elif isinstance(filter_value, (int, float)):
+            query.append(
+                f" JOIN parameter_values AS {alias} ON "
+                f"{alias}.collection_id = simulations.collection_id AND "
+                f"{alias}.simulation_id = simulations.simulation_id AND "
+                f"{alias}.name = ? AND {alias}.value_type = 'number' AND "
+                f"{alias}.numeric_value = ?"
+            )
+            join_values.extend((name, float(filter_value)))
+        elif isinstance(filter_value, str):
+            query.append(
+                f" JOIN parameter_values AS {alias} ON "
+                f"{alias}.collection_id = simulations.collection_id AND "
+                f"{alias}.simulation_id = simulations.simulation_id AND "
+                f"{alias}.name = ? AND {alias}.value_type = 'text' AND "
+                f"{alias}.text_value = ?"
+            )
+            join_values.extend((name, filter_value))
+        else:
+            raise ValueError(f"Unsupported filter value for {name}.")
+
+    if conditions:
+        query.append(" WHERE " + " AND ".join(conditions))
+    query.append(" ORDER BY simulations.collection_id, simulations.simulation_id")
+    with sqlite3.connect(registry_path) as connection:
+        rows = connection.execute("".join(query), [*join_values, *condition_values]).fetchall()
+    return tuple(
+        CatalogueSimulation(
+            collection_id=indexed_collection_id,
+            simulation_id=simulation_id,
+            path=catalogue_root / relative_path,
+            importer=importer,
+        )
+        for indexed_collection_id, simulation_id, relative_path, importer in rows
     )
 
 

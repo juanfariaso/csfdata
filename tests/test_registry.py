@@ -12,6 +12,7 @@ from csfdata.catalogue.configuration import (
 )
 from csfdata.catalogue.metadata import SimulationMetadata, write_simulation_metadata
 from csfdata.catalogue.registry import (
+    find_simulations,
     index_catalogue,
     missing_combinations,
     summarize_catalogue,
@@ -80,6 +81,15 @@ grid_axes:
     assert missing_combinations(catalogue_root, "dcaf-grid-v1") == (
         {"tff": 4.0, "sfe": 0.3},
     )
+    matches = find_simulations(
+        catalogue_root,
+        collection_id="dcaf-grid-v1",
+        filters={"tff": (2.0, 3.0), "sfe": 0.3},
+    )
+    assert len(matches) == 1
+    assert matches[0].simulation_id == "0001"
+    assert matches[0].importer == "dcaf"
+    assert matches[0].path == simulation_root
     with sqlite3.connect(catalogue_root / "registry.sqlite") as connection:
         assert connection.execute("SELECT COUNT(*) FROM collections").fetchone() == (1,)
         assert connection.execute("SELECT COUNT(*) FROM simulations").fetchone() == (1,)
