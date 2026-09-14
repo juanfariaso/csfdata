@@ -15,6 +15,7 @@ import yaml
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import read_collection_configuration
+from csfdata.catalogue.lite import export_lite_collection
 from csfdata.catalogue.registry import (
     index_catalogue,
     missing_combinations,
@@ -141,6 +142,26 @@ def main(argv: Sequence[str] | None = None) -> int:
         required=True,
         help="CSV path to create or replace.",
     )
+    export_lite_parser = subparsers.add_parser(
+        "export-lite",
+        help="Create a raw-data-free working copy of one catalogue collection.",
+    )
+    export_lite_parser.add_argument(
+        "--catalogue",
+        type=Path,
+        required=True,
+        help="Full source catalogue containing the raw snapshots.",
+    )
+    export_lite_parser.add_argument(
+        "--collection",
+        required=True,
+        help="One collection ID to copy into the lite catalogue.",
+    )
+    export_lite_parser.add_argument(
+        "destination",
+        type=Path,
+        help="New destination directory for the lite catalogue.",
+    )
 
     args = parser.parse_args(argv)
     if args.command == "validate":
@@ -164,7 +185,48 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.output,
             parser=missing_parser,
         )
+    if args.command == "export-lite":
+        return export_lite_command(
+            args.catalogue,
+            args.collection,
+            args.destination,
+            parser=export_lite_parser,
+        )
     return run_analysis(args.arguments, parser=analysis_parser)
+
+
+def export_lite_command(
+    source_catalogue: Path,
+    collection_id: str,
+    destination: Path,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Export one collection as a queryable lite catalogue.
+
+    Args:
+        source_catalogue: Existing full catalogue containing the collection.
+        collection_id: ID of the one collection to export.
+        destination: New directory for the resulting lite catalogue.
+        parser: Optional CLI parser used to present filesystem errors.
+
+    Returns:
+        Zero after the lite catalogue and its registry are written.
+
+    Raises:
+        OSError: If export files cannot be read or written and no parser is supplied.
+        ValueError: If the source collection is invalid and no parser is supplied.
+    """
+    try:
+        report = export_lite_collection(source_catalogue, collection_id, destination)
+    except (OSError, ValueError) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
+    print(f"Exported collection: {report.source.collection_id}")
+    print(f"Simulations: {report.simulation_count}")
+    print(f"Lite catalogue: {report.destination}")
+    print(f"Source catalogue: {report.source.catalogue_root}")
+    return 0
 
 
 def run_analysis(
