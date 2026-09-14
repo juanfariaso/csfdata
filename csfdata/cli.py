@@ -163,9 +163,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         nargs="?",
         default=Path("."),
         help=(
-            "Parent directory for an automatic COLLECTION_ID folder, or a "
-            "new explicit lite-catalogue path. Defaults to the current directory."
+            "Parent directory for the lite catalogue. Defaults to the current directory."
         ),
+    )
+    export_lite_parser.add_argument(
+        "--root",
+        default="catalogue",
+        help="Lite catalogue root folder name below destination. Defaults to catalogue.",
     )
 
     args = parser.parse_args(argv)
@@ -195,6 +199,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.catalogue,
             args.collection,
             args.destination,
+            root_name=args.root,
             parser=export_lite_parser,
         )
     return run_analysis(args.arguments, parser=analysis_parser)
@@ -204,6 +209,7 @@ def export_lite_command(
     source_catalogue: Path,
     collection_id: str,
     destination: Path,
+    root_name: str = "catalogue",
     parser: argparse.ArgumentParser | None = None,
 ) -> int:
     """Export one collection as a queryable lite catalogue.
@@ -211,8 +217,8 @@ def export_lite_command(
     Args:
         source_catalogue: Existing full catalogue containing the collection.
         collection_id: ID of the one collection to export.
-        destination: Existing parent directory for an automatic collection-ID
-            folder, or a new explicit lite-catalogue path.
+        destination: Parent directory for the lite catalogue root.
+        root_name: Lite catalogue root folder name below ``destination``.
         parser: Optional CLI parser used to present filesystem errors.
 
     Returns:
@@ -223,7 +229,13 @@ def export_lite_command(
         ValueError: If the source collection is invalid and no parser is supplied.
     """
     try:
-        output_path = destination / collection_id if destination.is_dir() else destination
+        if (
+            not root_name
+            or Path(root_name).name != root_name
+            or root_name in {".", ".."}
+        ):
+            raise ValueError("Lite catalogue name must be one safe directory name.")
+        output_path = destination / root_name
         report = export_lite_collection(source_catalogue, collection_id, output_path)
     except (OSError, ValueError) as error:
         if parser is None:

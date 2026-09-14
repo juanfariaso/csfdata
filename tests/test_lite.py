@@ -44,3 +44,4 @@ optional_parameters: []
     assert not (copied / "raw").exists()
     assert (report.destination / "registry.sqlite").is_file()
     assert read_lite_source(report.destination).catalogue_root == source.resolve()
+    assert export_lite_collection(source, "grid", report.destination).simulation_count == 1

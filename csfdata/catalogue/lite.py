@@ -73,13 +73,13 @@ def export_lite_collection(
     Args:
         source_catalogue: Existing full catalogue containing the collection.
         collection_id: ID of the one collection to mirror.
-        destination: New empty directory that will become the lite catalogue.
+        destination: New or compatible existing lite catalogue root.
 
     Returns:
         Summary of the created lite catalogue and its source provenance.
 
     Raises:
-        FileExistsError: If ``destination`` already exists.
+        FileExistsError: If ``destination`` is not a compatible lite catalogue.
         FileNotFoundError: If required collection files are absent.
         NotADirectoryError: If the source catalogue or collection is invalid.
         OSError: If required files cannot be copied or indexed.
@@ -93,8 +93,6 @@ def export_lite_collection(
     destination = destination.resolve()
     if not source_catalogue.is_dir():
         raise NotADirectoryError(f"Catalogue root is not a directory: {source_catalogue}")
-    if destination.exists():
-        raise FileExistsError(f"Lite catalogue destination already exists: {destination}")
     source_collection = source_catalogue / "collections" / collection_id
     source_simulations = source_collection / "simulations"
     collection_path = source_collection / "collection.yaml"
@@ -109,38 +107,54 @@ def export_lite_collection(
         collection_id=collection_id,
         collection_sha256=file_sha256(collection_path),
     )
+    if destination.exists() and not destination.is_dir():
+        raise FileExistsError(f"Lite catalogue destination is not a directory: {destination}")
+    if destination.exists() and any(destination.iterdir()):
+        if not is_lite_catalogue(destination):
+            raise FileExistsError(f"Lite catalogue destination is not empty: {destination}")
+        existing_source = read_lite_source(destination)
+        if existing_source != source:
+            raise ValueError("Existing lite catalogue has a different recorded source collection.")
+    else:
+        destination.mkdir(parents=True, exist_ok=True)
+        (destination / "lite.yaml").write_text(
+            yaml.safe_dump(
+                {
+                    "schema_version": 1,
+                    "source": {
+                        "catalogue_root": str(source.catalogue_root),
+                        "hostname": source.hostname,
+                        "collection_id": source.collection_id,
+                        "collection_sha256": source.collection_sha256,
+                    },
+                },
+                allow_unicode=False,
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
     destination_collection = destination / "collections" / collection_id
     destination_simulations = destination_collection / "simulations"
-    destination_simulations.mkdir(parents=True)
-    shutil.copy2(collection_path, destination_collection / "collection.yaml")
+    destination_simulations.mkdir(parents=True, exist_ok=True)
+    destination_collection_path = destination_collection / "collection.yaml"
+    if destination_collection_path.exists():
+        if file_sha256(destination_collection_path) != source.collection_sha256:
+            raise ValueError("Existing lite collection configuration differs from the source.")
+    else:
+        shutil.copy2(collection_path, destination_collection_path)
 
     simulation_count = 0
     for source_simulation in sorted(path for path in source_simulations.iterdir() if path.is_dir()):
         destination_simulation = destination_simulations / source_simulation.name
-        destination_simulation.mkdir()
+        destination_simulation.mkdir(exist_ok=True)
         for name in ("metadata.yaml", "config.yaml"):
             source_path = source_simulation / name
             if not source_path.is_file():
                 raise FileNotFoundError(f"Simulation file is missing: {source_path}")
-            shutil.copy2(source_path, destination_simulation / name)
+            destination_path = destination_simulation / name
+            if not destination_path.exists():
+                shutil.copy2(source_path, destination_path)
         simulation_count += 1
-
-    (destination / "lite.yaml").write_text(
-        yaml.safe_dump(
-            {
-                "schema_version": 1,
-                "source": {
-                    "catalogue_root": str(source.catalogue_root),
-                    "hostname": source.hostname,
-                    "collection_id": source.collection_id,
-                    "collection_sha256": source.collection_sha256,
-                },
-            },
-            allow_unicode=False,
-            sort_keys=False,
-        ),
-        encoding="utf-8",
-    )
     return LiteExportReport(destination, source, simulation_count, index_catalogue(destination))
 
 
