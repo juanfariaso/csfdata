@@ -11,7 +11,7 @@ from csfdata.catalogue.configuration import (
     write_simulation_configuration,
 )
 from csfdata.catalogue.metadata import SimulationMetadata, write_simulation_metadata
-from csfdata.catalogue.registry import index_catalogue
+from csfdata.catalogue.registry import index_catalogue, summarize_catalogue
 from csfdata.cli import main
 
 
@@ -61,6 +61,12 @@ optional_parameters: []
     assert first_report.simulation_count == 1
     assert first_report.parameter_count == 3
     assert second_report.collection_ids == ("dcaf-grid-v1",)
+    summary = summarize_catalogue(catalogue_root)
+    assert "Collections: 1" in summary
+    assert "dcaf-grid-v1 (dcaf)" in summary
+    assert "Simulations: 1" in summary
+    assert "tff [Myr]: 1/1; range 3 to 3 (parameters, number)" in summary
+    assert "label: 1/1; 1 distinct values (code_parameters, text)" in summary
     with sqlite3.connect(catalogue_root / "registry.sqlite") as connection:
         assert connection.execute("SELECT COUNT(*) FROM collections").fetchone() == (1,)
         assert connection.execute("SELECT COUNT(*) FROM simulations").fetchone() == (1,)
@@ -98,3 +104,10 @@ optional_parameters: []
     assert "Indexed collections: empty-grid" in output
     assert "Simulations: 0" in output
     assert f"Registry: {catalogue_root / 'registry.sqlite'}" in output
+
+    assert main(["catalogue-summary", str(catalogue_root)]) == 0
+
+    output = capsys.readouterr().out
+    assert "Collections: 1" in output
+    assert "empty-grid (dcaf)" in output
+    assert "Parameters: none" in output

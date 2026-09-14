@@ -14,7 +14,7 @@ import yaml
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import read_collection_configuration
-from csfdata.catalogue.registry import index_catalogue
+from csfdata.catalogue.registry import index_catalogue, summarize_catalogue
 from csfdata.discovery.local import LocalGridDiscoverer
 from csfdata.importer.local import import_manifest
 from csfdata.importer.manifest import create_import_manifest
@@ -107,6 +107,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--collection",
         help="Collection ID to update; omit to rebuild every collection.",
     )
+    summary_parser = subparsers.add_parser(
+        "catalogue-summary",
+        help="Print indexed collection and parameter availability information.",
+    )
+    summary_parser.add_argument(
+        "root",
+        type=Path,
+        help="Existing indexed catalogue root.",
+    )
+    summary_parser.add_argument(
+        "--collection",
+        help="Collection ID to summarize; omit to summarize every collection.",
+    )
 
     args = parser.parse_args(argv)
     if args.command == "validate":
@@ -121,6 +134,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     if args.command == "index-catalogue":
         return index_catalogue_command(args.root, args.collection, parser=index_parser)
+    if args.command == "catalogue-summary":
+        return catalogue_summary_command(args.root, args.collection, parser=summary_parser)
     return run_analysis(args.arguments, parser=analysis_parser)
 
 
@@ -192,6 +207,38 @@ def index_catalogue_command(
     print(f"Simulations: {report.simulation_count}")
     print(f"Parameters: {report.parameter_count}")
     print(f"Registry: {report.registry_path}")
+    return 0
+
+
+def catalogue_summary_command(
+    catalogue_root: Path,
+    collection_id: str | None = None,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Print human-readable availability information from the catalogue index.
+
+    Args:
+        catalogue_root: Existing catalogue root containing ``registry.sqlite``.
+        collection_id: Optional indexed collection ID to summarize.
+        parser: Optional CLI parser used to present registry errors. Omit it
+            when calling this function from Python.
+
+    Returns:
+        int: Zero after printing the summary.
+
+    Raises:
+        FileNotFoundError: If no registry exists and no ``parser`` is provided.
+        ValueError: If the requested collection is not indexed and no ``parser``
+            is provided.
+        sqlite3.Error: If the registry cannot be read and no ``parser`` is
+            provided.
+    """
+    try:
+        print(summarize_catalogue(catalogue_root, collection_id))
+    except (FileNotFoundError, ValueError, sqlite3.Error) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
     return 0
 
 

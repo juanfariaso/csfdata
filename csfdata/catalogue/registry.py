@@ -247,3 +247,108 @@ def index_catalogue(
         simulation_count=len(simulation_rows),
         parameter_count=len(parameter_rows),
     )
+
+
+def summarize_catalogue(
+    catalogue_root: Path,
+    collection_id: str | None = None,
+) -> str:
+    """Return a concise human-readable summary of an indexed catalogue.
+
+    Args:
+        catalogue_root: Existing catalogue root containing ``registry.sqlite``.
+        collection_id: Optional collection ID to summarize. When omitted,
+            summarize every indexed collection.
+
+    Returns:
+        A multi-line summary of collections, simulation counts, and indexed
+        parameter availability. Numeric parameters show their stored range;
+        text and boolean parameters show their number of distinct values.
+
+    Raises:
+        FileNotFoundError: If the catalogue has not been indexed yet.
+        ValueError: If ``collection_id`` is not present in the registry.
+        sqlite3.Error: If the registry cannot be read.
+
+    Notes:
+        This function reads only the SQLite registry. Run :func:`index_catalogue`
+        after importing or changing simulations before relying on the summary.
+    """
+    catalogue_root = catalogue_root.resolve()
+    registry_path = catalogue_root / "registry.sqlite"
+    if not registry_path.is_file():
+        raise FileNotFoundError(
+            f"Catalogue has not been indexed: {registry_path}. Run index-catalogue first."
+        )
+
+    with sqlite3.connect(registry_path) as connection:
+        if collection_id is None:
+            collections = connection.execute(
+                """
+                SELECT collections.collection_id, collections.importer, COUNT(simulations.simulation_id)
+                FROM collections
+                LEFT JOIN simulations USING (collection_id)
+                GROUP BY collections.collection_id, collections.importer
+                ORDER BY collections.collection_id
+                """
+            ).fetchall()
+        else:
+            collections = connection.execute(
+                """
+                SELECT collections.collection_id, collections.importer, COUNT(simulations.simulation_id)
+                FROM collections
+                LEFT JOIN simulations USING (collection_id)
+                WHERE collections.collection_id = ?
+                GROUP BY collections.collection_id, collections.importer
+                """,
+                (collection_id,),
+            ).fetchall()
+        if collection_id is not None and not collections:
+            raise ValueError(f"Collection is not indexed: {collection_id}")
+
+        lines = [f"Registry: {registry_path}", f"Collections: {len(collections)}"]
+        for indexed_collection_id, importer, simulation_count in collections:
+            lines.append(f"{indexed_collection_id} ({importer})")
+            lines.append(f"  Simulations: {simulation_count}")
+            parameters = connection.execute(
+                """
+                SELECT
+                    name,
+                    section,
+                    value_type,
+                    unit,
+                    COUNT(*),
+                    MIN(numeric_value),
+                    MAX(numeric_value),
+                    COUNT(DISTINCT COALESCE(text_value, numeric_value))
+                FROM parameter_values
+                WHERE collection_id = ?
+                GROUP BY name, section, value_type, unit
+                ORDER BY section, name, value_type, unit
+                """,
+                (indexed_collection_id,),
+            ).fetchall()
+            if not parameters:
+                lines.append("  Parameters: none")
+                continue
+            lines.append("  Parameters:")
+            for (
+                name,
+                section,
+                value_type,
+                unit,
+                available_count,
+                minimum,
+                maximum,
+                distinct_text_count,
+            ) in parameters:
+                unit_label = f" [{unit}]" if unit is not None else ""
+                available = f"{available_count}/{simulation_count}"
+                if value_type == "number":
+                    detail = f"range {minimum:g} to {maximum:g}"
+                else:
+                    detail = f"{distinct_text_count} distinct values"
+                lines.append(
+                    f"    {name}{unit_label}: {available}; {detail} ({section}, {value_type})"
+                )
+    return "\n".join(lines)
