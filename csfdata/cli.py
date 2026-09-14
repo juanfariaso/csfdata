@@ -6,16 +6,20 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 import socket
+import sqlite3
 import sys
+from typing import Callable
 
 import yaml
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import read_collection_configuration
+from csfdata.catalogue.registry import index_catalogue
 from csfdata.discovery.local import LocalGridDiscoverer
 from csfdata.importer.local import import_manifest
 from csfdata.importer.manifest import create_import_manifest
 from csfdata.importer.validation import read_validation_report
+from csfdata.analysis import load as load_analysis
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -77,17 +81,118 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Check the import without changing the catalogue.",
     )
+    analysis_parser = subparsers.add_parser(
+        "analysis",
+        help="Run commands supplied by the installed CSFData analysis add-on.",
+        description=(
+            "Forward a command to the optional csfdata_analysis add-on. "
+            "Install that package separately before using this command."
+        ),
+    )
+    analysis_parser.add_argument(
+        "arguments",
+        nargs=argparse.REMAINDER,
+        help="Analysis command and its arguments, for example: diagnostics.",
+    )
+    index_parser = subparsers.add_parser(
+        "index-catalogue",
+        help="Build or update the SQLite search index for a local catalogue.",
+    )
+    index_parser.add_argument(
+        "root",
+        type=Path,
+        help="Existing catalogue root containing collections/.",
+    )
+    index_parser.add_argument(
+        "--collection",
+        help="Collection ID to update; omit to rebuild every collection.",
+    )
 
     args = parser.parse_args(argv)
     if args.command == "validate":
         return validate_grid(args.root, args.report, parser=validate_parser)
-    return import_collection(
-        args.root,
-        args.report,
-        args.collection,
-        parser=import_parser,
-        dry_run=args.dry_run,
-    )
+    if args.command == "import":
+        return import_collection(
+            args.root,
+            args.report,
+            args.collection,
+            parser=import_parser,
+            dry_run=args.dry_run,
+        )
+    if args.command == "index-catalogue":
+        return index_catalogue_command(args.root, args.collection, parser=index_parser)
+    return run_analysis(args.arguments, parser=analysis_parser)
+
+
+def run_analysis(
+    arguments: Sequence[str],
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Run the default optional analysis add-on command-line interface.
+
+    Args:
+        arguments: Arguments to forward to the add-on, excluding
+            ``csfdata analysis``.
+        parser: Optional core CLI parser used to show a concise installation
+            error. Omit it when calling this function from Python.
+
+    Returns:
+        int: Exit code returned by the analysis add-on.
+
+    Raises:
+        LookupError: If the add-on is unavailable and no ``parser`` is
+            provided.
+    """
+    try:
+        command: Callable[[Sequence[str] | None], int] = load_analysis("csfdata_analysis")
+    except LookupError as error:
+        message = (
+            f"{error} Install the optional csfdata_analysis package to use "
+            "the analysis command."
+        )
+        if parser is None:
+            raise LookupError(message) from error
+        parser.error(message)
+    return command(arguments)
+
+
+def index_catalogue_command(
+    catalogue_root: Path,
+    collection_id: str | None = None,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Build or update the SQLite registry for a local catalogue.
+
+    Args:
+        catalogue_root: Existing catalogue root containing ``collections/``.
+        collection_id: Optional collection ID to index. Omit it to rebuild the
+            complete registry.
+        parser: Optional CLI parser used to present indexing errors. Omit it
+            when calling this function from Python.
+
+    Returns:
+        int: Zero after the registry has been updated.
+
+    Raises:
+        OSError: If catalogue files cannot be read or written and no ``parser``
+            is provided.
+        sqlite3.Error: If the registry cannot be created or updated and no
+            ``parser`` is provided.
+        ValueError: If catalogue records are inconsistent and no ``parser`` is
+            provided.
+    """
+    try:
+        report = index_catalogue(catalogue_root, collection_id)
+    except (OSError, ValueError, sqlite3.Error) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
+    collections = ", ".join(report.collection_ids) or "none"
+    print(f"Indexed collections: {collections}")
+    print(f"Simulations: {report.simulation_count}")
+    print(f"Parameters: {report.parameter_count}")
+    print(f"Registry: {report.registry_path}")
+    return 0
 
 
 def validate_grid(

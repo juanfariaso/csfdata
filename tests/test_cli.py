@@ -4,7 +4,8 @@ import h5py
 from pytest import CaptureFixture
 import yaml
 
-from csfdata.cli import main, validate_grid, validation_report_data
+import csfdata.cli as cli
+from csfdata.cli import main, run_analysis, validate_grid, validation_report_data
 from csfdata.importer.validation import ValidatedSource
 
 
@@ -54,6 +55,28 @@ def test_public_validation_functions_work_without_a_cli_parser(tmp_path: Path) -
     assert validation_report_data(grid_root, ((grid_root / "valid", ()),))[
         "valid_simulations"
     ] == ["valid"]
+
+
+def test_analysis_command_forwards_arguments_to_the_installed_add_on(
+    monkeypatch,
+) -> None:
+    received: list[str] = []
+
+    def analysis_command(arguments: list[str] | None) -> int:
+        received.extend(arguments or [])
+        return 7
+
+    monkeypatch.setattr(cli, "load_analysis", lambda name: analysis_command)
+
+    assert main(["analysis", "diagnostics"]) == 7
+    assert received == ["diagnostics"]
+    assert run_analysis(["compute", "simulation", "lagrangian_radii"]) == 7
+    assert received == [
+        "diagnostics",
+        "compute",
+        "simulation",
+        "lagrangian_radii",
+    ]
 
 
 def test_import_command_creates_a_local_catalogue_entry(

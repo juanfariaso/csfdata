@@ -1,1 +1,5 @@
-"""Catalogue configuration and metadata for imported simulation collections."""
+"""Catalogue configuration, metadata, and indexing for simulation collections."""
+
+from csfdata.catalogue.registry import IndexReport, index_catalogue
+
+__all__ = ["IndexReport", "index_catalogue"]
