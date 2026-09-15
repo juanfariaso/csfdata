@@ -1,0 +1,3727 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../metadata/">
+      
+      
+        <link rel="next" href="../../cli/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>csfdata.catalogue.registry - Clustererd Star Formation Database</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/api-reference.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#csfdata.catalogue.registry" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="Clustererd Star Formation Database" class="md-header__button md-logo" aria-label="Clustererd Star Formation Database" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Clustererd Star Formation Database
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              csfdata.catalogue.registry
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="Clustererd Star Formation Database" class="md-nav__button md-logo" aria-label="Clustererd Star Formation Database" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Clustererd Star Formation Database
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../units/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Units
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../command-line/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Line
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../catalogue/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalogue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../catalogue-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catalogue Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../lite-catalogue-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lite Catalogue Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../analysis-add-ons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis Add-Ons
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8_1" id="__nav_8_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    csfdata
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_1_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_1_2" id="__nav_8_1_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.adapters
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    csfdata.adapters
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adapters/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.adapters.base
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adapters/dcaf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.adapters.dcaf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_1_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8_1_4" id="__nav_8_1_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_1_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    csfdata.catalogue
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.collection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.lite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.registry
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.IndexReport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IndexReport
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.CatalogueSimulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CatalogueSimulation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.index_catalogue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        index_catalogue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.find_simulations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_simulations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.summarize_catalogue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        summarize_catalogue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.missing_combinations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        missing_combinations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.cli
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_1_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_1_6" id="__nav_8_1_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.discovery
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    csfdata.discovery
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../discovery/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.discovery.base
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../discovery/local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.discovery.local
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../discovery/report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.discovery.report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_1_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_1_7" id="__nav_8_1_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.importer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_8_1_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_1_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    csfdata.importer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../importer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.importer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../importer/local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.importer.local
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../importer/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.importer.manifest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../importer/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.importer.validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../units/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.units
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.IndexReport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IndexReport
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.CatalogueSimulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CatalogueSimulation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.index_catalogue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        index_catalogue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.find_simulations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_simulations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.summarize_catalogue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        summarize_catalogue
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#csfdata.catalogue.registry.missing_combinations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        missing_combinations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h1 id="csfdata.catalogue.registry" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>csfdata.catalogue.registry</code>
+
+
+</h1>
+
+    <div class="doc doc-contents first">
+
+        <p>SQLite indexing for fast catalogue simulation selection.</p>
+<p>The registry is a rebuildable cache of catalogue <code>metadata.yaml</code> and
+<code>config.yaml</code> files. Those YAML files remain the human-readable source of
+truth for simulation identity, provenance, and scientific parameters.</p>
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Functions:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            index_catalogue(catalogue_root, collection_id=None) (csfdata.catalogue.registry.index_catalogue)" href="#csfdata.catalogue.registry.index_catalogue">index_catalogue</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Index one collection or every collection in a local catalogue.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            find_simulations(catalogue_root, collection_id=None, filters=None) (csfdata.catalogue.registry.find_simulations)" href="#csfdata.catalogue.registry.find_simulations">find_simulations</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return catalogue simulations matching indexed parameter filters.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            summarize_catalogue(catalogue_root, collection_id=None) (csfdata.catalogue.registry.summarize_catalogue)" href="#csfdata.catalogue.registry.summarize_catalogue">summarize_catalogue</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return a concise human-readable summary of an indexed catalogue.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            missing_combinations(catalogue_root, collection_id) (csfdata.catalogue.registry.missing_combinations)" href="#csfdata.catalogue.registry.missing_combinations">missing_combinations</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return declared grid parameter combinations absent from one collection.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="csfdata.catalogue.registry.IndexReport" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>IndexReport</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Summary of one completed catalogue indexing operation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>catalogue_root</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Root directory containing <code>collections/</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>registry_path</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>SQLite file created or updated by indexing.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>collection_ids</code>
+            </td>
+            <td>
+                  <code><span title="tuple">tuple</span>[<span title="str">str</span>, ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IDs of collections indexed during this operation.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>simulation_count</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of simulations indexed during this operation.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>parameter_count</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of known scientific parameters indexed during
+this operation.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>csfdata/catalogue/registry.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IndexReport</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summary of one completed catalogue indexing operation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        catalogue_root: Root directory containing ``collections/``.</span>
+<span class="sd">        registry_path: SQLite file created or updated by indexing.</span>
+<span class="sd">        collection_ids: IDs of collections indexed during this operation.</span>
+<span class="sd">        simulation_count: Number of simulations indexed during this operation.</span>
+<span class="sd">        parameter_count: Number of known scientific parameters indexed during</span>
+<span class="sd">            this operation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">catalogue_root</span><span class="p">:</span> <span class="n">Path</span>
+    <span class="n">registry_path</span><span class="p">:</span> <span class="n">Path</span>
+    <span class="n">collection_ids</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">simulation_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">parameter_count</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="csfdata.catalogue.registry.CatalogueSimulation" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>CatalogueSimulation</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>One simulation selected from the indexed catalogue.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>collection_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Stable ID of the containing collection.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>simulation_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Permanent ID within the collection.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Absolute path to the imported simulation directory.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>importer</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the adapter that imported this simulation.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>csfdata/catalogue/registry.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CatalogueSimulation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;One simulation selected from the indexed catalogue.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        collection_id: Stable ID of the containing collection.</span>
+<span class="sd">        simulation_id: Permanent ID within the collection.</span>
+<span class="sd">        path: Absolute path to the imported simulation directory.</span>
+<span class="sd">        importer: Name of the adapter that imported this simulation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">simulation_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span>
+    <span class="n">importer</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="csfdata.catalogue.registry.index_catalogue" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">index_catalogue</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">collection_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Index one collection or every collection in a local catalogue.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>catalogue_root</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Existing catalogue root containing <code>collections/</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>collection_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional collection ID to replace in the registry. When
+omitted, rebuild the registry from every collection on disk.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            IndexReport
+
+
+  
+      dataclass
+   (csfdata.catalogue.registry.IndexReport)" href="#csfdata.catalogue.registry.IndexReport">IndexReport</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Summary of the collections, simulations, and known parameters indexed.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotADirectoryError">NotADirectoryError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the catalogue root or its <code>collections/</code>
+directory does not exist.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If a selected collection is absent, a simulation directory
+disagrees with its metadata, or an indexed parameter is unsupported.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If a catalogue YAML file cannot be read or the registry cannot
+be created or updated.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="sqlite3.Error">Error</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If SQLite cannot create or update the registry.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>The function validates all selected YAML files before changing the
+database. It then replaces only the selected collection rows, or all
+rows for a full rebuild, in one SQLite transaction. Unknown and
+inapplicable parameters are deliberately not indexed because they have
+no scientific value to compare.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>csfdata/catalogue/registry.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">index_catalogue</span><span class="p">(</span>
+    <span class="n">catalogue_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IndexReport</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Index one collection or every collection in a local catalogue.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        catalogue_root: Existing catalogue root containing ``collections/``.</span>
+<span class="sd">        collection_id: Optional collection ID to replace in the registry. When</span>
+<span class="sd">            omitted, rebuild the registry from every collection on disk.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Summary of the collections, simulations, and known parameters indexed.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        NotADirectoryError: If the catalogue root or its ``collections/``</span>
+<span class="sd">            directory does not exist.</span>
+<span class="sd">        ValueError: If a selected collection is absent, a simulation directory</span>
+<span class="sd">            disagrees with its metadata, or an indexed parameter is unsupported.</span>
+<span class="sd">        OSError: If a catalogue YAML file cannot be read or the registry cannot</span>
+<span class="sd">            be created or updated.</span>
+<span class="sd">        sqlite3.Error: If SQLite cannot create or update the registry.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        The function validates all selected YAML files before changing the</span>
+<span class="sd">        database. It then replaces only the selected collection rows, or all</span>
+<span class="sd">        rows for a full rebuild, in one SQLite transaction. Unknown and</span>
+<span class="sd">        inapplicable parameters are deliberately not indexed because they have</span>
+<span class="sd">        no scientific value to compare.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catalogue_root</span> <span class="o">=</span> <span class="n">catalogue_root</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">catalogue_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Catalogue root is not a directory: </span><span class="si">{</span><span class="n">catalogue_root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">collections_root</span> <span class="o">=</span> <span class="n">catalogue_root</span> <span class="o">/</span> <span class="s2">&quot;collections&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">collections_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Catalogue has no collections directory: </span><span class="si">{</span><span class="n">collections_root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">collection_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">collection_roots</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">sorted</span><span class="p">(</span><span class="n">path</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">collections_root</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">())</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">collection_roots</span> <span class="o">=</span> <span class="p">(</span><span class="n">collections_root</span> <span class="o">/</span> <span class="n">collection_id</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">collection_roots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection does not exist: </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">collection_rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">simulation_rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">parameter_rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">collection_root</span> <span class="ow">in</span> <span class="n">collection_roots</span><span class="p">:</span>
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">read_collection_configuration</span><span class="p">(</span><span class="n">collection_root</span> <span class="o">/</span> <span class="s2">&quot;collection.yaml&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">collection</span><span class="o">.</span><span class="n">collection_id</span> <span class="o">!=</span> <span class="n">collection_root</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Collection directory name does not match collection.yaml id: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collection_root</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">collection</span><span class="o">.</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">collection_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">collection</span><span class="o">.</span><span class="n">collection_id</span><span class="p">,</span>
+                <span class="n">collection</span><span class="o">.</span><span class="n">importer</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">collection_root</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">)),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">simulations_root</span> <span class="o">=</span> <span class="n">collection_root</span> <span class="o">/</span> <span class="s2">&quot;simulations&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">simulations_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Collection has no simulations directory: </span><span class="si">{</span><span class="n">simulations_root</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">simulation_root</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">path</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">simulations_root</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()):</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">read_simulation_metadata</span><span class="p">(</span><span class="n">simulation_root</span> <span class="o">/</span> <span class="s2">&quot;metadata.yaml&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">collection_id</span> <span class="o">!=</span> <span class="n">collection</span><span class="o">.</span><span class="n">collection_id</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Simulation metadata collection_id does not match </span><span class="si">{</span><span class="n">simulation_root</span><span class="si">}</span><span class="s2">: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">collection_id</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">collection</span><span class="o">.</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">metadata</span><span class="o">.</span><span class="n">simulation_id</span> <span class="o">!=</span> <span class="n">simulation_root</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Simulation metadata simulation_id does not match directory: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metadata</span><span class="o">.</span><span class="n">simulation_id</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">simulation_root</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">configuration</span> <span class="o">=</span> <span class="n">read_simulation_configuration</span><span class="p">(</span><span class="n">simulation_root</span> <span class="o">/</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+            <span class="n">simulation_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">collection</span><span class="o">.</span><span class="n">collection_id</span><span class="p">,</span>
+                    <span class="n">metadata</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">,</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">simulation_root</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">)),</span>
+                    <span class="n">metadata</span><span class="o">.</span><span class="n">imported_at</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">section</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;parameters&quot;</span><span class="p">,</span> <span class="n">configuration</span><span class="o">.</span><span class="n">parameters</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;code_parameters&quot;</span><span class="p">,</span> <span class="n">configuration</span><span class="o">.</span><span class="n">code_parameters</span><span class="p">),</span>
+            <span class="p">):</span>
+                <span class="k">for</span> <span class="n">parameter</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">parameter</span><span class="o">.</span><span class="n">is_known</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+                        <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;boolean&quot;</span>
+                        <span class="n">numeric_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                        <span class="n">text_value</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                        <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;number&quot;</span>
+                        <span class="n">numeric_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                        <span class="n">text_value</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="n">value_type</span> <span class="o">=</span> <span class="s2">&quot;text&quot;</span>
+                        <span class="n">numeric_value</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="n">text_value</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">value</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Known parameter </span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> has an unsupported value.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">parameter_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="n">collection</span><span class="o">.</span><span class="n">collection_id</span><span class="p">,</span>
+                            <span class="n">metadata</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">,</span>
+                            <span class="n">parameter</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                            <span class="n">value_type</span><span class="p">,</span>
+                            <span class="n">numeric_value</span><span class="p">,</span>
+                            <span class="n">text_value</span><span class="p">,</span>
+                            <span class="n">parameter</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span>
+                            <span class="n">section</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+
+    <span class="n">registry_path</span> <span class="o">=</span> <span class="n">catalogue_root</span> <span class="o">/</span> <span class="s2">&quot;registry.sqlite&quot;</span>
+    <span class="k">with</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">registry_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;PRAGMA foreign_keys = ON&quot;</span><span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            CREATE TABLE IF NOT EXISTS collections (</span>
+<span class="sd">                collection_id TEXT PRIMARY KEY,</span>
+<span class="sd">                importer TEXT NOT NULL,</span>
+<span class="sd">                relative_path TEXT NOT NULL</span>
+<span class="sd">            );</span>
+<span class="sd">            CREATE TABLE IF NOT EXISTS simulations (</span>
+<span class="sd">                collection_id TEXT NOT NULL,</span>
+<span class="sd">                simulation_id TEXT NOT NULL,</span>
+<span class="sd">                relative_path TEXT NOT NULL,</span>
+<span class="sd">                imported_at TEXT NOT NULL,</span>
+<span class="sd">                PRIMARY KEY (collection_id, simulation_id),</span>
+<span class="sd">                FOREIGN KEY (collection_id) REFERENCES collections (collection_id)</span>
+<span class="sd">            );</span>
+<span class="sd">            CREATE TABLE IF NOT EXISTS parameter_values (</span>
+<span class="sd">                collection_id TEXT NOT NULL,</span>
+<span class="sd">                simulation_id TEXT NOT NULL,</span>
+<span class="sd">                name TEXT NOT NULL,</span>
+<span class="sd">                value_type TEXT NOT NULL,</span>
+<span class="sd">                numeric_value REAL,</span>
+<span class="sd">                text_value TEXT,</span>
+<span class="sd">                unit TEXT,</span>
+<span class="sd">                section TEXT NOT NULL,</span>
+<span class="sd">                PRIMARY KEY (collection_id, simulation_id, name),</span>
+<span class="sd">                FOREIGN KEY (collection_id, simulation_id)</span>
+<span class="sd">                    REFERENCES simulations (collection_id, simulation_id)</span>
+<span class="sd">            );</span>
+<span class="sd">            CREATE INDEX IF NOT EXISTS parameter_numeric_lookup</span>
+<span class="sd">                ON parameter_values (name, numeric_value, collection_id, simulation_id);</span>
+<span class="sd">            CREATE INDEX IF NOT EXISTS parameter_text_lookup</span>
+<span class="sd">                ON parameter_values (name, text_value, collection_id, simulation_id);</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">indexed_collection_ids</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">collection_rows</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">collection_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DELETE FROM parameter_values&quot;</span><span class="p">)</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DELETE FROM simulations&quot;</span><span class="p">)</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DELETE FROM collections&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">indexed_collection_id</span> <span class="ow">in</span> <span class="n">indexed_collection_ids</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="s2">&quot;DELETE FROM parameter_values WHERE collection_id = ?&quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">indexed_collection_id</span><span class="p">,),</span>
+                <span class="p">)</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="s2">&quot;DELETE FROM simulations WHERE collection_id = ?&quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">indexed_collection_id</span><span class="p">,),</span>
+                <span class="p">)</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="s2">&quot;DELETE FROM collections WHERE collection_id = ?&quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">indexed_collection_id</span><span class="p">,),</span>
+                <span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+            <span class="s2">&quot;INSERT INTO collections (collection_id, importer, relative_path) VALUES (?, ?, ?)&quot;</span><span class="p">,</span>
+            <span class="n">collection_rows</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            INSERT INTO simulations (collection_id, simulation_id, relative_path, imported_at)</span>
+<span class="sd">            VALUES (?, ?, ?, ?)</span>
+<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="n">simulation_rows</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            INSERT INTO parameter_values (</span>
+<span class="sd">                collection_id, simulation_id, name, value_type, numeric_value,</span>
+<span class="sd">                text_value, unit, section</span>
+<span class="sd">            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)</span>
+<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="n">parameter_rows</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">IndexReport</span><span class="p">(</span>
+        <span class="n">catalogue_root</span><span class="o">=</span><span class="n">catalogue_root</span><span class="p">,</span>
+        <span class="n">registry_path</span><span class="o">=</span><span class="n">registry_path</span><span class="p">,</span>
+        <span class="n">collection_ids</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">collection_rows</span><span class="p">),</span>
+        <span class="n">simulation_count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">simulation_rows</span><span class="p">),</span>
+        <span class="n">parameter_count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">parameter_rows</span><span class="p">),</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="csfdata.catalogue.registry.find_simulations" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">find_simulations</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">collection_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return catalogue simulations matching indexed parameter filters.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>catalogue_root</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Existing catalogue root containing <code>registry.sqlite</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>collection_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional collection ID to restrict the search.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>filters</code>
+            </td>
+            <td>
+                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="str">str</span> | <span title="int">int</span> | <span title="float">float</span> | <span title="bool">bool</span> | <span title="tuple">tuple</span>[<span title="float">float</span> | None, <span title="float">float</span> | None]] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Parameter filters keyed by canonical configuration name. A
+scalar requires an exact match. A two-value tuple gives an inclusive
+numeric range, where <code>None</code> means no lower or upper bound.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="            CatalogueSimulation
+
+
+  
+      dataclass
+   (csfdata.catalogue.registry.CatalogueSimulation)" href="#csfdata.catalogue.registry.CatalogueSimulation">CatalogueSimulation</a>, ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Matching simulations ordered by collection ID and simulation ID.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the catalogue has not been indexed yet.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If a range is invalid or a filter value is unsupported.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="sqlite3.Error">Error</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the registry cannot be read.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <pre><code class="language-python">find_simulations(
+    catalogue_root,
+    collection_id=&quot;dcaf-grid-v1&quot;,
+    filters={&quot;tff&quot;: (0.5, 3.0), &quot;sfe&quot;: 0.3},
+)
+</code></pre>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>csfdata/catalogue/registry.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_simulations</span><span class="p">(</span>
+    <span class="n">catalogue_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filters</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">CatalogueSimulation</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return catalogue simulations matching indexed parameter filters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        catalogue_root: Existing catalogue root containing ``registry.sqlite``.</span>
+<span class="sd">        collection_id: Optional collection ID to restrict the search.</span>
+<span class="sd">        filters: Parameter filters keyed by canonical configuration name. A</span>
+<span class="sd">            scalar requires an exact match. A two-value tuple gives an inclusive</span>
+<span class="sd">            numeric range, where ``None`` means no lower or upper bound.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Matching simulations ordered by collection ID and simulation ID.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: If the catalogue has not been indexed yet.</span>
+<span class="sd">        ValueError: If a range is invalid or a filter value is unsupported.</span>
+<span class="sd">        sqlite3.Error: If the registry cannot be read.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        find_simulations(</span>
+<span class="sd">            catalogue_root,</span>
+<span class="sd">            collection_id=&quot;dcaf-grid-v1&quot;,</span>
+<span class="sd">            filters={&quot;tff&quot;: (0.5, 3.0), &quot;sfe&quot;: 0.3},</span>
+<span class="sd">        )</span>
+<span class="sd">        ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catalogue_root</span> <span class="o">=</span> <span class="n">catalogue_root</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="n">registry_path</span> <span class="o">=</span> <span class="n">catalogue_root</span> <span class="o">/</span> <span class="s2">&quot;registry.sqlite&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">registry_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Catalogue has not been indexed: </span><span class="si">{</span><span class="n">registry_path</span><span class="si">}</span><span class="s2">. Run index-catalogue first.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;SELECT simulations.collection_id, simulations.simulation_id, &quot;</span><span class="p">,</span>
+        <span class="s2">&quot;simulations.relative_path, collections.importer &quot;</span><span class="p">,</span>
+        <span class="s2">&quot;FROM simulations JOIN collections USING (collection_id)&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">conditions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">join_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">condition_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">collection_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;simulations.collection_id = ?&quot;</span><span class="p">)</span>
+        <span class="n">condition_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">collection_id</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">filter_value</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="n">filters</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="n">alias</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;parameter_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_value</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Range filter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must contain exactly two bounds.&quot;</span><span class="p">)</span>
+            <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">filter_value</span>
+            <span class="k">if</span> <span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lower</span> <span class="o">&gt;</span> <span class="n">upper</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Range filter </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has a lower bound above its upper bound.&quot;</span><span class="p">)</span>
+            <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot; JOIN parameter_values AS </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2"> ON &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.collection_id = simulations.collection_id AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.simulation_id = simulations.simulation_id AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.name = ? AND </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.value_type = &#39;number&#39;&quot;</span>
+            <span class="p">)</span>
+            <span class="n">join_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.numeric_value &gt;= ?&quot;</span><span class="p">)</span>
+                <span class="n">condition_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lower</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.numeric_value &lt;= ?&quot;</span><span class="p">)</span>
+                <span class="n">condition_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">upper</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot; JOIN parameter_values AS </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2"> ON &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.collection_id = simulations.collection_id AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.simulation_id = simulations.simulation_id AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.name = ? AND </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.value_type = &#39;boolean&#39; AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.numeric_value = ?&quot;</span>
+            <span class="p">)</span>
+            <span class="n">join_values</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">filter_value</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot; JOIN parameter_values AS </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2"> ON &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.collection_id = simulations.collection_id AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.simulation_id = simulations.simulation_id AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.name = ? AND </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.value_type = &#39;number&#39; AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.numeric_value = ?&quot;</span>
+            <span class="p">)</span>
+            <span class="n">join_values</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">filter_value</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filter_value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot; JOIN parameter_values AS </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2"> ON &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.collection_id = simulations.collection_id AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.simulation_id = simulations.simulation_id AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.name = ? AND </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.value_type = &#39;text&#39; AND &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.text_value = ?&quot;</span>
+            <span class="p">)</span>
+            <span class="n">join_values</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">filter_value</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported filter value for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">conditions</span><span class="p">:</span>
+        <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; WHERE &quot;</span> <span class="o">+</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conditions</span><span class="p">))</span>
+    <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; ORDER BY simulations.collection_id, simulations.simulation_id&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">registry_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="p">[</span><span class="o">*</span><span class="n">join_values</span><span class="p">,</span> <span class="o">*</span><span class="n">condition_values</span><span class="p">])</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="n">CatalogueSimulation</span><span class="p">(</span>
+            <span class="n">collection_id</span><span class="o">=</span><span class="n">indexed_collection_id</span><span class="p">,</span>
+            <span class="n">simulation_id</span><span class="o">=</span><span class="n">simulation_id</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">catalogue_root</span> <span class="o">/</span> <span class="n">relative_path</span><span class="p">,</span>
+            <span class="n">importer</span><span class="o">=</span><span class="n">importer</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">indexed_collection_id</span><span class="p">,</span> <span class="n">simulation_id</span><span class="p">,</span> <span class="n">relative_path</span><span class="p">,</span> <span class="n">importer</span> <span class="ow">in</span> <span class="n">rows</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="csfdata.catalogue.registry.summarize_catalogue" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">summarize_catalogue</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">collection_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return a concise human-readable summary of an indexed catalogue.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>catalogue_root</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Existing catalogue root containing <code>registry.sqlite</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>collection_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional collection ID to summarize. When omitted,
+summarize every indexed collection.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A multi-line summary of collections, simulation counts, and indexed</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>parameter availability. Numeric parameters show their stored range;</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>text and boolean parameters show their number of distinct values.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the catalogue has not been indexed yet.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>collection_id</code> is not present in the registry.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="sqlite3.Error">Error</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the registry cannot be read.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>This function reads the SQLite registry and each selected collection's
+small <code>collection.yaml</code> file for optional grid axes. Run
+:func:<code>index_catalogue</code> after importing or changing simulations before
+relying on the summary.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>csfdata/catalogue/registry.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">summarize_catalogue</span><span class="p">(</span>
+    <span class="n">catalogue_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a concise human-readable summary of an indexed catalogue.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        catalogue_root: Existing catalogue root containing ``registry.sqlite``.</span>
+<span class="sd">        collection_id: Optional collection ID to summarize. When omitted,</span>
+<span class="sd">            summarize every indexed collection.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A multi-line summary of collections, simulation counts, and indexed</span>
+<span class="sd">        parameter availability. Numeric parameters show their stored range;</span>
+<span class="sd">        text and boolean parameters show their number of distinct values.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: If the catalogue has not been indexed yet.</span>
+<span class="sd">        ValueError: If ``collection_id`` is not present in the registry.</span>
+<span class="sd">        sqlite3.Error: If the registry cannot be read.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        This function reads the SQLite registry and each selected collection&#39;s</span>
+<span class="sd">        small ``collection.yaml`` file for optional grid axes. Run</span>
+<span class="sd">        :func:`index_catalogue` after importing or changing simulations before</span>
+<span class="sd">        relying on the summary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catalogue_root</span> <span class="o">=</span> <span class="n">catalogue_root</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="n">registry_path</span> <span class="o">=</span> <span class="n">catalogue_root</span> <span class="o">/</span> <span class="s2">&quot;registry.sqlite&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">registry_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Catalogue has not been indexed: </span><span class="si">{</span><span class="n">registry_path</span><span class="si">}</span><span class="s2">. Run index-catalogue first.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">registry_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">collection_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">collections</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT</span>
+<span class="sd">                    collections.collection_id,</span>
+<span class="sd">                    collections.importer,</span>
+<span class="sd">                    collections.relative_path,</span>
+<span class="sd">                    COUNT(simulations.simulation_id)</span>
+<span class="sd">                FROM collections</span>
+<span class="sd">                LEFT JOIN simulations USING (collection_id)</span>
+<span class="sd">                GROUP BY collections.collection_id, collections.importer, collections.relative_path</span>
+<span class="sd">                ORDER BY collections.collection_id</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">collections</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT</span>
+<span class="sd">                    collections.collection_id,</span>
+<span class="sd">                    collections.importer,</span>
+<span class="sd">                    collections.relative_path,</span>
+<span class="sd">                    COUNT(simulations.simulation_id)</span>
+<span class="sd">                FROM collections</span>
+<span class="sd">                LEFT JOIN simulations USING (collection_id)</span>
+<span class="sd">                WHERE collections.collection_id = ?</span>
+<span class="sd">                GROUP BY collections.collection_id, collections.importer, collections.relative_path</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">collection_id</span><span class="p">,),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">collection_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">collections</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection is not indexed: </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Registry: </span><span class="si">{</span><span class="n">registry_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Collections: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">collections</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">indexed_collection_id</span><span class="p">,</span> <span class="n">importer</span><span class="p">,</span> <span class="n">relative_path</span><span class="p">,</span> <span class="n">simulation_count</span> <span class="ow">in</span> <span class="n">collections</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indexed_collection_id</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">importer</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Simulations: </span><span class="si">{</span><span class="n">simulation_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT</span>
+<span class="sd">                    name,</span>
+<span class="sd">                    section,</span>
+<span class="sd">                    value_type,</span>
+<span class="sd">                    unit,</span>
+<span class="sd">                    COUNT(*),</span>
+<span class="sd">                    MIN(numeric_value),</span>
+<span class="sd">                    MAX(numeric_value),</span>
+<span class="sd">                    COUNT(DISTINCT COALESCE(text_value, numeric_value))</span>
+<span class="sd">                FROM parameter_values</span>
+<span class="sd">                WHERE collection_id = ?</span>
+<span class="sd">                GROUP BY name, section, value_type, unit</span>
+<span class="sd">                ORDER BY section, name, value_type, unit</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">indexed_collection_id</span><span class="p">,),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">parameters</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  Parameters: none&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  Parameters:&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="p">(</span>
+                    <span class="n">name</span><span class="p">,</span>
+                    <span class="n">section</span><span class="p">,</span>
+                    <span class="n">value_type</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="p">,</span>
+                    <span class="n">available_count</span><span class="p">,</span>
+                    <span class="n">minimum</span><span class="p">,</span>
+                    <span class="n">maximum</span><span class="p">,</span>
+                    <span class="n">distinct_text_count</span><span class="p">,</span>
+                <span class="p">)</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                    <span class="n">unit_label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; [</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">]&quot;</span> <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">available</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">available_count</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">simulation_count</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">if</span> <span class="n">value_type</span> <span class="o">==</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span>
+                        <span class="n">detail</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;range </span><span class="si">{</span><span class="n">minimum</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">maximum</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">detail</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">distinct_text_count</span><span class="si">}</span><span class="s2"> distinct values&quot;</span>
+                    <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">name</span><span class="si">}{</span><span class="n">unit_label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">available</span><span class="si">}</span><span class="s2">; </span><span class="si">{</span><span class="n">detail</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">value_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="p">)</span>
+            <span class="n">collection</span> <span class="o">=</span> <span class="n">read_collection_configuration</span><span class="p">(</span>
+                <span class="n">catalogue_root</span> <span class="o">/</span> <span class="n">relative_path</span> <span class="o">/</span> <span class="s2">&quot;collection.yaml&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">collection</span><span class="o">.</span><span class="n">grid_axes</span><span class="p">:</span>
+                <span class="n">expected_count</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">collection</span><span class="o">.</span><span class="n">grid_axes</span><span class="p">)</span>
+                <span class="n">missing_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">missing_combinations</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">indexed_collection_id</span><span class="p">))</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  Grid coverage:&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Expected combinations: </span><span class="si">{</span><span class="n">expected_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Indexed combinations: </span><span class="si">{</span><span class="n">expected_count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">missing_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Missing combinations: </span><span class="si">{</span><span class="n">missing_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="csfdata.catalogue.registry.missing_combinations" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">missing_combinations</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return declared grid parameter combinations absent from one collection.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>catalogue_root</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Existing catalogue root containing <code>registry.sqlite</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>collection_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Indexed collection ID that declares <code>grid_axes</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span> | <span title="int">int</span> | <span title="float">float</span> | <span title="bool">bool</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Missing parameter combinations in the order defined by</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>...</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>collection.yaml</code>. Each dictionary maps a grid-axis name to one</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="tuple">tuple</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span> | <span title="int">int</span> | <span title="float">float</span> | <span title="bool">bool</span>], ...]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>expected value.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the catalogue has not been indexed yet.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the collection is not indexed or does not declare
+<code>grid_axes</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="sqlite3.Error">Error</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the registry cannot be read.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p><code>grid_axes</code> represents a full Cartesian product. The function does
+not infer intended combinations from existing simulations.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>csfdata/catalogue/registry.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">missing_combinations</span><span class="p">(</span>
+    <span class="n">catalogue_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return declared grid parameter combinations absent from one collection.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        catalogue_root: Existing catalogue root containing ``registry.sqlite``.</span>
+<span class="sd">        collection_id: Indexed collection ID that declares ``grid_axes``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Missing parameter combinations in the order defined by</span>
+<span class="sd">        ``collection.yaml``. Each dictionary maps a grid-axis name to one</span>
+<span class="sd">        expected value.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: If the catalogue has not been indexed yet.</span>
+<span class="sd">        ValueError: If the collection is not indexed or does not declare</span>
+<span class="sd">            ``grid_axes``.</span>
+<span class="sd">        sqlite3.Error: If the registry cannot be read.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        ``grid_axes`` represents a full Cartesian product. The function does</span>
+<span class="sd">        not infer intended combinations from existing simulations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catalogue_root</span> <span class="o">=</span> <span class="n">catalogue_root</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="n">registry_path</span> <span class="o">=</span> <span class="n">catalogue_root</span> <span class="o">/</span> <span class="s2">&quot;registry.sqlite&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">registry_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Catalogue has not been indexed: </span><span class="si">{</span><span class="n">registry_path</span><span class="si">}</span><span class="s2">. Run index-catalogue first.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">with</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">registry_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="s2">&quot;SELECT relative_path FROM collections WHERE collection_id = ?&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">collection_id</span><span class="p">,),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection is not indexed: </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">read_collection_configuration</span><span class="p">(</span><span class="n">catalogue_root</span> <span class="o">/</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="s2">&quot;collection.yaml&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">collection</span><span class="o">.</span><span class="n">grid_axes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection does not declare grid_axes: </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">axis_names</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">collection</span><span class="o">.</span><span class="n">grid_axes</span><span class="p">)</span>
+        <span class="n">placeholders</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;?&quot;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">axis_names</span><span class="p">)</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT simulation_id, name, value_type, numeric_value, text_value</span>
+<span class="s2">            FROM parameter_values</span>
+<span class="s2">            WHERE collection_id = ? AND name IN (</span><span class="si">{</span><span class="n">placeholders</span><span class="si">}</span><span class="s2">)</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">collection_id</span><span class="p">,</span> <span class="o">*</span><span class="n">axis_names</span><span class="p">),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+    <span class="n">values_by_simulation</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">simulation_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value_type</span><span class="p">,</span> <span class="n">numeric_value</span><span class="p">,</span> <span class="n">text_value</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value_type</span> <span class="o">==</span> <span class="s2">&quot;boolean&quot;</span><span class="p">:</span>
+            <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">numeric_value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">numeric_value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">text_value</span>
+        <span class="n">values_by_simulation</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">simulation_id</span><span class="p">,</span> <span class="p">{})[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="n">observed</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">axis_names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">values_by_simulation</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">axis_names</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">axis_names</span><span class="p">,</span> <span class="n">combination</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">combination</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">values</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">collection</span><span class="o">.</span><span class="n">grid_axes</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">combination</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">observed</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
