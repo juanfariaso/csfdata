@@ -5,7 +5,7 @@
 This repo meant to manage a simulations of star cluster formation made with D-CAF. However it may manage other star cluster simulations in the future.
 
 
-The idea here is that this repo can copy an existing grid of simulations and integrate it on astandalone server. Later we can use this repository to query simulations of a given model, initial conditions etc.
+The idea here is that this repo can copy an existing grid of simulations and integrate it on a standalone server. Later we can use this repository to query simulations of a given model, initial conditions etc.
 
 The goal is also to have a lite version of the database that can be stored locally, which will contain only the artifacts derivations of a simulation, such as lagrangian radii evolution, bound fraction evolution, etc.
 
@@ -23,7 +23,7 @@ csfdata : This repository. The responsability of this repository is to handle th
 
 
 There are two more repositories that should be installed in top of this, for other related resposabilities.
-  - csfdata_analysis : It handles the interface between the raw data and analysis tools. It is also useful for exploring and working with the catalogues.
+  - [csfdata_analysis](https://github.com/juanfariaso/csfdata_analysis) : It handles the interface between the raw data and analysis tools. It is also useful for exploring and working with the catalogues.
   - csfdata_scheduler: (to be completed) This repository will be able to submit jobs and run simulations on a proposed grid of parameters. Simulations organized with this will be much easier to import into the database.
 
 # Documentation:
