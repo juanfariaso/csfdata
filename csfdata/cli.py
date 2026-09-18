@@ -192,8 +192,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     refresh_snapshots_parser.add_argument(
         "--collection",
-        required=True,
-        help="One collection ID to inspect and refresh.",
+        help="One collection ID to refresh; omit to refresh every collection.",
     )
     snapshots_parser = subparsers.add_parser(
         "list-snapshots",
@@ -434,18 +433,19 @@ def list_snapshots_command(
 
 def refresh_snapshot_times_command(
     catalogue_root: Path,
-    collection_id: str,
+    collection_id: str | None = None,
     parser: argparse.ArgumentParser | None = None,
 ) -> int:
     """Refresh and report one collection's durable snapshot-time inventory.
 
     Args:
         catalogue_root: Indexed full catalogue root containing raw snapshots.
-        collection_id: One collection ID to refresh.
+        collection_id: One collection ID to refresh. When omitted, refresh every
+            collection found below ``root/collections``.
         parser: Optional CLI parser used to present refresh errors.
 
     Returns:
-        Zero when every snapshot is recorded, or one when the written inventory
+        Zero when every inventory is complete, or one when any written inventory
         contains per-simulation issues.
 
     Raises:
@@ -455,17 +455,32 @@ def refresh_snapshot_times_command(
         ValueError: If the collection importer is unsupported.
     """
     try:
-        report = refresh_snapshot_times(catalogue_root, collection_id)
+        collections_root = catalogue_root.resolve() / "collections"
+        if collection_id is None:
+            if not collections_root.is_dir():
+                raise FileNotFoundError(
+                    f"Catalogue has no collections directory: {collections_root}"
+                )
+            collection_ids = tuple(
+                sorted(path.name for path in collections_root.iterdir() if path.is_dir())
+            )
+        else:
+            collection_ids = (collection_id,)
+        reports = tuple(
+            refresh_snapshot_times(catalogue_root, current_collection_id)
+            for current_collection_id in collection_ids
+        )
     except (FileNotFoundError, OSError, ValueError) as error:
         if parser is None:
             raise
         parser.error(str(error))
-    print(f"Collection: {collection_id}")
-    print(f"Simulations inspected: {report.simulation_count}")
-    print(f"Snapshots recorded: {report.snapshot_count}")
-    print(f"Simulations with issues: {len(report.issues)}")
-    print(f"Inventory: {report.inventory_path}")
-    return 1 if report.issues else 0
+    for report in reports:
+        print(f"Collection: {report.inventory_path.parent.name}")
+        print(f"Simulations inspected: {report.simulation_count}")
+        print(f"Snapshots recorded: {report.snapshot_count}")
+        print(f"Simulations with issues: {len(report.issues)}")
+        print(f"Inventory: {report.inventory_path}")
+    return 1 if any(report.issues for report in reports) else 0
 
 
 def clear_snapshots_command(

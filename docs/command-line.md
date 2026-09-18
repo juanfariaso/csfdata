@@ -55,6 +55,12 @@ csfdata refresh-snapshot-times /path/to/catalogue \
   --collection example-collection
 ```
 
+Omit `--collection` to refresh every collection in the catalogue:
+
+```bash
+csfdata refresh-snapshot-times /path/to/catalogue
+```
+
 The command writes usable entries even when a few snapshots cannot be read,
 then returns a nonzero status and reports those simulations. This lets the
 inventory remain useful while making incomplete data visible.

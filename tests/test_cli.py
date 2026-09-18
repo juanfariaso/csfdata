@@ -5,6 +5,7 @@ from pytest import CaptureFixture
 import yaml
 
 import csfdata.cli as cli
+from csfdata.catalogue.snapshots import SnapshotTimeRefreshReport
 from csfdata.cli import main, run_analysis, validate_grid, validation_report_data
 from csfdata.importer.validation import ValidatedSource
 
@@ -170,6 +171,33 @@ optional_parameters: []
         / "0001"
         / "metadata.yaml"
     ).is_file()
+
+
+def test_refresh_snapshot_times_without_collection_refreshes_every_collection(
+    tmp_path: Path,
+    capsys: CaptureFixture[str],
+    monkeypatch,
+) -> None:
+    """Refresh every collection when the command receives no collection filter."""
+    catalogue = tmp_path / "catalogue"
+    for collection_id in ("first", "second"):
+        (catalogue / "collections" / collection_id).mkdir(parents=True)
+    refreshed: list[str] = []
+
+    def refresh(root: Path, collection_id: str) -> SnapshotTimeRefreshReport:
+        refreshed.append(collection_id)
+        return SnapshotTimeRefreshReport(
+            catalogue / "collections" / collection_id / "snapshot-times.yaml",
+            1,
+            2,
+            {},
+        )
+
+    monkeypatch.setattr(cli, "refresh_snapshot_times", refresh)
+
+    assert main(["refresh-snapshot-times", str(catalogue)]) == 0
+    assert refreshed == ["first", "second"]
+    assert "Collection: first" in capsys.readouterr().out
 
 
 def _write_dcaf_run(run_root: Path, final_time: float) -> None:
