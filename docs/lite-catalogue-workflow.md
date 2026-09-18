@@ -12,7 +12,7 @@ The normal unit of work is one collection.
 ```text
 full source catalogue
     |
-    | csfdata export-lite
+    | csfdata import-lite
     v
 lite working catalogue
     |
@@ -27,16 +27,16 @@ derived files in the original full catalogue
 
 The lite catalogue contains copied metadata, canonical configurations, and a
 SQLite index. It does not contain `raw/` snapshot data. Its `lite.yaml` records
-the exact source catalogue and collection from which it was exported.
+the exact source catalogue and collection from which it was imported.
 
-## 1. Export One Collection
+## 1. Import One Collection
 
 From a node that can read the full catalogue, create the lite working copy:
 
 ```bash
-csfdata export-lite \
-  --catalogue /path/to/source-catalogue \
-  --collection dcaf-tff-grid-v1 \
+csfdata import-lite \
+  /path/to/source-catalogue \
+  --collection example-collection \
   /path/to/working-directory
 ```
 
@@ -47,7 +47,7 @@ The default root name is `catalogue`, so this creates:
   lite.yaml
   registry.sqlite
   collections/
-    dcaf-tff-grid-v1/
+    example-collection/
       collection.yaml
       simulations/
         0001/
@@ -59,16 +59,28 @@ The collection ID appears only below `collections/`. The root is always named
 `catalogue` unless you explicitly choose another name:
 
 ```bash
-csfdata export-lite \
-  --catalogue /path/to/source-catalogue \
-  --collection dcaf-tff-grid-v1 \
-  --root dcaf-analysis \
+csfdata import-lite \
+  /path/to/source-catalogue \
+  --collection example-collection \
+  --root analysis-catalogue \
   /path/to/working-directory
 ```
 
-Re-run the same export to fill missing metadata or configuration files. It
-checks that the existing lite catalogue records the same full source catalogue
-and collection, and never overwrites existing files.
+Re-run the same import to fill missing lite-catalogue files. It checks that the
+existing lite catalogue records the same full source catalogue and collection,
+and never overwrites existing files unless `--overwrite` is supplied.
+
+To import directly from a remote source, use the normal SSH source syntax:
+
+```bash
+csfdata import-lite \
+  USER@HOST:/path/to/source-catalogue \
+  --collection example-collection \
+  /path/to/working-directory
+```
+
+CSFData runs `rsync` internally. SSH handles the caller's usual credentials,
+and raw snapshot directories are excluded from the transfer.
 
 ## 2. Compute On A Worker Node
 
@@ -85,8 +97,8 @@ simulation counts, then asks for confirmation:
 
 ```text
 Selected collections:
-  dcaf-tff-grid-v1: 1858 simulations
-Total simulations: 1858
+  example-collection: 100 simulations
+Total simulations: 100
 Compute this diagnostic? [y/N]
 ```
 
@@ -153,7 +165,7 @@ csfdata analysis import-derived /path/to/working-directory/catalogue \
 
 - Do not edit `lite.yaml`; it is the provenance link to the full catalogue.
 - Keep the source catalogue available at the absolute path recorded during
-  export. If it is unavailable on the worker, computation stops before reading
+  import. If it is unavailable on the worker, computation stops before reading
   snapshots.
 - Do not copy `raw/` data into the lite catalogue.
 - Do not use `--overwrite` unless the replacement is deliberate and reviewed.

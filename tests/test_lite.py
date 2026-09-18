@@ -1,4 +1,4 @@
-"""Tests for collection-scoped lite catalogue exports."""
+"""Tests for collection-scoped lite catalogue imports."""
 
 from pathlib import Path
 
@@ -7,11 +7,11 @@ from csfdata.catalogue.configuration import (
     SimulationConfiguration,
     write_simulation_configuration,
 )
-from csfdata.catalogue.lite import export_lite_collection, read_lite_source
+from csfdata.catalogue.lite import import_lite_collection, read_lite_source
 from csfdata.catalogue.metadata import SimulationMetadata, write_simulation_metadata
 
 
-def test_export_lite_collection_copies_query_files_without_raw_data(tmp_path: Path) -> None:
+def test_import_lite_collection_copies_derived_files_without_raw_data(tmp_path: Path) -> None:
     source = tmp_path / "full"
     simulation = source / "collections" / "grid" / "simulations" / "0001"
     simulation.mkdir(parents=True)
@@ -34,14 +34,18 @@ optional_parameters: []
         simulation / "config.yaml",
     )
     (simulation / "raw").mkdir()
+    derived = simulation / "derived" / "diagnostics" / "test" / "v1"
+    derived.mkdir(parents=True)
+    (derived / "series.h5").write_bytes(b"derived")
 
-    report = export_lite_collection(source, "grid", tmp_path / "lite")
+    report = import_lite_collection(source, "grid", tmp_path / "lite")
 
     copied = report.destination / "collections" / "grid" / "simulations" / "0001"
     assert report.simulation_count == 1
     assert (copied / "metadata.yaml").is_file()
     assert (copied / "config.yaml").is_file()
+    assert (copied / "derived" / "diagnostics" / "test" / "v1" / "series.h5").is_file()
     assert not (copied / "raw").exists()
     assert (report.destination / "registry.sqlite").is_file()
     assert read_lite_source(report.destination).catalogue_root == source.resolve()
-    assert export_lite_collection(source, "grid", report.destination).simulation_count == 1
+    assert import_lite_collection(source, "grid", report.destination).simulation_count == 1

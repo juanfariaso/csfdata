@@ -8,6 +8,7 @@ import csv
 from pathlib import Path
 import socket
 import sqlite3
+import subprocess
 import sys
 from typing import Callable
 
@@ -15,11 +16,16 @@ import yaml
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import read_collection_configuration
-from csfdata.catalogue.lite import export_lite_collection
+from csfdata.catalogue.lite import import_lite_collection
 from csfdata.catalogue.registry import (
     index_catalogue,
     missing_combinations,
     summarize_catalogue,
+)
+from csfdata.catalogue.snapshots import (
+    clear_snapshots,
+    list_snapshots,
+    write_snapshot_manifest,
 )
 from csfdata.discovery.local import LocalGridDiscoverer
 from csfdata.importer.local import import_manifest
@@ -142,22 +148,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         required=True,
         help="CSV path to create or replace.",
     )
-    export_lite_parser = subparsers.add_parser(
-        "export-lite",
-        help="Create a raw-data-free working copy of one catalogue collection.",
+    import_lite_parser = subparsers.add_parser(
+        "import-lite",
+        help="Import one local or remote catalogue collection as a lite catalogue.",
     )
-    export_lite_parser.add_argument(
-        "--catalogue",
-        type=Path,
-        required=True,
-        help="Full source catalogue containing the raw snapshots.",
+    import_lite_parser.add_argument(
+        "source",
+        help="Local catalogue path or remote HOST:/absolute/catalogue/path source.",
     )
-    export_lite_parser.add_argument(
+    import_lite_parser.add_argument(
         "--collection",
         required=True,
-        help="One collection ID to copy into the lite catalogue.",
+        help="One collection ID to import into the lite catalogue.",
     )
-    export_lite_parser.add_argument(
+    import_lite_parser.add_argument(
         "destination",
         type=Path,
         nargs="?",
@@ -166,10 +170,65 @@ def main(argv: Sequence[str] | None = None) -> int:
             "Parent directory for the lite catalogue. Defaults to the current directory."
         ),
     )
-    export_lite_parser.add_argument(
+    import_lite_parser.add_argument(
         "--root",
         default="catalogue",
         help="Lite catalogue root folder name below destination. Defaults to catalogue.",
+    )
+    import_lite_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace existing local lite files instead of copying only missing files.",
+    )
+    snapshots_parser = subparsers.add_parser(
+        "list-snapshots",
+        help="Select nearest raw snapshots and write a portable YAML manifest.",
+    )
+    snapshots_parser.add_argument(
+        "root",
+        type=Path,
+        help="Indexed full catalogue or lite catalogue root.",
+    )
+    snapshots_parser.add_argument(
+        "--collection",
+        required=True,
+        help="One indexed collection ID to inspect.",
+    )
+    snapshots_parser.add_argument(
+        "--time",
+        type=float,
+        required=True,
+        help="Target time in Myr, or multiplier when --normalization is used.",
+    )
+    snapshots_parser.add_argument(
+        "--normalization",
+        help="Optional Myr-valued configuration parameter used to normalize time.",
+    )
+    snapshots_parser.add_argument(
+        "--filter",
+        action="append",
+        default=[],
+        help="Repeatable NAME=VALUE or NAME=LOWER:UPPER parameter filter.",
+    )
+    snapshots_parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="New YAML snapshot manifest path.",
+    )
+    clear_parser = subparsers.add_parser(
+        "clear",
+        help="Remove locally cached data from a lite catalogue.",
+    )
+    clear_subparsers = clear_parser.add_subparsers(dest="clear_target", required=True)
+    clear_snapshots_parser = clear_subparsers.add_parser(
+        "snapshots",
+        help="Remove all locally cached snapshot files from a lite catalogue.",
+    )
+    clear_snapshots_parser.add_argument(
+        "root",
+        type=Path,
+        help="Lite catalogue root from which snapshots are removed.",
     )
 
     args = parser.parse_args(argv)
@@ -194,38 +253,53 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.output,
             parser=missing_parser,
         )
-    if args.command == "export-lite":
-        return export_lite_command(
-            args.catalogue,
+    if args.command == "import-lite":
+        return import_lite_command(
+            args.source,
             args.collection,
             args.destination,
             root_name=args.root,
-            parser=export_lite_parser,
+            overwrite=args.overwrite,
+            parser=import_lite_parser,
         )
+    if args.command == "list-snapshots":
+        return list_snapshots_command(
+            args.root,
+            args.collection,
+            args.time,
+            args.output,
+            filters=args.filter,
+            normalization=args.normalization,
+            parser=snapshots_parser,
+        )
+    if args.command == "clear":
+        return clear_snapshots_command(args.root, parser=clear_snapshots_parser)
     return run_analysis(args.arguments, parser=analysis_parser)
 
 
-def export_lite_command(
-    source_catalogue: Path,
+def import_lite_command(
+    source_catalogue: Path | str,
     collection_id: str,
     destination: Path,
     root_name: str = "catalogue",
+    overwrite: bool = False,
     parser: argparse.ArgumentParser | None = None,
 ) -> int:
-    """Export one collection as a queryable lite catalogue.
+    """Import one collection as a queryable lite catalogue.
 
     Args:
-        source_catalogue: Existing full catalogue containing the collection.
-        collection_id: ID of the one collection to export.
+        source_catalogue: Local or remote full catalogue containing the collection.
+        collection_id: ID of the one collection to import.
         destination: Parent directory for the lite catalogue root.
         root_name: Lite catalogue root folder name below ``destination``.
+        overwrite: Whether existing local lite files may be replaced.
         parser: Optional CLI parser used to present filesystem errors.
 
     Returns:
-        Zero after the lite catalogue and its registry are written.
+        Zero after the lite catalogue and its registry are imported.
 
     Raises:
-        OSError: If export files cannot be read or written and no parser is supplied.
+        OSError: If import files cannot be read or written and no parser is supplied.
         ValueError: If the source collection is invalid and no parser is supplied.
     """
     try:
@@ -236,15 +310,144 @@ def export_lite_command(
         ):
             raise ValueError("Lite catalogue name must be one safe directory name.")
         output_path = destination / root_name
-        report = export_lite_collection(source_catalogue, collection_id, output_path)
-    except (OSError, ValueError) as error:
+        report = import_lite_collection(
+            source_catalogue,
+            collection_id,
+            output_path,
+            overwrite=overwrite,
+        )
+    except (OSError, ValueError, subprocess.CalledProcessError) as error:
         if parser is None:
             raise
         parser.error(str(error))
-    print(f"Exported collection: {report.source.collection_id}")
+    print(f"Imported collection: {report.source.collection_id}")
     print(f"Simulations: {report.simulation_count}")
     print(f"Lite catalogue: {report.destination}")
     print(f"Source catalogue: {report.source.catalogue_root}")
+    return 0
+
+
+def list_snapshots_command(
+    catalogue_root: Path,
+    collection_id: str,
+    time_myr: float,
+    output_path: Path,
+    filters: Sequence[str] = (),
+    normalization: str | None = None,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Select snapshots and write a transfer-ready YAML manifest.
+
+    Args:
+        catalogue_root: Indexed full or lite catalogue root.
+        collection_id: One collection ID to inspect.
+        time_myr: Physical target time in Myr, or normalized multiplier.
+        output_path: New YAML manifest path to write.
+        filters: Repeated ``NAME=VALUE`` or ``NAME=LOWER:UPPER`` filters.
+        normalization: Optional Myr-valued parameter used to normalize time.
+        parser: Optional CLI parser used to present selection errors.
+
+    Returns:
+        Zero after printing a summary and writing the manifest.
+
+    Raises:
+        FileNotFoundError: If the catalogue, registry, or lite source is absent
+            and no parser is supplied.
+        OSError: If a source file or manifest cannot be read or written and no
+            parser is supplied.
+        ValueError: If a filter, source, or simulation format is invalid and no
+            parser is supplied.
+    """
+    try:
+        parsed_filters: dict[str, str | float | bool | tuple[float | None, float | None]] = {}
+        for filter_text in filters:
+            if "=" not in filter_text:
+                raise ValueError(f"Filter must use NAME=VALUE syntax: {filter_text}")
+            name, value_text = filter_text.split("=", maxsplit=1)
+            if not name or not value_text:
+                raise ValueError(f"Filter must have a name and value: {filter_text}")
+            if name in parsed_filters:
+                raise ValueError(f"Filter may be specified only once: {name}")
+            if ":" in value_text:
+                lower_text, upper_text = value_text.split(":", maxsplit=1)
+                lower = float(lower_text) if lower_text else None
+                upper = float(upper_text) if upper_text else None
+                if lower is not None and upper is not None and lower > upper:
+                    raise ValueError(f"Range filter has a lower bound above its upper bound: {filter_text}")
+                parsed_filters[name] = (lower, upper)
+            elif value_text.lower() in {"true", "false"}:
+                parsed_filters[name] = value_text.lower() == "true"
+            else:
+                try:
+                    parsed_filters[name] = float(value_text)
+                except ValueError:
+                    parsed_filters[name] = value_text
+        report = list_snapshots(
+            catalogue_root,
+            collection_id,
+            time_myr,
+            parsed_filters,
+            normalization,
+        )
+        manifest_path = write_snapshot_manifest(report, output_path)
+    except (FileExistsError, FileNotFoundError, OSError, ValueError) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
+    selected = tuple(selection for selection in report.selections if selection.issue is None)
+    unmatched = tuple(selection for selection in report.selections if selection.issue is not None)
+    print(f"Collection: {report.collection_id}")
+    print(f"Requested time: {report.time_myr:g} Myr")
+    if report.normalization is not None:
+        print(f"Normalization: {report.normalization}")
+    print(f"Matched simulations: {len(report.selections)}")
+    print(f"Selected snapshots: {len(selected)}")
+    print(f"Unmatched simulations: {len(unmatched)}")
+    for selection in unmatched[:10]:
+        print(f"  - {selection.simulation_id}: {selection.issue}")
+    if len(unmatched) > 10:
+        print(f"  ... {len(unmatched) - 10} additional unmatched simulations are in the manifest.")
+    print(f"Manifest: {manifest_path}")
+    return 0
+
+
+def clear_snapshots_command(
+    lite_catalogue: Path,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Clear all cached snapshots from one lite catalogue.
+
+    Args:
+        lite_catalogue: Lite catalogue root from which snapshots are removed.
+        parser: Optional CLI parser used to present clearing errors.
+
+    Returns:
+        Zero after deleting snapshot files and printing the reclaimed size.
+
+    Raises:
+        FileNotFoundError: If the lite collection is incomplete and no parser
+            is supplied.
+        OSError: If a snapshot cannot be deleted and no parser is supplied.
+        ValueError: If the root is not a lite catalogue and no parser is supplied.
+    """
+    try:
+        report = clear_snapshots(lite_catalogue)
+    except (FileNotFoundError, OSError, ValueError) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
+    size = report.reclaimed_size_bytes
+    if size < 1024:
+        readable_size = f"{size} B"
+    elif size < 1024**2:
+        readable_size = f"{size / 1024:.1f} KiB"
+    elif size < 1024**3:
+        readable_size = f"{size / 1024**2:.1f} MiB"
+    else:
+        readable_size = f"{size / 1024**3:.1f} GiB"
+    print(f"Lite catalogue: {report.lite_catalogue}")
+    print(f"Deleted snapshots: {len(report.deleted_paths)}")
+    print(f"Reclaimed size: {readable_size}")
     return 0
 
 

@@ -100,7 +100,7 @@ worker can read the source catalogue but cannot write there. The lite copy store
 source catalogue path and collection fingerprint in `lite.yaml`; it is not a
 new scientific collection or a replacement for the original raw data.
 
-Export it with `csfdata export-lite`, compute derived data inside the lite
+Import it with `csfdata import-lite`, compute derived data inside the lite
 catalogue, then use `csfdata analysis import-derived` from a writable node to
 validate and copy only completed products back into the recorded source.
 

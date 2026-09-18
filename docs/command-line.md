@@ -45,6 +45,53 @@ csfdata missing-combinations /path/to/catalogue \
 The output CSV uses the declared axis names as headers and can later feed a
 scheduler or a manual restart workflow.
 
+## List Snapshots
+
+Select the nearest usable snapshot at one target time for every simulation
+matching a collection and repeated parameter filters:
+
+```bash
+csfdata list-snapshots /path/to/catalogue \
+  --collection example-collection \
+  --time 10 \
+  --filter tff=1.0 \
+  --filter sfe=0.1 \
+  --output snapshots.yaml
+```
+
+The command prints selected and unmatched counts, then writes a readable YAML
+manifest. The manifest records the source catalogue identity, filters, exact
+selected times, adaptive time tolerance, and source-relative snapshot paths
+for a future transfer command. A snapshot must be within half its local output
+interval toward the requested time. Use `--normalization PARAMETER` when the
+requested time is a multiplier of a Myr-valued configuration parameter.
+
+## Import Snapshots
+
+Snapshot transfer is not implemented yet. The planned command is:
+
+```bash
+csfdata import-snapshots /path/to/lite-catalogue snapshots.yaml
+```
+
+It will read a manifest written by `list-snapshots`, verify that its source
+identity matches the lite catalogue's `lite.yaml`, and copy only the listed
+source-relative snapshot files into their matching lite simulation folders.
+Existing files will be skipped by default; replacement will require an explicit
+`--overwrite` option.
+
+## Clear Snapshots
+
+Remove all locally cached snapshot files from a lite catalogue:
+
+```bash
+csfdata clear snapshots /path/to/lite-catalogue
+```
+
+This command is non-interactive and refuses a root without `lite.yaml`. It
+preserves metadata, canonical configuration, derived products, and non-snapshot
+raw files, then reports the number of deleted snapshots and reclaimed size.
+
 ## Analysis Add-on
 
 Install `csfdata_analysis` in the same Python environment as `csfdata` to
@@ -67,26 +114,37 @@ when developing or inspecting one imported simulation directly.
 `csfdata` validates local D-CAF simulation grids and imports approved
 simulations into a separate local catalogue. It never modifies the source grid.
 
-## Export Lite Collection
+## Import Lite Collection
 
 Create a lightweight working copy of one collection before using a worker node
 that cannot write to the full catalogue:
 
 ```bash
-csfdata export-lite \
-  --catalogue /path/to/source-catalogue \
-  --collection dcaf-grid-v1
+csfdata import-lite \
+  /path/to/source-catalogue \
+  /path/to/working-directory \
+  --collection example-collection
 ```
 
-The lite catalogue copies only `collection.yaml`, `metadata.yaml`, and
-canonical `config.yaml`, then creates its own `registry.sqlite`. It does not
-copy raw snapshots or prior derived files. Its `lite.yaml` records the full
-source catalogue and collection identity so the analysis add-on can read raw
-snapshots from the original catalogue while writing results locally. By
+The source may also be an SSH location. CSFData invokes `rsync` internally and
+uses your ordinary SSH credentials:
+
+```bash
+csfdata import-lite \
+  USER@HOST:/path/to/source-catalogue \
+  /path/to/working-directory \
+  --collection example-collection
+```
+
+The lite catalogue copies collection metadata, canonical configuration, and
+derived products, then creates its own `registry.sqlite`. It does not copy raw
+snapshots. Its `lite.yaml` records the full source catalogue and collection
+identity so the analysis add-on can read raw snapshots from the original
+catalogue while writing results locally. By
 default it creates `./catalogue`; give an existing directory such as
 `/path/to/working-directory` to create its `catalogue` child. Use `--root NAME` to choose
-a different lite-root folder name. Repeating the export into the same
-compatible lite catalogue copies only missing metadata and configuration files
+a different lite-root folder name. Repeating the import into the same
+compatible lite catalogue copies only missing files
 and never overwrites existing files.
 
 ## Installation

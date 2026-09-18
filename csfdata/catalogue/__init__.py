@@ -1,10 +1,10 @@
 """Catalogue configuration, metadata, and indexing for simulation collections."""
 
 from csfdata.catalogue.lite import (
-    LiteExportReport,
+    LiteImportReport,
     LiteSource,
-    export_lite_collection,
     file_sha256,
+    import_lite_collection,
     is_lite_catalogue,
     read_lite_source,
 )
@@ -20,11 +20,11 @@ from csfdata.catalogue.registry import (
 __all__ = [
     "CatalogueSimulation",
     "IndexReport",
-    "LiteExportReport",
+    "LiteImportReport",
     "LiteSource",
-    "export_lite_collection",
     "file_sha256",
     "find_simulations",
+    "import_lite_collection",
     "index_catalogue",
     "is_lite_catalogue",
     "missing_combinations",

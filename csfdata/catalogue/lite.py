@@ -1,12 +1,22 @@
-"""Create and inspect lightweight, collection-scoped catalogue copies."""
+"""Operate on catalogue roots marked as lightweight copies.
+
+A lite catalogue uses the normal catalogue layout, but its ``lite.yaml`` file
+records that it is a portable, collection-scoped copy. The marker stores the
+full catalogue that owns the omitted raw snapshots. This module implements the
+extra safety rules required by that mode: copy collection metadata and derived
+data without ``raw/``, record provenance, and reject incompatible updates.
+
+Lite is therefore a catalogue mode, not a separate data model. General
+catalogue operations continue to work on a lite root in the usual way.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
 from pathlib import Path
-import shutil
 import socket
+import subprocess
 
 import yaml
 
@@ -19,9 +29,9 @@ class LiteSource:
 
     Args:
         catalogue_root: Absolute full-catalogue root that owns the raw data.
-        hostname: Host where the source catalogue was exported.
+        hostname: Host where the source catalogue is located.
         collection_id: The single collection represented by the lite catalogue.
-        collection_sha256: SHA-256 digest of the exported ``collection.yaml``.
+        collection_sha256: SHA-256 digest of the source ``collection.yaml``.
     """
 
     catalogue_root: Path
@@ -31,8 +41,8 @@ class LiteSource:
 
 
 @dataclass(frozen=True)
-class LiteExportReport:
-    """Summary of one completed lite-collection export.
+class LiteImportReport:
+    """Summary of one completed lite-collection import.
 
     Args:
         destination: Created lite catalogue root.
@@ -63,60 +73,100 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def export_lite_collection(
-    source_catalogue: Path,
+def import_lite_collection(
+    source_catalogue: Path | str,
     collection_id: str,
     destination: Path,
-) -> LiteExportReport:
-    """Create a queryable, raw-data-free copy of one catalogue collection.
+    overwrite: bool = False,
+) -> LiteImportReport:
+    """Import one full-catalogue collection as a local lite catalogue.
 
     Args:
-        source_catalogue: Existing full catalogue containing the collection.
+        source_catalogue: Local catalogue path or ``HOST:PATH`` remote source.
         collection_id: ID of the one collection to mirror.
-        destination: New or compatible existing lite catalogue root.
+        destination: New or compatible existing local lite catalogue root.
+        overwrite: Whether existing local lite files may be replaced.
 
     Returns:
-        Summary of the created lite catalogue and its source provenance.
+        Summary of the imported lite catalogue and its source provenance.
 
     Raises:
         FileExistsError: If ``destination`` is not a compatible lite catalogue.
-        FileNotFoundError: If required collection files are absent.
-        NotADirectoryError: If the source catalogue or collection is invalid.
-        OSError: If required files cannot be copied or indexed.
+        FileNotFoundError: If a required local source file is absent.
+        NotADirectoryError: If a local source catalogue or collection is invalid.
+        OSError: If rsync or local indexing fails.
 
     Notes:
-        Only ``collection.yaml``, ``metadata.yaml``, and canonical
-        ``config.yaml`` files are copied. Raw snapshots and existing derived
-        products are deliberately excluded.
+        ``rsync`` transfers the collection while excluding every ``raw/``
+        directory. This preserves metadata, canonical configurations, and
+        derived products while never copying raw snapshots. Remote transfers
+        use the caller's ordinary SSH credentials.
     """
-    source_catalogue = source_catalogue.resolve()
     destination = destination.resolve()
-    if not source_catalogue.is_dir():
-        raise NotADirectoryError(f"Catalogue root is not a directory: {source_catalogue}")
-    source_collection = source_catalogue / "collections" / collection_id
-    source_simulations = source_collection / "simulations"
-    collection_path = source_collection / "collection.yaml"
-    if not source_collection.is_dir() or not source_simulations.is_dir():
-        raise NotADirectoryError(f"Collection does not exist: {collection_id}")
-    if not collection_path.is_file():
-        raise FileNotFoundError(f"Collection configuration is missing: {collection_path}")
-
-    source = LiteSource(
-        catalogue_root=source_catalogue,
-        hostname=socket.gethostname(),
-        collection_id=collection_id,
-        collection_sha256=file_sha256(collection_path),
-    )
+    source_text = str(source_catalogue)
+    remote_hostname: str | None = None
+    # SSH-style sources are passed directly to rsync; local paths are checked
+    # here first so obvious catalogue errors fail before a transfer starts.
+    if ":" in source_text and not source_text.startswith("/"):
+        remote_hostname, remote_root = source_text.split(":", maxsplit=1)
+        if not remote_hostname or not remote_root.startswith("/"):
+            raise ValueError("Remote source must use HOST:/absolute/catalogue/path syntax.")
+        source_root = Path(remote_root)
+        source_collection_argument = (
+            f"{remote_hostname}:{source_root}/collections/{collection_id}/"
+        )
+    else:
+        source_root = Path(source_catalogue).resolve()
+        source_collection = source_root / "collections" / collection_id
+        if not source_root.is_dir():
+            raise NotADirectoryError(f"Catalogue root is not a directory: {source_root}")
+        if not (source_collection / "simulations").is_dir():
+            raise NotADirectoryError(f"Collection does not exist: {collection_id}")
+        if not (source_collection / "collection.yaml").is_file():
+            raise FileNotFoundError(
+                f"Collection configuration is missing: {source_collection / 'collection.yaml'}"
+            )
+        source_collection_argument = f"{source_collection}/"
     if destination.exists() and not destination.is_dir():
         raise FileExistsError(f"Lite catalogue destination is not a directory: {destination}")
     if destination.exists() and any(destination.iterdir()):
+        # An existing lite root may be resumed only when it represents exactly
+        # the same original collection. This prevents mixed-source catalogues.
         if not is_lite_catalogue(destination):
             raise FileExistsError(f"Lite catalogue destination is not empty: {destination}")
         existing_source = read_lite_source(destination)
-        if existing_source != source:
+        if (
+            existing_source.catalogue_root != source_root
+            or existing_source.hostname != (remote_hostname or socket.gethostname())
+            or existing_source.collection_id != collection_id
+        ):
             raise ValueError("Existing lite catalogue has a different recorded source collection.")
     else:
         destination.mkdir(parents=True, exist_ok=True)
+    destination_collection = destination / "collections" / collection_id
+    destination_collection.mkdir(parents=True, exist_ok=True)
+    # Retain catalogue metadata and derived products, but never bring the raw
+    # snapshots into a lite copy. --partial makes interrupted transfers resumable.
+    command = ["rsync", "-rt", "--partial", "--info=progress2", "--exclude=raw/"]
+    if not overwrite:
+        command.append("--ignore-existing")
+    command.extend((source_collection_argument, f"{destination_collection}/"))
+    subprocess.run(command, check=True)
+
+    destination_collection_path = destination_collection / "collection.yaml"
+    if not destination_collection_path.is_file():
+        raise FileNotFoundError(
+            f"Imported collection configuration is missing: {destination_collection_path}"
+        )
+    source = LiteSource(
+        catalogue_root=source_root,
+        hostname=remote_hostname or socket.gethostname(),
+        collection_id=collection_id,
+        collection_sha256=file_sha256(destination_collection_path),
+    )
+    if not (destination / "lite.yaml").exists():
+        # Provenance lets analysis locate raw snapshots later and lets derived
+        # results be checked before they are copied back to the full catalogue.
         (destination / "lite.yaml").write_text(
             yaml.safe_dump(
                 {
@@ -133,29 +183,13 @@ def export_lite_collection(
             ),
             encoding="utf-8",
         )
-    destination_collection = destination / "collections" / collection_id
-    destination_simulations = destination_collection / "simulations"
-    destination_simulations.mkdir(parents=True, exist_ok=True)
-    destination_collection_path = destination_collection / "collection.yaml"
-    if destination_collection_path.exists():
-        if file_sha256(destination_collection_path) != source.collection_sha256:
-            raise ValueError("Existing lite collection configuration differs from the source.")
-    else:
-        shutil.copy2(collection_path, destination_collection_path)
-
-    simulation_count = 0
-    for source_simulation in sorted(path for path in source_simulations.iterdir() if path.is_dir()):
-        destination_simulation = destination_simulations / source_simulation.name
-        destination_simulation.mkdir(exist_ok=True)
-        for name in ("metadata.yaml", "config.yaml"):
-            source_path = source_simulation / name
-            if not source_path.is_file():
-                raise FileNotFoundError(f"Simulation file is missing: {source_path}")
-            destination_path = destination_simulation / name
-            if not destination_path.exists():
-                shutil.copy2(source_path, destination_path)
-        simulation_count += 1
-    return LiteExportReport(destination, source, simulation_count, index_catalogue(destination))
+    index_report = index_catalogue(destination)
+    return LiteImportReport(
+        destination,
+        source,
+        index_report.simulation_count,
+        index_report,
+    )
 
 
 def is_lite_catalogue(path: Path) -> bool:
