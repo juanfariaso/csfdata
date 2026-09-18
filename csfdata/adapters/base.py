@@ -55,16 +55,16 @@ class SimulationAdapter(ABC):
         """
 
     @abstractmethod
-    def checkpoint_times(self) -> tuple[float, ...]:
-        """Return model times recorded for output checkpoints.
+    def snapshot_times(self) -> dict[Path, float]:
+        """Return every primary snapshot path mapped to its model time.
 
         Returns:
-            Checkpoint model times in canonical ``Myr``, in the order recorded
-                by the simulation.
+            Mapping from paths relative to this adapter's ``run_root`` to
+            exact model times in canonical ``Myr``.
 
         Raises:
-            ValueError: If checkpoint records exist but their times cannot be
-                read reliably.
+            ValueError: If snapshot paths or their times cannot be mapped
+                reliably.
         """
 
     @abstractmethod

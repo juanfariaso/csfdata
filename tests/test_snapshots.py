@@ -12,8 +12,9 @@ from csfdata.catalogue.configuration import (
     write_simulation_configuration,
 )
 from csfdata.catalogue.metadata import SimulationMetadata, write_simulation_metadata
+from csfdata.catalogue.lite import file_sha256
 from csfdata.catalogue.registry import index_catalogue
-from csfdata.catalogue.snapshots import clear_snapshots
+from csfdata.catalogue.snapshots import clear_snapshots, refresh_snapshot_times
 from csfdata.cli import main
 
 
@@ -61,6 +62,7 @@ optional_parameters: []
             group = snapshot.create_group("data/0000000001")
             group.attrs["model_time"] = time_myr * 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
     index_catalogue(catalogue)
+    refresh_snapshot_times(catalogue, "example-collection")
 
     manifest = tmp_path / "snapshots.yaml"
     assert main(
@@ -100,12 +102,12 @@ optional_parameters: []
     with pytest.raises(ValueError, match="only from a lite catalogue"):
         clear_snapshots(catalogue)
     (catalogue / "lite.yaml").write_text(
-        """schema_version: 1
+        f"""schema_version: 1
 source:
   catalogue_root: /path/to/source-catalogue
   hostname: host
   collection_id: example-collection
-  collection_sha256: placeholder
+  collection_sha256: {file_sha256(simulation.parent.parent / "collection.yaml")}
 """,
         encoding="utf-8",
     )

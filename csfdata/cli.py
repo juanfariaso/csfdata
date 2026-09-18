@@ -25,6 +25,7 @@ from csfdata.catalogue.registry import (
 from csfdata.catalogue.snapshots import (
     clear_snapshots,
     list_snapshots,
+    refresh_snapshot_times,
     write_snapshot_manifest,
 )
 from csfdata.discovery.local import LocalGridDiscoverer
@@ -180,6 +181,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Replace existing local lite files instead of copying only missing files.",
     )
+    refresh_snapshots_parser = subparsers.add_parser(
+        "refresh-snapshot-times",
+        help="Read raw snapshots and refresh one collection's local time inventory.",
+    )
+    refresh_snapshots_parser.add_argument(
+        "root",
+        type=Path,
+        help="Indexed full catalogue root containing the raw snapshots.",
+    )
+    refresh_snapshots_parser.add_argument(
+        "--collection",
+        required=True,
+        help="One collection ID to inspect and refresh.",
+    )
     snapshots_parser = subparsers.add_parser(
         "list-snapshots",
         help="Select nearest raw snapshots and write a portable YAML manifest.",
@@ -187,7 +202,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     snapshots_parser.add_argument(
         "root",
         type=Path,
-        help="Indexed full catalogue or lite catalogue root.",
+        help="Indexed full or lite catalogue root with snapshot-times.yaml.",
     )
     snapshots_parser.add_argument(
         "--collection",
@@ -261,6 +276,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             root_name=args.root,
             overwrite=args.overwrite,
             parser=import_lite_parser,
+        )
+    if args.command == "refresh-snapshot-times":
+        return refresh_snapshot_times_command(
+            args.root,
+            args.collection,
+            parser=refresh_snapshots_parser,
         )
     if args.command == "list-snapshots":
         return list_snapshots_command(
@@ -351,7 +372,7 @@ def list_snapshots_command(
         Zero after printing a summary and writing the manifest.
 
     Raises:
-        FileNotFoundError: If the catalogue, registry, or lite source is absent
+        FileNotFoundError: If the catalogue, registry, or inventory is absent
             and no parser is supplied.
         OSError: If a source file or manifest cannot be read or written and no
             parser is supplied.
@@ -409,6 +430,42 @@ def list_snapshots_command(
         print(f"  ... {len(unmatched) - 10} additional unmatched simulations are in the manifest.")
     print(f"Manifest: {manifest_path}")
     return 0
+
+
+def refresh_snapshot_times_command(
+    catalogue_root: Path,
+    collection_id: str,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Refresh and report one collection's durable snapshot-time inventory.
+
+    Args:
+        catalogue_root: Indexed full catalogue root containing raw snapshots.
+        collection_id: One collection ID to refresh.
+        parser: Optional CLI parser used to present refresh errors.
+
+    Returns:
+        Zero when every snapshot is recorded, or one when the written inventory
+        contains per-simulation issues.
+
+    Raises:
+        FileNotFoundError: If the collection or registry is absent and no parser
+            is supplied.
+        OSError: If raw snapshots or the inventory cannot be read or written.
+        ValueError: If the collection importer is unsupported.
+    """
+    try:
+        report = refresh_snapshot_times(catalogue_root, collection_id)
+    except (FileNotFoundError, OSError, ValueError) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
+    print(f"Collection: {collection_id}")
+    print(f"Simulations inspected: {report.simulation_count}")
+    print(f"Snapshots recorded: {report.snapshot_count}")
+    print(f"Simulations with issues: {len(report.issues)}")
+    print(f"Inventory: {report.inventory_path}")
+    return 1 if report.issues else 0
 
 
 def clear_snapshots_command(
@@ -768,7 +825,15 @@ def import_collection(
         print(f"Imported: {len(destinations)} simulations")
     print(f"Collection: {collection.collection_id}")
     print(f"Catalogue root: {catalogue_root}")
-    return 0
+    if dry_run:
+        return 0
+    # The inventory uses the registry's stable simulation IDs created by import.
+    index_catalogue(catalogue_root, collection.collection_id)
+    return refresh_snapshot_times_command(
+        catalogue_root,
+        collection.collection_id,
+        parser=parser,
+    )
 
 
 if __name__ == "__main__":

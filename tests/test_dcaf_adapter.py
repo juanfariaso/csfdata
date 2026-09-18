@@ -41,7 +41,7 @@ def test_dcaf_adapter_reads_resumed_background_gas_segments(tmp_path: Path) -> N
     assert adapter.configuration_path() == run_root / "config.yaml"
     assert adapter.read_configuration()["seed_index"] == 0
     assert adapter.model_time() == 15.1
-    assert adapter.checkpoint_times() == (0.0, 10.0, 10.0, 15.1)
+    assert adapter.background_gas_times() == (0.0, 10.0, 10.0, 15.1)
     assert adapter.snapshot_paths() == (
         snapshot,
         output_root / "stars_021.amuse",
@@ -49,6 +49,12 @@ def test_dcaf_adapter_reads_resumed_background_gas_segments(tmp_path: Path) -> N
         resumed_output_root / "stars_023.amuse",
     )
     assert adapter.snapshot_time(snapshot) == 0.0
+    assert adapter.snapshot_times() == {
+        Path("dcaf_output/stars_020.amuse"): 0.0,
+        Path("dcaf_output/stars_021.amuse"): 10.0,
+        Path("dcaf_output_1/stars_022.amuse"): 10.0,
+        Path("dcaf_output_1/stars_023.amuse"): 15.1,
+    }
     assert adapter.validate_simulation() == ()
     assert adapter.raw_data_paths() == (
         run_root / "config.yaml",

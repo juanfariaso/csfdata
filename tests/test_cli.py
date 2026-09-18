@@ -87,6 +87,9 @@ def test_import_command_creates_a_local_catalogue_entry(
     run_root = source_root / "M1000" / "tff3.0" / "07"
     run_root.mkdir(parents=True)
     (run_root / "config.yaml").write_text("tff: 3.0 Myr\n", encoding="utf-8")
+    output_root = run_root / "dcaf_output"
+    output_root.mkdir()
+    _write_snapshot(output_root / "stars_000.amuse", 0.0)
     report_path = tmp_path / "validation-report.yaml"
     report_path.write_text(
         yaml.safe_dump(
@@ -153,6 +156,12 @@ optional_parameters: []
     assert "Importing M1000/tff3.0/07 -> 0001" in output
     assert "OK: M1000/tff3.0/07 -> 0001" in output
     assert "Imported: 1 simulations" in output
+    assert (
+        catalogue_root
+        / "collections"
+        / "dcaf-tff-grid-v1"
+        / "snapshot-times.yaml"
+    ).is_file()
     assert (
         catalogue_root
         / "collections"

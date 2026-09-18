@@ -26,7 +26,8 @@ derived files in the original full catalogue
 ```
 
 The lite catalogue contains copied metadata, canonical configurations, and a
-SQLite index. It does not contain `raw/` snapshot data. Its `lite.yaml` records
+SQLite index. It does not contain raw snapshots, but it may contain small raw
+support files declared by its collection configuration. Its `lite.yaml` records
 the exact source catalogue and collection from which it was imported.
 
 ## 1. Import One Collection
@@ -79,8 +80,11 @@ csfdata import-lite \
   /path/to/working-directory
 ```
 
-CSFData runs `rsync` internally. SSH handles the caller's usual credentials,
-and raw snapshot directories are excluded from the transfer.
+CSFData runs `rsync` internally. SSH handles the caller's usual credentials.
+Raw snapshots are excluded, while any files declared under `lite.include` in
+the source `collection.yaml` are retained. The collection-level
+`snapshot-times.yaml` inventory is also copied, so the lite catalogue can list
+available remote snapshots locally without starting CSFData on the source host.
 
 ## 2. Compute On A Worker Node
 

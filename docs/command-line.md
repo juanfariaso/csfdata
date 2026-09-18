@@ -47,6 +47,18 @@ scheduler or a manual restart workflow.
 
 ## List Snapshots
 
+The full catalogue creates `snapshot-times.yaml` automatically after an import.
+Refresh it after raw output changes:
+
+```bash
+csfdata refresh-snapshot-times /path/to/catalogue \
+  --collection example-collection
+```
+
+The command writes usable entries even when a few snapshots cannot be read,
+then returns a nonzero status and reports those simulations. This lets the
+inventory remain useful while making incomplete data visible.
+
 Select the nearest usable snapshot at one target time for every simulation
 matching a collection and repeated parameter filters:
 
@@ -65,6 +77,8 @@ selected times, adaptive time tolerance, and source-relative snapshot paths
 for a future transfer command. A snapshot must be within half its local output
 interval toward the requested time. Use `--normalization PARAMETER` when the
 requested time is a multiplier of a Myr-valued configuration parameter.
+It reads the collection's local `snapshot-times.yaml`, so it works from either
+a full catalogue or a lite copy without executing CSFData on the source server.
 
 ## Import Snapshots
 
@@ -136,9 +150,9 @@ csfdata import-lite \
   --collection example-collection
 ```
 
-The lite catalogue copies collection metadata, canonical configuration, and
-derived products, then creates its own `registry.sqlite`. It does not copy raw
-snapshots. Its `lite.yaml` records the full source catalogue and collection
+The lite catalogue copies collection metadata, canonical configuration, the
+collection `snapshot-times.yaml` inventory, and derived products, then creates
+its own `registry.sqlite`. It does not copy raw snapshots. Its `lite.yaml` records the full source catalogue and collection
 identity so the analysis add-on can read raw snapshots from the original
 catalogue while writing results locally. By
 default it creates `./catalogue`; give an existing directory such as

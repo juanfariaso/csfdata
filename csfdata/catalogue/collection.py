@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import yaml
 
@@ -27,6 +27,8 @@ class CollectionConfiguration:
         grid_axes: Optional expected parameter values for a complete Cartesian
             simulation grid. Each pair contains one parameter name and its
             declared values, in YAML declaration order.
+        lite_include: Optional raw-file patterns retained in lite copies. Each
+            pattern is relative to one simulation root and must begin ``raw/``.
 
     Notes:
         This object represents one whole collection, not an individual
@@ -41,6 +43,7 @@ class CollectionConfiguration:
     required_parameters: tuple[str, ...]
     optional_parameters: tuple[str, ...]
     grid_axes: tuple[tuple[str, tuple[str | int | float | bool, ...]], ...] = ()
+    lite_include: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         """Validate the collection identity and declared parameter vocabulary.
@@ -83,6 +86,21 @@ class CollectionConfiguration:
                 raise ValueError(f"Grid axis {name} must not contain duplicate values.")
             if any(not isinstance(value, (str, int, float, bool)) for value in values):
                 raise ValueError(f"Grid axis {name} must contain scalar values.")
+        if len(self.lite_include) != len(set(self.lite_include)):
+            raise ValueError("lite_include must not contain duplicate patterns.")
+        for pattern in self.lite_include:
+            path = PurePosixPath(pattern)
+            if (
+                not pattern
+                or path.is_absolute()
+                or ".." in path.parts
+                or len(path.parts) < 2
+                or path.parts[0] != "raw"
+            ):
+                raise ValueError(
+                    "lite_include patterns must be safe paths below raw/: "
+                    f"{pattern!r}."
+                )
 
 
 def read_collection_configuration(path: Path) -> CollectionConfiguration:
@@ -145,6 +163,13 @@ def read_collection_configuration(path: Path) -> CollectionConfiguration:
             )
         parsed_grid_axes.append((name, tuple(values)))
 
+    lite = contents.get("lite", {})
+    if not isinstance(lite, dict):
+        raise ValueError("Collection configuration lite must be a mapping.")
+    lite_include = lite.get("include", [])
+    if not isinstance(lite_include, list) or not all(isinstance(pattern, str) for pattern in lite_include):
+        raise ValueError("Collection configuration lite.include must be a list of strings.")
+
     return CollectionConfiguration(
         collection_id=collection_id,
         importer=importer,
@@ -152,4 +177,5 @@ def read_collection_configuration(path: Path) -> CollectionConfiguration:
         required_parameters=parameter_names["required_parameters"],
         optional_parameters=parameter_names["optional_parameters"],
         grid_axes=tuple(parsed_grid_axes),
+        lite_include=tuple(lite_include),
     )

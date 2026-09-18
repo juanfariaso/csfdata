@@ -3,8 +3,9 @@
 A lite catalogue uses the normal catalogue layout, but its ``lite.yaml`` file
 records that it is a portable, collection-scoped copy. The marker stores the
 full catalogue that owns the omitted raw snapshots. This module implements the
-extra safety rules required by that mode: copy collection metadata and derived
-data without ``raw/``, record provenance, and reject incompatible updates.
+extra safety rules required by that mode: copy collection metadata, derived
+data, and explicitly declared raw support files; record provenance; and reject
+incompatible updates.
 
 Lite is therefore a catalogue mode, not a separate data model. General
 catalogue operations continue to work on a lite root in the usual way.
@@ -20,6 +21,7 @@ import subprocess
 
 import yaml
 
+from csfdata.catalogue.collection import read_collection_configuration
 from csfdata.catalogue.registry import IndexReport, index_catalogue
 
 
@@ -97,10 +99,11 @@ def import_lite_collection(
         OSError: If rsync or local indexing fails.
 
     Notes:
-        ``rsync`` transfers the collection while excluding every ``raw/``
-        directory. This preserves metadata, canonical configurations, and
-        derived products while never copying raw snapshots. Remote transfers
-        use the caller's ordinary SSH credentials.
+        ``rsync`` transfers the collection while excluding raw data except for
+        patterns explicitly declared by the source collection's ``lite.include``
+        policy. This preserves metadata, canonical configurations, derived
+        products, and small support files without copying raw snapshots.
+        Remote transfers use the caller's ordinary SSH credentials.
     """
     destination = destination.resolve()
     source_text = str(source_catalogue)
@@ -145,29 +148,59 @@ def import_lite_collection(
         destination.mkdir(parents=True, exist_ok=True)
     destination_collection = destination / "collections" / collection_id
     destination_collection.mkdir(parents=True, exist_ok=True)
+    destination_collection_path = destination_collection / "collection.yaml"
+    # The collection policy and snapshot inventory must stay aligned with the
+    # source before ordinary files are copied or a lite registry is rebuilt.
+    subprocess.run(
+        [
+            "rsync",
+            "-rt",
+            f"{source_collection_argument.rstrip('/')}/collection.yaml",
+            str(destination_collection_path),
+        ],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "rsync",
+            "-rt",
+            f"{source_collection_argument.rstrip('/')}/snapshot-times.yaml",
+            str(destination_collection / "snapshot-times.yaml"),
+        ],
+        check=True,
+    )
+    collection = read_collection_configuration(destination_collection_path)
     # Retain catalogue metadata and derived products, but never bring the raw
-    # snapshots into a lite copy. --partial makes interrupted transfers resumable.
+    # snapshot payload into a lite copy. --partial makes interrupted transfers resumable.
     command = ["rsync", "-rt", "--partial", "--info=progress2", "--exclude=raw/"]
     if not overwrite:
         command.append("--ignore-existing")
     command.extend((source_collection_argument, f"{destination_collection}/"))
     subprocess.run(command, check=True)
 
-    destination_collection_path = destination_collection / "collection.yaml"
-    if not destination_collection_path.is_file():
-        raise FileNotFoundError(
-            f"Imported collection configuration is missing: {destination_collection_path}"
-        )
+    if collection.lite_include:
+        # Include directories for traversal, then permit only collection-declared
+        # support files below each simulation's raw directory.
+        command = ["rsync", "-rt", "--partial", "--info=progress2", "--include=*/"]
+        for pattern in collection.lite_include:
+            command.extend(("--include", f"simulations/*/{pattern}"))
+        command.append("--exclude=*")
+        if not overwrite:
+            command.append("--ignore-existing")
+        command.extend((source_collection_argument, f"{destination_collection}/"))
+        subprocess.run(command, check=True)
+
     source = LiteSource(
         catalogue_root=source_root,
         hostname=remote_hostname or socket.gethostname(),
         collection_id=collection_id,
         collection_sha256=file_sha256(destination_collection_path),
     )
-    if not (destination / "lite.yaml").exists():
+    manifest_path = destination / "lite.yaml"
+    if not manifest_path.exists() or read_lite_source(destination).collection_sha256 != source.collection_sha256:
         # Provenance lets analysis locate raw snapshots later and lets derived
         # results be checked before they are copied back to the full catalogue.
-        (destination / "lite.yaml").write_text(
+        manifest_path.write_text(
             yaml.safe_dump(
                 {
                     "schema_version": 1,

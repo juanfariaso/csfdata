@@ -84,20 +84,20 @@ class DcafAdapter(SimulationAdapter):
         return configuration
 
     def model_time(self) -> float | None:
-        """Return the final time from all background-gas segments.
+        """Return the final time of the latest usable stellar snapshot.
 
         Returns:
-            The final recorded model time in Myr, or ``None`` when no valid
-            background-gas time records can be read.
+            The final usable snapshot model time in Myr, or ``None`` when no
+            snapshot-time mapping can be read reliably.
         """
         try:
-            times = self.checkpoint_times()
+            times = self.snapshot_times()
         except ValueError:
             return None
-        return times[-1] if times else None
+        return max(times.values(), default=None)
 
-    def checkpoint_times(self) -> tuple[float, ...]:
-        """Return D-CAF background-gas times as output checkpoint times.
+    def background_gas_times(self) -> tuple[float, ...]:
+        """Return D-CAF background-gas times in resumed-output order.
 
         Returns:
             Model times in Myr from all ``background_gas*.dat`` files, ordered
@@ -130,6 +130,30 @@ class DcafAdapter(SimulationAdapter):
                 raise ValueError(f"No time records found in {path.name}.")
             times.extend(file_times)
         return tuple(times)
+
+    def snapshot_times(self) -> dict[Path, float]:
+        """Map D-CAF stellar snapshot paths to their stored model times.
+
+        Returns:
+            Mapping from paths relative to ``run_root`` to exact snapshot times
+            in Myr, ordered by D-CAF output segment and filename.
+
+        Raises:
+            ValueError: If no stellar snapshot exists or any snapshot does not
+                contain a readable model time.
+        """
+        times: dict[Path, float] = {}
+        for snapshot_path in self.snapshot_paths():
+            snapshot_time = self.snapshot_time(snapshot_path)
+            if snapshot_time is None:
+                raise ValueError(
+                    "Cannot read snapshot model time: "
+                    f"{snapshot_path.relative_to(self.run_root)}"
+                )
+            times[snapshot_path.relative_to(self.run_root)] = snapshot_time
+        if not times:
+            raise ValueError("No D-CAF stellar snapshots found.")
+        return times
 
     def snapshot_paths(self) -> tuple[Path, ...]:
         """Return D-CAF stellar snapshots in resumed-output order.
@@ -449,13 +473,13 @@ class DcafAdapter(SimulationAdapter):
                         )
                         break
 
-        times = tuple(
-            time
-            for segment in sorted(gas_records_by_segment)
-            for _, _, time in gas_records_by_segment[segment]
-        )
-        if not times:
+        if not gas_records_by_segment:
             issues.append("No readable background-gas time records found.")
+
+        # The final usable stellar snapshot is the generic definition of model time.
+        final_snapshot_time = self.model_time()
+        if final_snapshot_time is None:
+            issues.append("No readable stellar snapshot model time found.")
 
         value = configuration.get("t_end")
         try:
@@ -471,10 +495,13 @@ class DcafAdapter(SimulationAdapter):
         except ValueError:
             issues.append("D-CAF config.yaml must define t_end in Myr.")
         else:
-            if times and abs(times[-1] - configured_end_time) > self.tolerance_myr:
+            if (
+                final_snapshot_time is not None
+                and abs(final_snapshot_time - configured_end_time) > self.tolerance_myr
+            ):
                 issues.append(
                     "Final model time "
-                    f"{times[-1]:g} Myr differs from configured t_end "
+                    f"{final_snapshot_time:g} Myr differs from configured t_end "
                     f"{configured_end_time:g} Myr by more than {self.tolerance_myr:g} Myr."
                 )
 

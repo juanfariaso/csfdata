@@ -94,7 +94,7 @@ validate source grid
 
 ## Lite Collections
 
-A lite collection is a queryable, raw-data-free working copy of exactly one
+A lite collection is a queryable working copy of exactly one
 full catalogue collection. It is intended for worker-node analysis when the
 worker can read the source catalogue but cannot write there. The lite copy stores its
 source catalogue path and collection fingerprint in `lite.yaml`; it is not a
@@ -103,6 +103,25 @@ new scientific collection or a replacement for the original raw data.
 Import it with `csfdata import-lite`, compute derived data inside the lite
 catalogue, then use `csfdata analysis import-derived` from a writable node to
 validate and copy only completed products back into the recorded source.
+
+Each full collection also has one `snapshot-times.yaml` inventory. It records
+snapshot paths, times, and sizes for the whole collection and is created after
+an import. Run `csfdata refresh-snapshot-times` after raw files change. Lite
+imports copy this small file, allowing snapshot selection without accessing the
+source server's Python environment.
+
+Each collection can declare small raw support files that every lite copy keeps:
+
+```yaml
+lite:
+  include:
+    - raw/background_gas*.dat
+```
+
+Patterns are relative to each simulation root and must stay below `raw/`. This
+is a collection policy: different collections may retain different timing or
+checkpoint files. All undeclared raw files, including snapshots, remain absent
+from lite copies.
 
 The global commands discover collection IDs themselves. You only need to give
 `--collection` after the global summary has shown the collection you want to
