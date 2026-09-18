@@ -347,6 +347,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#list-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clear-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clear Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#analysis-add-on" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -358,10 +391,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#export-lite-collection" class="md-nav__link">
+  <a href="#import-lite-collection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Export Lite Collection
+        Import Lite Collection
       
     </span>
   </a>
@@ -1060,6 +1093,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/csfdata/catalogue/snapshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.snapshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1533,6 +1594,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#list-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clear-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clear Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#analysis-add-on" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1544,10 +1638,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#export-lite-collection" class="md-nav__link">
+  <a href="#import-lite-collection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Export Lite Collection
+        Import Lite Collection
       
     </span>
   </a>
@@ -1671,6 +1765,38 @@ combinations that are absent from the indexed catalogue:</p>
 </code></pre>
 <p>The output CSV uses the declared axis names as headers and can later feed a
 scheduler or a manual restart workflow.</p>
+<h2 id="list-snapshots">List Snapshots</h2>
+<p>Select the nearest usable snapshot at one target time for every simulation
+matching a collection and repeated parameter filters:</p>
+<pre><code class="language-bash">csfdata list-snapshots /path/to/catalogue \
+  --collection example-collection \
+  --time 10 \
+  --filter tff=1.0 \
+  --filter sfe=0.1 \
+  --output snapshots.yaml
+</code></pre>
+<p>The command prints selected and unmatched counts, then writes a readable YAML
+manifest. The manifest records the source catalogue identity, filters, exact
+selected times, adaptive time tolerance, and source-relative snapshot paths
+for a future transfer command. A snapshot must be within half its local output
+interval toward the requested time. Use <code>--normalization PARAMETER</code> when the
+requested time is a multiplier of a Myr-valued configuration parameter.</p>
+<h2 id="import-snapshots">Import Snapshots</h2>
+<p>Snapshot transfer is not implemented yet. The planned command is:</p>
+<pre><code class="language-bash">csfdata import-snapshots /path/to/lite-catalogue snapshots.yaml
+</code></pre>
+<p>It will read a manifest written by <code>list-snapshots</code>, verify that its source
+identity matches the lite catalogue's <code>lite.yaml</code>, and copy only the listed
+source-relative snapshot files into their matching lite simulation folders.
+Existing files will be skipped by default; replacement will require an explicit
+<code>--overwrite</code> option.</p>
+<h2 id="clear-snapshots">Clear Snapshots</h2>
+<p>Remove all locally cached snapshot files from a lite catalogue:</p>
+<pre><code class="language-bash">csfdata clear snapshots /path/to/lite-catalogue
+</code></pre>
+<p>This command is non-interactive and refuses a root without <code>lite.yaml</code>. It
+preserves metadata, canonical configuration, derived products, and non-snapshot
+raw files, then reports the number of deleted snapshots and reclaimed size.</p>
 <h2 id="analysis-add-on">Analysis Add-on</h2>
 <p>Install <code>csfdata_analysis</code> in the same Python environment as <code>csfdata</code> to
 make its diagnostics available through the main command:</p>
@@ -1687,22 +1813,30 @@ installed analysis package. Use <code>compute-simulation</code> instead of <code
 when developing or inspecting one imported simulation directly.</p>
 <p><code>csfdata</code> validates local D-CAF simulation grids and imports approved
 simulations into a separate local catalogue. It never modifies the source grid.</p>
-<h2 id="export-lite-collection">Export Lite Collection</h2>
+<h2 id="import-lite-collection">Import Lite Collection</h2>
 <p>Create a lightweight working copy of one collection before using a worker node
 that cannot write to the full catalogue:</p>
-<pre><code class="language-bash">csfdata export-lite \
-  --catalogue /path/to/source-catalogue \
-  --collection dcaf-grid-v1
+<pre><code class="language-bash">csfdata import-lite \
+  /path/to/source-catalogue \
+  /path/to/working-directory \
+  --collection example-collection
 </code></pre>
-<p>The lite catalogue copies only <code>collection.yaml</code>, <code>metadata.yaml</code>, and
-canonical <code>config.yaml</code>, then creates its own <code>registry.sqlite</code>. It does not
-copy raw snapshots or prior derived files. Its <code>lite.yaml</code> records the full
-source catalogue and collection identity so the analysis add-on can read raw
-snapshots from the original catalogue while writing results locally. By
+<p>The source may also be an SSH location. CSFData invokes <code>rsync</code> internally and
+uses your ordinary SSH credentials:</p>
+<pre><code class="language-bash">csfdata import-lite \
+  USER@HOST:/path/to/source-catalogue \
+  /path/to/working-directory \
+  --collection example-collection
+</code></pre>
+<p>The lite catalogue copies collection metadata, canonical configuration, and
+derived products, then creates its own <code>registry.sqlite</code>. It does not copy raw
+snapshots. Its <code>lite.yaml</code> records the full source catalogue and collection
+identity so the analysis add-on can read raw snapshots from the original
+catalogue while writing results locally. By
 default it creates <code>./catalogue</code>; give an existing directory such as
 <code>/path/to/working-directory</code> to create its <code>catalogue</code> child. Use <code>--root NAME</code> to choose
-a different lite-root folder name. Repeating the export into the same
-compatible lite catalogue copies only missing metadata and configuration files
+a different lite-root folder name. Repeating the import into the same
+compatible lite catalogue copies only missing files
 and never overwrites existing files.</p>
 <h2 id="installation">Installation</h2>
 <p>From the repository root, create and activate a Python environment, then

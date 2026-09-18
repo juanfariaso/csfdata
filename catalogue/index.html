@@ -1032,6 +1032,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/csfdata/catalogue/snapshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.snapshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1661,7 +1689,7 @@ full catalogue collection. It is intended for worker-node analysis when the
 worker can read the source catalogue but cannot write there. The lite copy stores its
 source catalogue path and collection fingerprint in <code>lite.yaml</code>; it is not a
 new scientific collection or a replacement for the original raw data.</p>
-<p>Export it with <code>csfdata export-lite</code>, compute derived data inside the lite
+<p>Import it with <code>csfdata import-lite</code>, compute derived data inside the lite
 catalogue, then use <code>csfdata analysis import-derived</code> from a writable node to
 validate and copy only completed products back into the recorded source.</p>
 <p>The global commands discover collection IDs themselves. You only need to give

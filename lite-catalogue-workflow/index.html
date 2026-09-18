@@ -406,10 +406,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-export-one-collection" class="md-nav__link">
+  <a href="#1-import-one-collection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Export One Collection
+        1. Import One Collection
       
     </span>
   </a>
@@ -988,6 +988,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/csfdata/catalogue/snapshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.snapshots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1439,10 +1467,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-export-one-collection" class="md-nav__link">
+  <a href="#1-import-one-collection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Export One Collection
+        1. Import One Collection
       
     </span>
   </a>
@@ -1508,7 +1536,7 @@ on a writable filesystem and imports them later.</p>
 <h2 id="overview">Overview</h2>
 <pre><code class="language-text">full source catalogue
     |
-    | csfdata export-lite
+    | csfdata import-lite
     v
 lite working catalogue
     |
@@ -1522,12 +1550,12 @@ derived files in the original full catalogue
 </code></pre>
 <p>The lite catalogue contains copied metadata, canonical configurations, and a
 SQLite index. It does not contain <code>raw/</code> snapshot data. Its <code>lite.yaml</code> records
-the exact source catalogue and collection from which it was exported.</p>
-<h2 id="1-export-one-collection">1. Export One Collection</h2>
+the exact source catalogue and collection from which it was imported.</p>
+<h2 id="1-import-one-collection">1. Import One Collection</h2>
 <p>From a node that can read the full catalogue, create the lite working copy:</p>
-<pre><code class="language-bash">csfdata export-lite \
-  --catalogue /path/to/source-catalogue \
-  --collection dcaf-tff-grid-v1 \
+<pre><code class="language-bash">csfdata import-lite \
+  /path/to/source-catalogue \
+  --collection example-collection \
   /path/to/working-directory
 </code></pre>
 <p>The default root name is <code>catalogue</code>, so this creates:</p>
@@ -1535,7 +1563,7 @@ the exact source catalogue and collection from which it was exported.</p>
   lite.yaml
   registry.sqlite
   collections/
-    dcaf-tff-grid-v1/
+    example-collection/
       collection.yaml
       simulations/
         0001/
@@ -1544,15 +1572,23 @@ the exact source catalogue and collection from which it was exported.</p>
 </code></pre>
 <p>The collection ID appears only below <code>collections/</code>. The root is always named
 <code>catalogue</code> unless you explicitly choose another name:</p>
-<pre><code class="language-bash">csfdata export-lite \
-  --catalogue /path/to/source-catalogue \
-  --collection dcaf-tff-grid-v1 \
-  --root dcaf-analysis \
+<pre><code class="language-bash">csfdata import-lite \
+  /path/to/source-catalogue \
+  --collection example-collection \
+  --root analysis-catalogue \
   /path/to/working-directory
 </code></pre>
-<p>Re-run the same export to fill missing metadata or configuration files. It
-checks that the existing lite catalogue records the same full source catalogue
-and collection, and never overwrites existing files.</p>
+<p>Re-run the same import to fill missing lite-catalogue files. It checks that the
+existing lite catalogue records the same full source catalogue and collection,
+and never overwrites existing files unless <code>--overwrite</code> is supplied.</p>
+<p>To import directly from a remote source, use the normal SSH source syntax:</p>
+<pre><code class="language-bash">csfdata import-lite \
+  USER@HOST:/path/to/source-catalogue \
+  --collection example-collection \
+  /path/to/working-directory
+</code></pre>
+<p>CSFData runs <code>rsync</code> internally. SSH handles the caller's usual credentials,
+and raw snapshot directories are excluded from the transfer.</p>
 <h2 id="2-compute-on-a-worker-node">2. Compute On A Worker Node</h2>
 <p>On a worker node, run the analysis against the lite catalogue root:</p>
 <pre><code class="language-bash">csfdata analysis compute lagrangian_radii \
@@ -1562,8 +1598,8 @@ and collection, and never overwrites existing files.</p>
 <p>Before computation begins, the command lists the selected collections and
 simulation counts, then asks for confirmation:</p>
 <pre><code class="language-text">Selected collections:
-  dcaf-tff-grid-v1: 1858 simulations
-Total simulations: 1858
+  example-collection: 100 simulations
+Total simulations: 100
 Compute this diagnostic? [y/N]
 </code></pre>
 <p>The analysis code recognizes <code>lite.yaml</code>, verifies that the original source
@@ -1612,7 +1648,7 @@ incomplete, and mismatched results without copying them.</p>
 <ul>
 <li>Do not edit <code>lite.yaml</code>; it is the provenance link to the full catalogue.</li>
 <li>Keep the source catalogue available at the absolute path recorded during
-  export. If it is unavailable on the worker, computation stops before reading
+  import. If it is unavailable on the worker, computation stops before reading
   snapshots.</li>
 <li>Do not copy <code>raw/</code> data into the lite catalogue.</li>
 <li>Do not use <code>--overwrite</code> unless the replacement is deliberate and reviewed.</li>

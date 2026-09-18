@@ -791,10 +791,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#csfdata.catalogue.LiteExportReport" class="md-nav__link">
+  <a href="#csfdata.catalogue.LiteImportReport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LiteExportReport
+        LiteImportReport
       
     </span>
   </a>
@@ -835,10 +835,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#csfdata.catalogue.export_lite_collection" class="md-nav__link">
+  <a href="#csfdata.catalogue.file_sha256" class="md-nav__link">
     <span class="md-ellipsis">
       
-        export_lite_collection
+        file_sha256
       
     </span>
   </a>
@@ -846,10 +846,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#csfdata.catalogue.file_sha256" class="md-nav__link">
+  <a href="#csfdata.catalogue.import_lite_collection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        file_sha256
+        import_lite_collection
       
     </span>
   </a>
@@ -1058,6 +1058,34 @@
     
   
     csfdata.catalogue.registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="snapshots/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.snapshots
   
 
     
@@ -1511,10 +1539,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#csfdata.catalogue.LiteExportReport" class="md-nav__link">
+  <a href="#csfdata.catalogue.LiteImportReport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LiteExportReport
+        LiteImportReport
       
     </span>
   </a>
@@ -1555,10 +1583,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#csfdata.catalogue.export_lite_collection" class="md-nav__link">
+  <a href="#csfdata.catalogue.file_sha256" class="md-nav__link">
     <span class="md-ellipsis">
       
-        export_lite_collection
+        file_sha256
       
     </span>
   </a>
@@ -1566,10 +1594,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#csfdata.catalogue.file_sha256" class="md-nav__link">
+  <a href="#csfdata.catalogue.import_lite_collection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        file_sha256
+        import_lite_collection
       
     </span>
   </a>
@@ -1707,7 +1735,7 @@
             <td><code><a class="autorefs autorefs-internal" title="            csfdata.catalogue.lite" href="lite/#csfdata.catalogue.lite">lite</a></code></td>
             <td>
               <div class="doc-md-description">
-                <p>Create and inspect lightweight, collection-scoped catalogue copies.</p>
+                <p>Operate on catalogue roots marked as lightweight copies.</p>
               </div>
             </td>
           </tr>
@@ -1724,6 +1752,14 @@
             <td>
               <div class="doc-md-description">
                 <p>SQLite indexing for fast catalogue simulation selection.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            csfdata.catalogue.snapshots" href="snapshots/#csfdata.catalogue.snapshots">snapshots</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Select raw simulation snapshots and write portable selection manifests.</p>
               </div>
             </td>
           </tr>
@@ -1745,18 +1781,18 @@
       </thead>
       <tbody>
             <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            export_lite_collection(source_catalogue, collection_id, destination) (csfdata.catalogue.export_lite_collection)" href="#csfdata.catalogue.export_lite_collection">export_lite_collection</a></code></td>
-              <td>
-                <div class="doc-md-description">
-                  <p>Create a queryable, raw-data-free copy of one catalogue collection.</p>
-                </div>
-              </td>
-            </tr>
-            <tr class="doc-section-item">
               <td><code><a class="autorefs autorefs-internal" title="            file_sha256(path) (csfdata.catalogue.file_sha256)" href="#csfdata.catalogue.file_sha256">file_sha256</a></code></td>
               <td>
                 <div class="doc-md-description">
                   <p>Return the SHA-256 digest of one regular file.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            import_lite_collection(source_catalogue, collection_id, destination, overwrite=False) (csfdata.catalogue.import_lite_collection)" href="#csfdata.catalogue.import_lite_collection">import_lite_collection</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Import one full-catalogue collection as a local lite catalogue.</p>
                 </div>
               </td>
             </tr>
@@ -1828,8 +1864,8 @@
 
 
 
-<h2 id="csfdata.catalogue.LiteExportReport" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>LiteExportReport</code>
+<h2 id="csfdata.catalogue.LiteImportReport" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>LiteImportReport</code>
 
 
   <span class="doc doc-labels">
@@ -1843,7 +1879,7 @@
 
 
 
-        <p>Summary of one completed lite-collection export.</p>
+        <p>Summary of one completed lite-collection import.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1945,23 +1981,23 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
 <span class="normal">46</span>
-<span class="normal">47</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">LiteExportReport</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summary of one completed lite-collection export.</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LiteImportReport</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summary of one completed lite-collection import.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        destination: Created lite catalogue root.</span>
@@ -2056,7 +2092,7 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Host where the source catalogue was exported.</p>
+                <p>Host where the source catalogue is located.</p>
               </div>
             </td>
             <td>
@@ -2088,7 +2124,7 @@
             </td>
             <td>
               <div class="doc-md-description">
-                <p>SHA-256 digest of the exported <code>collection.yaml</code>.</p>
+                <p>SHA-256 digest of the source <code>collection.yaml</code>.</p>
               </div>
             </td>
             <td>
@@ -2109,29 +2145,29 @@
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">26</span>
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">LiteSource</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Provenance needed to read raw data for one lite collection.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        catalogue_root: Absolute full-catalogue root that owns the raw data.</span>
-<span class="sd">        hostname: Host where the source catalogue was exported.</span>
+<span class="sd">        hostname: Host where the source catalogue is located.</span>
 <span class="sd">        collection_id: The single collection represented by the lite catalogue.</span>
-<span class="sd">        collection_sha256: SHA-256 digest of the exported ``collection.yaml``.</span>
+<span class="sd">        collection_sha256: SHA-256 digest of the source ``collection.yaml``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">catalogue_root</span><span class="p">:</span> <span class="n">Path</span>
@@ -2517,15 +2553,118 @@ this operation.</p>
 <div class="doc doc-object doc-function">
 
 
-<h2 id="csfdata.catalogue.export_lite_collection" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">export_lite_collection</span><span class="p">(</span><span class="n">source_catalogue</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span></code>
+<h2 id="csfdata.catalogue.file_sha256" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">file_sha256</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></code>
 
 </h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Create a queryable, raw-data-free copy of one catalogue collection.</p>
+        <p>Return the SHA-256 digest of one regular file.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Existing file whose bytes are hashed.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Lowercase hexadecimal SHA-256 digest.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">file_sha256</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SHA-256 digest of one regular file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: Existing file whose bytes are hashed.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Lowercase hexadecimal SHA-256 digest.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">),</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+            <span class="n">digest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">digest</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="csfdata.catalogue.import_lite_collection" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">import_lite_collection</span><span class="p">(</span><span class="n">source_catalogue</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Import one full-catalogue collection as a local lite catalogue.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2544,11 +2683,11 @@ this operation.</p>
                 <code>source_catalogue</code>
             </td>
             <td>
-                  <code><span title="pathlib.Path">Path</span></code>
+                  <code><span title="pathlib.Path">Path</span> | <span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Existing full catalogue containing the collection.</p>
+                <p>Local catalogue path or <code>HOST:PATH</code> remote source.</p>
               </div>
             </td>
             <td>
@@ -2580,11 +2719,27 @@ this operation.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>New or compatible existing lite catalogue root.</p>
+                <p>New or compatible existing local lite catalogue root.</p>
               </div>
             </td>
             <td>
                 <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>overwrite</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether existing local lite files may be replaced.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
             </td>
           </tr>
       </tbody>
@@ -2602,16 +2757,16 @@ this operation.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="            LiteExportReport
+                  <code><a class="autorefs autorefs-internal" title="            LiteImportReport
 
 
   
       dataclass
-   (csfdata.catalogue.lite.LiteExportReport)" href="lite/#csfdata.catalogue.lite.LiteExportReport">LiteExportReport</a></code>
+   (csfdata.catalogue.lite.LiteImportReport)" href="lite/#csfdata.catalogue.lite.LiteImportReport">LiteImportReport</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Summary of the created lite catalogue and its source provenance.</p>
+                <p>Summary of the imported lite catalogue and its source provenance.</p>
               </div>
             </td>
           </tr>
@@ -2644,7 +2799,7 @@ this operation.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If required collection files are absent.</p>
+                <p>If a required local source file is absent.</p>
               </div>
             </td>
           </tr>
@@ -2654,7 +2809,7 @@ this operation.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If the source catalogue or collection is invalid.</p>
+                <p>If a local source catalogue or collection is invalid.</p>
               </div>
             </td>
           </tr>
@@ -2664,7 +2819,7 @@ this operation.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If required files cannot be copied or indexed.</p>
+                <p>If rsync or local indexing fails.</p>
               </div>
             </td>
           </tr>
@@ -2674,24 +2829,15 @@ this operation.</p>
 
 <details class="notes" open>
   <summary>Notes</summary>
-  <p>Only <code>collection.yaml</code>, <code>metadata.yaml</code>, and canonical
-<code>config.yaml</code> files are copied. Raw snapshots and existing derived
-products are deliberately excluded.</p>
+  <p><code>rsync</code> transfers the collection while excluding every <code>raw/</code>
+directory. This preserves metadata, canonical configurations, and
+derived products while never copying raw snapshots. Remote transfers
+use the caller's ordinary SSH credentials.</p>
 </details>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 76</span>
 <span class="normal"> 77</span>
 <span class="normal"> 78</span>
 <span class="normal"> 79</span>
@@ -2773,60 +2919,134 @@ products are deliberately excluded.</p>
 <span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
-<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">export_lite_collection</span><span class="p">(</span>
-    <span class="n">source_catalogue</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_lite_collection</span><span class="p">(</span>
+    <span class="n">source_catalogue</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">destination</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LiteExportReport</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a queryable, raw-data-free copy of one catalogue collection.</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LiteImportReport</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import one full-catalogue collection as a local lite catalogue.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        source_catalogue: Existing full catalogue containing the collection.</span>
+<span class="sd">        source_catalogue: Local catalogue path or ``HOST:PATH`` remote source.</span>
 <span class="sd">        collection_id: ID of the one collection to mirror.</span>
-<span class="sd">        destination: New or compatible existing lite catalogue root.</span>
+<span class="sd">        destination: New or compatible existing local lite catalogue root.</span>
+<span class="sd">        overwrite: Whether existing local lite files may be replaced.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Summary of the created lite catalogue and its source provenance.</span>
+<span class="sd">        Summary of the imported lite catalogue and its source provenance.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        FileExistsError: If ``destination`` is not a compatible lite catalogue.</span>
-<span class="sd">        FileNotFoundError: If required collection files are absent.</span>
-<span class="sd">        NotADirectoryError: If the source catalogue or collection is invalid.</span>
-<span class="sd">        OSError: If required files cannot be copied or indexed.</span>
+<span class="sd">        FileNotFoundError: If a required local source file is absent.</span>
+<span class="sd">        NotADirectoryError: If a local source catalogue or collection is invalid.</span>
+<span class="sd">        OSError: If rsync or local indexing fails.</span>
 
 <span class="sd">    Notes:</span>
-<span class="sd">        Only ``collection.yaml``, ``metadata.yaml``, and canonical</span>
-<span class="sd">        ``config.yaml`` files are copied. Raw snapshots and existing derived</span>
-<span class="sd">        products are deliberately excluded.</span>
+<span class="sd">        ``rsync`` transfers the collection while excluding every ``raw/``</span>
+<span class="sd">        directory. This preserves metadata, canonical configurations, and</span>
+<span class="sd">        derived products while never copying raw snapshots. Remote transfers</span>
+<span class="sd">        use the caller&#39;s ordinary SSH credentials.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">source_catalogue</span> <span class="o">=</span> <span class="n">source_catalogue</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
     <span class="n">destination</span> <span class="o">=</span> <span class="n">destination</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">source_catalogue</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Catalogue root is not a directory: </span><span class="si">{</span><span class="n">source_catalogue</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">source_collection</span> <span class="o">=</span> <span class="n">source_catalogue</span> <span class="o">/</span> <span class="s2">&quot;collections&quot;</span> <span class="o">/</span> <span class="n">collection_id</span>
-    <span class="n">source_simulations</span> <span class="o">=</span> <span class="n">source_collection</span> <span class="o">/</span> <span class="s2">&quot;simulations&quot;</span>
-    <span class="n">collection_path</span> <span class="o">=</span> <span class="n">source_collection</span> <span class="o">/</span> <span class="s2">&quot;collection.yaml&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">source_collection</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">source_simulations</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection does not exist: </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">collection_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection configuration is missing: </span><span class="si">{</span><span class="n">collection_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="n">source</span> <span class="o">=</span> <span class="n">LiteSource</span><span class="p">(</span>
-        <span class="n">catalogue_root</span><span class="o">=</span><span class="n">source_catalogue</span><span class="p">,</span>
-        <span class="n">hostname</span><span class="o">=</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span>
-        <span class="n">collection_id</span><span class="o">=</span><span class="n">collection_id</span><span class="p">,</span>
-        <span class="n">collection_sha256</span><span class="o">=</span><span class="n">file_sha256</span><span class="p">(</span><span class="n">collection_path</span><span class="p">),</span>
-    <span class="p">)</span>
+    <span class="n">source_text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">source_catalogue</span><span class="p">)</span>
+    <span class="n">remote_hostname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># SSH-style sources are passed directly to rsync; local paths are checked</span>
+    <span class="c1"># here first so obvious catalogue errors fail before a transfer starts.</span>
+    <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">source_text</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">source_text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+        <span class="n">remote_hostname</span><span class="p">,</span> <span class="n">remote_root</span> <span class="o">=</span> <span class="n">source_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">remote_hostname</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">remote_root</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Remote source must use HOST:/absolute/catalogue/path syntax.&quot;</span><span class="p">)</span>
+        <span class="n">source_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">remote_root</span><span class="p">)</span>
+        <span class="n">source_collection_argument</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">remote_hostname</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">source_root</span><span class="si">}</span><span class="s2">/collections/</span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">/&quot;</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">source_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">source_catalogue</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+        <span class="n">source_collection</span> <span class="o">=</span> <span class="n">source_root</span> <span class="o">/</span> <span class="s2">&quot;collections&quot;</span> <span class="o">/</span> <span class="n">collection_id</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Catalogue root is not a directory: </span><span class="si">{</span><span class="n">source_root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">source_collection</span> <span class="o">/</span> <span class="s2">&quot;simulations&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection does not exist: </span><span class="si">{</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">source_collection</span> <span class="o">/</span> <span class="s2">&quot;collection.yaml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Collection configuration is missing: </span><span class="si">{</span><span class="n">source_collection</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">&#39;collection.yaml&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">source_collection_argument</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_collection</span><span class="si">}</span><span class="s2">/&quot;</span>
     <span class="k">if</span> <span class="n">destination</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">destination</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lite catalogue destination is not a directory: </span><span class="si">{</span><span class="n">destination</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">destination</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">destination</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()):</span>
+        <span class="c1"># An existing lite root may be resumed only when it represents exactly</span>
+        <span class="c1"># the same original collection. This prevents mixed-source catalogues.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_lite_catalogue</span><span class="p">(</span><span class="n">destination</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lite catalogue destination is not empty: </span><span class="si">{</span><span class="n">destination</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">existing_source</span> <span class="o">=</span> <span class="n">read_lite_source</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">existing_source</span> <span class="o">!=</span> <span class="n">source</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">existing_source</span><span class="o">.</span><span class="n">catalogue_root</span> <span class="o">!=</span> <span class="n">source_root</span>
+            <span class="ow">or</span> <span class="n">existing_source</span><span class="o">.</span><span class="n">hostname</span> <span class="o">!=</span> <span class="p">(</span><span class="n">remote_hostname</span> <span class="ow">or</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">())</span>
+            <span class="ow">or</span> <span class="n">existing_source</span><span class="o">.</span><span class="n">collection_id</span> <span class="o">!=</span> <span class="n">collection_id</span>
+        <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Existing lite catalogue has a different recorded source collection.&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">destination</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">destination_collection</span> <span class="o">=</span> <span class="n">destination</span> <span class="o">/</span> <span class="s2">&quot;collections&quot;</span> <span class="o">/</span> <span class="n">collection_id</span>
+    <span class="n">destination_collection</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Retain catalogue metadata and derived products, but never bring the raw</span>
+    <span class="c1"># snapshots into a lite copy. --partial makes interrupted transfers resumable.</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rsync&quot;</span><span class="p">,</span> <span class="s2">&quot;-rt&quot;</span><span class="p">,</span> <span class="s2">&quot;--partial&quot;</span><span class="p">,</span> <span class="s2">&quot;--info=progress2&quot;</span><span class="p">,</span> <span class="s2">&quot;--exclude=raw/&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+        <span class="n">command</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--ignore-existing&quot;</span><span class="p">)</span>
+    <span class="n">command</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">source_collection_argument</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">destination_collection</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">))</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">destination_collection_path</span> <span class="o">=</span> <span class="n">destination_collection</span> <span class="o">/</span> <span class="s2">&quot;collection.yaml&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">destination_collection_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Imported collection configuration is missing: </span><span class="si">{</span><span class="n">destination_collection_path</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">LiteSource</span><span class="p">(</span>
+        <span class="n">catalogue_root</span><span class="o">=</span><span class="n">source_root</span><span class="p">,</span>
+        <span class="n">hostname</span><span class="o">=</span><span class="n">remote_hostname</span> <span class="ow">or</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span>
+        <span class="n">collection_id</span><span class="o">=</span><span class="n">collection_id</span><span class="p">,</span>
+        <span class="n">collection_sha256</span><span class="o">=</span><span class="n">file_sha256</span><span class="p">(</span><span class="n">destination_collection_path</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">destination</span> <span class="o">/</span> <span class="s2">&quot;lite.yaml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="c1"># Provenance lets analysis locate raw snapshots later and lets derived</span>
+        <span class="c1"># results be checked before they are copied back to the full catalogue.</span>
         <span class="p">(</span><span class="n">destination</span> <span class="o">/</span> <span class="s2">&quot;lite.yaml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
             <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span>
                 <span class="p">{</span>
@@ -2843,132 +3063,13 @@ products are deliberately excluded.</p>
             <span class="p">),</span>
             <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="n">destination_collection</span> <span class="o">=</span> <span class="n">destination</span> <span class="o">/</span> <span class="s2">&quot;collections&quot;</span> <span class="o">/</span> <span class="n">collection_id</span>
-    <span class="n">destination_simulations</span> <span class="o">=</span> <span class="n">destination_collection</span> <span class="o">/</span> <span class="s2">&quot;simulations&quot;</span>
-    <span class="n">destination_simulations</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">destination_collection_path</span> <span class="o">=</span> <span class="n">destination_collection</span> <span class="o">/</span> <span class="s2">&quot;collection.yaml&quot;</span>
-    <span class="k">if</span> <span class="n">destination_collection_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">file_sha256</span><span class="p">(</span><span class="n">destination_collection_path</span><span class="p">)</span> <span class="o">!=</span> <span class="n">source</span><span class="o">.</span><span class="n">collection_sha256</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Existing lite collection configuration differs from the source.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">collection_path</span><span class="p">,</span> <span class="n">destination_collection_path</span><span class="p">)</span>
-
-    <span class="n">simulation_count</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">source_simulation</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">path</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">source_simulations</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()):</span>
-        <span class="n">destination_simulation</span> <span class="o">=</span> <span class="n">destination_simulations</span> <span class="o">/</span> <span class="n">source_simulation</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">destination_simulation</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;metadata.yaml&quot;</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">):</span>
-            <span class="n">source_path</span> <span class="o">=</span> <span class="n">source_simulation</span> <span class="o">/</span> <span class="n">name</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">source_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulation file is missing: </span><span class="si">{</span><span class="n">source_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">destination_path</span> <span class="o">=</span> <span class="n">destination_simulation</span> <span class="o">/</span> <span class="n">name</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">destination_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">source_path</span><span class="p">,</span> <span class="n">destination_path</span><span class="p">)</span>
-        <span class="n">simulation_count</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">LiteExportReport</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">simulation_count</span><span class="p">,</span> <span class="n">index_catalogue</span><span class="p">(</span><span class="n">destination</span><span class="p">))</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="csfdata.catalogue.file_sha256" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">file_sha256</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></code>
-
-</h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Return the SHA-256 digest of one regular file.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>path</code>
-            </td>
-            <td>
-                  <code><span title="pathlib.Path">Path</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Existing file whose bytes are hashed.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Lowercase hexadecimal SHA-256 digest.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">file_sha256</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SHA-256 digest of one regular file.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        path: Existing file whose bytes are hashed.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Lowercase hexadecimal SHA-256 digest.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">()</span>
-    <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">),</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
-            <span class="n">digest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">digest</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="n">index_report</span> <span class="o">=</span> <span class="n">index_catalogue</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">LiteImportReport</span><span class="p">(</span>
+        <span class="n">destination</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">,</span>
+        <span class="n">index_report</span><span class="o">.</span><span class="n">simulation_count</span><span class="p">,</span>
+        <span class="n">index_report</span><span class="p">,</span>
+    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3045,16 +3146,16 @@ products are deliberately excluded.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_lite_catalogue</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_lite_catalogue</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return whether a path is the root of a version-1 lite catalogue.</span>
 
 <span class="sd">    Args:</span>
@@ -3178,37 +3279,37 @@ products are deliberately excluded.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lite_source</span><span class="p">(</span><span class="n">lite_catalogue</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LiteSource</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lite_source</span><span class="p">(</span><span class="n">lite_catalogue</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LiteSource</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the source provenance recorded in one lite catalogue.</span>
 
 <span class="sd">    Args:</span>
