@@ -63,7 +63,8 @@ csfdata refresh-snapshot-times /path/to/catalogue
 
 The command writes usable entries even when a few snapshots cannot be read,
 then returns a nonzero status and reports those simulations. This lets the
-inventory remain useful while making incomplete data visible.
+inventory remain useful while making incomplete data visible. While it runs,
+one updating terminal line shows the current collection and simulation.
 
 Select the nearest usable snapshot at one target time for every simulation
 matching a collection and repeated parameter filters:

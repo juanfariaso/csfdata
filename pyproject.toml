@@ -19,6 +19,7 @@ classifiers = [
 dependencies = [
   "h5py>=3.0",
   "PyYAML>=6.0",
+  "tqdm>=4.0",
 ]
 
 [project.scripts]

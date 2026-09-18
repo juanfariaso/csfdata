@@ -62,7 +62,15 @@ optional_parameters: []
             group = snapshot.create_group("data/0000000001")
             group.attrs["model_time"] = time_myr * 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
     index_catalogue(catalogue)
-    refresh_snapshot_times(catalogue, "example-collection")
+    progress: list[tuple[int, int, str]] = []
+    refresh_snapshot_times(
+        catalogue,
+        "example-collection",
+        progress=lambda number, total, simulation_id: progress.append(
+            (number, total, simulation_id)
+        ),
+    )
+    assert progress == [(1, 1, "0001")]
 
     manifest = tmp_path / "snapshots.yaml"
     assert main(

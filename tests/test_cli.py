@@ -184,7 +184,11 @@ def test_refresh_snapshot_times_without_collection_refreshes_every_collection(
         (catalogue / "collections" / collection_id).mkdir(parents=True)
     refreshed: list[str] = []
 
-    def refresh(root: Path, collection_id: str) -> SnapshotTimeRefreshReport:
+    def refresh(
+        root: Path,
+        collection_id: str,
+        progress=None,
+    ) -> SnapshotTimeRefreshReport:
         refreshed.append(collection_id)
         return SnapshotTimeRefreshReport(
             catalogue / "collections" / collection_id / "snapshot-times.yaml",

@@ -13,6 +13,7 @@ import sys
 from typing import Callable
 
 import yaml
+from tqdm import tqdm
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import read_collection_configuration
@@ -466,10 +467,30 @@ def refresh_snapshot_times_command(
             )
         else:
             collection_ids = (collection_id,)
-        reports = tuple(
-            refresh_snapshot_times(catalogue_root, current_collection_id)
-            for current_collection_id in collection_ids
-        )
+        reports = []
+        for current_collection_id in collection_ids:
+            with tqdm(
+                total=0,
+                desc=f"Refreshing {current_collection_id}",
+                unit="simulation",
+                dynamic_ncols=True,
+            ) as progress_bar:
+                def update_progress(
+                    number: int,
+                    total: int,
+                    simulation_id: str,
+                ) -> None:
+                    """Update the active collection refresh progress bar."""
+                    progress_bar.total = total
+                    progress_bar.set_postfix_str(simulation_id)
+                    progress_bar.update(1)
+
+                report = refresh_snapshot_times(
+                    catalogue_root,
+                    current_collection_id,
+                    progress=update_progress,
+                )
+            reports.append(report)
     except (FileNotFoundError, OSError, ValueError) as error:
         if parser is None:
             raise

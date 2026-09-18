@@ -7,7 +7,7 @@ and lite catalogues to select snapshots without reopening raw output files.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 import socket
@@ -137,12 +137,15 @@ class SnapshotClearReport:
 def refresh_snapshot_times(
     catalogue_root: Path | str,
     collection_id: str,
+    progress: Callable[[int, int, str], None] | None = None,
 ) -> SnapshotTimeRefreshReport:
     """Read one full collection's raw snapshots and write its inventory.
 
     Args:
         catalogue_root: Indexed full catalogue root containing the raw data.
         collection_id: One collection ID to inspect and refresh.
+        progress: Optional callback invoked before each simulation is inspected.
+            It receives the one-based simulation number, total count, and ID.
 
     Returns:
         The written inventory path, counts, and any per-simulation read issues.
@@ -169,7 +172,9 @@ def refresh_snapshot_times(
     snapshots: dict[str, tuple[SnapshotTime, ...]] = {}
     issues: dict[str, tuple[str, ...]] = {}
     simulations = find_simulations(root, collection_id)
-    for simulation in simulations:
+    for simulation_number, simulation in enumerate(simulations, start=1):
+        if progress is not None:
+            progress(simulation_number, len(simulations), simulation.simulation_id)
         adapter = DcafAdapter(simulation.path / "raw")
         try:
             times = adapter.snapshot_times()
