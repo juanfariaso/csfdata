@@ -338,6 +338,7 @@ def list_snapshots(
         str | int | float | bool | tuple[float | None, float | None],
     ] | None = None,
     normalization: str | None = None,
+    progress: Callable[[int, int, str], None] | None = None,
 ) -> SnapshotListReport:
     """Select the closest valid inventory snapshot for every filtered simulation.
 
@@ -347,6 +348,9 @@ def list_snapshots(
         time_myr: Physical target time in Myr, or multiplier when normalized.
         filters: Exact or inclusive-range indexed configuration filters.
         normalization: Optional known canonical configuration parameter in Myr.
+        progress: Optional callback invoked before each selected simulation is
+            inspected. It receives the one-based count, total count, and
+            simulation ID.
 
     Returns:
         Provenance plus one selected or unmatched result per filtered simulation.
@@ -366,7 +370,9 @@ def list_snapshots(
     inventory = read_snapshot_times(selection_catalogue, collection_id)
     simulations = find_simulations(selection_catalogue, collection_id, filters)
     selections: list[SnapshotSelection] = []
-    for simulation in simulations:
+    for simulation_number, simulation in enumerate(simulations, start=1):
+        if progress is not None:
+            progress(simulation_number, len(simulations), simulation.simulation_id)
         target_time = float(time_myr)
         if normalization is not None:
             parameter = read_simulation_configuration(
@@ -677,11 +683,17 @@ def import_snapshots(
     return SnapshotImportReport(lite_root, copied_paths, skipped_paths)
 
 
-def clear_snapshots(lite_catalogue: Path | str) -> SnapshotClearReport:
+def clear_snapshots(
+    lite_catalogue: Path | str,
+    progress: Callable[[int, int, str], None] | None = None,
+) -> SnapshotClearReport:
     """Remove every inventory-recorded snapshot file from a lite catalogue.
 
     Args:
         lite_catalogue: Root of the lite catalogue to clear.
+        progress: Optional callback invoked after each inventory-recorded
+            snapshot is inspected. It receives the completed count, total
+            count, and source-relative snapshot path.
 
     Returns:
         Paths removed and their total reclaimed size in bytes.
@@ -704,12 +716,20 @@ def clear_snapshots(lite_catalogue: Path | str) -> SnapshotClearReport:
     collection_root = lite_root / "collections" / source.collection_id
     deleted_paths: list[Path] = []
     reclaimed_size_bytes = 0
+    total_snapshots = sum(len(records) for records in inventory.snapshots.values())
+    inspected_snapshots = 0
     for simulation_id, records in inventory.snapshots.items():
         for record in records:
             snapshot_path = collection_root / "simulations" / simulation_id / record.path
-            if not snapshot_path.is_file():
-                continue
-            reclaimed_size_bytes += snapshot_path.stat().st_size
-            snapshot_path.unlink()
-            deleted_paths.append(snapshot_path)
+            inspected_snapshots += 1
+            if snapshot_path.is_file():
+                reclaimed_size_bytes += snapshot_path.stat().st_size
+                snapshot_path.unlink()
+                deleted_paths.append(snapshot_path)
+            if progress is not None:
+                progress(
+                    inspected_snapshots,
+                    total_snapshots,
+                    f"{simulation_id}/{record.path}",
+                )
     return SnapshotClearReport(lite_root, tuple(deleted_paths), reclaimed_size_bytes)

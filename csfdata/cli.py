@@ -358,12 +358,26 @@ def import_lite_command(
         ):
             raise ValueError("Lite catalogue name must be one safe directory name.")
         output_path = destination / root_name
-        report = import_lite_collection(
-            source_catalogue,
-            collection_id,
-            output_path,
-            overwrite=overwrite,
-        )
+        with tqdm(
+            total=0,
+            desc="Indexing lite catalogue",
+            unit="simulation",
+            dynamic_ncols=True,
+            leave=True,
+        ) as progress_bar:
+            def update_progress(number: int, total: int, label: str) -> None:
+                """Advance the post-transfer lite indexing bar."""
+                progress_bar.total = total
+                progress_bar.set_postfix_str(label)
+                progress_bar.update(1)
+
+            report = import_lite_collection(
+                source_catalogue,
+                collection_id,
+                output_path,
+                overwrite=overwrite,
+                progress=update_progress,
+            )
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         if parser is None:
             raise
@@ -430,13 +444,27 @@ def list_snapshots_command(
                     parsed_filters[name] = float(value_text)
                 except ValueError:
                     parsed_filters[name] = value_text
-        report = list_snapshots(
-            catalogue_root,
-            collection_id,
-            time_myr,
-            parsed_filters,
-            normalization,
-        )
+        with tqdm(
+            total=0,
+            desc="Selecting snapshots",
+            unit="simulation",
+            dynamic_ncols=True,
+            leave=True,
+        ) as progress_bar:
+            def update_progress(number: int, total: int, simulation_id: str) -> None:
+                """Advance the snapshot-selection bar after one simulation."""
+                progress_bar.total = total
+                progress_bar.set_postfix_str(simulation_id)
+                progress_bar.update(1)
+
+            report = list_snapshots(
+                catalogue_root,
+                collection_id,
+                time_myr,
+                parsed_filters,
+                normalization,
+                progress=update_progress,
+            )
         manifest_path = write_snapshot_manifest(report, output_path)
     except (FileExistsError, FileNotFoundError, OSError, ValueError) as error:
         if parser is None:
@@ -585,7 +613,20 @@ def clear_snapshots_command(
         ValueError: If the root is not a lite catalogue and no parser is supplied.
     """
     try:
-        report = clear_snapshots(lite_catalogue)
+        with tqdm(
+            total=0,
+            desc="Clearing snapshots",
+            unit="snapshot",
+            dynamic_ncols=True,
+            leave=True,
+        ) as progress_bar:
+            def update_progress(number: int, total: int, snapshot_path: str) -> None:
+                """Advance the snapshot-clearing bar after one inventory entry."""
+                progress_bar.total = total
+                progress_bar.set_postfix_str(snapshot_path)
+                progress_bar.update(1)
+
+            report = clear_snapshots(lite_catalogue, progress=update_progress)
     except (FileNotFoundError, OSError, ValueError) as error:
         if parser is None:
             raise
@@ -663,7 +704,20 @@ def index_catalogue_command(
             provided.
     """
     try:
-        report = index_catalogue(catalogue_root, collection_id)
+        with tqdm(
+            total=0,
+            desc="Indexing catalogue",
+            unit="simulation",
+            dynamic_ncols=True,
+            leave=True,
+        ) as progress_bar:
+            def update_progress(number: int, total: int, label: str) -> None:
+                """Advance the indexing bar after one simulation is indexed."""
+                progress_bar.total = total
+                progress_bar.set_postfix_str(label)
+                progress_bar.update(1)
+
+            report = index_catalogue(catalogue_root, collection_id, update_progress)
     except (OSError, ValueError, sqlite3.Error) as error:
         if parser is None:
             raise
@@ -788,24 +842,27 @@ def validate_grid(
 
     results: list[tuple[Path, tuple[str, ...]]] = []
     total = len(discovery_report.simulations)
-    interactive = sys.stdout.isatty()
-    for index, discovered_simulation in enumerate(discovery_report.simulations, start=1):
-        run_root = discovered_simulation.run_root
-        if interactive:
-            print(f"\r[{index:>4}/{total}] Checking {run_root} ...", end="", flush=True)
+    with tqdm(
+        total=total,
+        desc="Validating grid",
+        unit="simulation",
+        dynamic_ncols=True,
+        leave=True,
+    ) as progress_bar:
+        for discovered_simulation in discovery_report.simulations:
+            run_root = discovered_simulation.run_root
+            progress_bar.set_postfix_str(str(run_root.relative_to(root)))
 
-        issues = discovered_simulation.validation_issues
-        if issues:
-            # Open HDF5 snapshots only after the inexpensive structural screen flags a run.
-            issues = DcafAdapter(run_root).validate_simulation(detailed=True)
-        results.append((run_root, issues))
-        prefix = "\r" if interactive else ""
-        if issues:
-            print(f"{prefix}[{index:>4}/{total}] ISSUE: {run_root} ({len(issues)} issues)          ")
-            for issue in issues:
-                print(f"  - {issue}")
-        else:
-            print(f"{prefix}[{index:>4}/{total}] OK: {run_root}          ")
+            issues = discovered_simulation.validation_issues
+            if issues:
+                # Open HDF5 snapshots only after the inexpensive structural screen flags a run.
+                issues = DcafAdapter(run_root).validate_simulation(detailed=True)
+            results.append((run_root, issues))
+            progress_bar.update(1)
+            if issues:
+                tqdm.write(f"ISSUE: {run_root} ({len(issues)} issues)")
+                for issue in issues:
+                    tqdm.write(f"  - {issue}")
 
     try:
         report_path.write_text(

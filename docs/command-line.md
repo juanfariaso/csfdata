@@ -14,9 +14,10 @@ Update only a newly imported or changed collection:
 csfdata index-catalogue /path/to/catalogue --collection dcaf-grid-v1
 ```
 
-The command writes `registry.sqlite` at the catalogue root. It indexes each
-simulation's canonical `metadata.yaml` and `config.yaml`; those YAML files
-remain the source of truth and the SQLite file can always be rebuilt.
+The command writes `registry.sqlite` at the catalogue root and shows a retained
+simulation progress bar. It indexes each simulation's canonical `metadata.yaml`
+and `config.yaml`; those YAML files remain the source of truth and the SQLite
+file can always be rebuilt.
 
 ## Catalogue Summary
 
@@ -298,10 +299,9 @@ Each simulation is staged below `.staging/` before promotion. If an import
 fails, its staging directory is kept for inspection. The command never
 overwrites an existing simulation or follows a symbolic link in raw data.
 
-During a real import, one updating terminal line shows the current simulation
-and the fraction of its raw-data bytes copied. It updates after each copied raw
-file; individual filenames are not printed. Each completed simulation leaves
-one `OK` line.
+During a real import, a retained byte-scaled progress bar shows the current
+simulation and cumulative copied raw data. It updates after each copied raw
+file; individual filenames are not printed.
 
 ## Current Scope
 

@@ -7,7 +7,7 @@ truth for simulation identity, provenance, and scientific parameters.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from itertools import product
 from math import prod
@@ -89,6 +89,7 @@ def _index_scalar_value(value: str | int | float | bool) -> tuple[str, float | N
 def index_catalogue(
     catalogue_root: Path,
     collection_id: str | None = None,
+    progress: Callable[[int, int, str], None] | None = None,
 ) -> IndexReport:
     """Index one collection or every collection in a local catalogue.
 
@@ -96,6 +97,9 @@ def index_catalogue(
         catalogue_root: Existing catalogue root containing ``collections/``.
         collection_id: Optional collection ID to replace in the registry. When
             omitted, rebuild the registry from every collection on disk.
+        progress: Optional callback invoked after each simulation is indexed.
+            It receives the one-based completed count, total count, and the
+            ``collection_id/simulation_id`` label.
 
     Returns:
         Summary of the collections, simulations, and known parameters indexed.
@@ -139,7 +143,26 @@ def index_catalogue(
         tuple[str, str, str, str, float | None, str | None, str | None, str, str, str, int]
     ] = []
 
+    simulation_roots_by_collection = []
     for collection_root in collection_roots:
+        simulations_root = collection_root / "simulations"
+        if not simulations_root.is_dir():
+            raise NotADirectoryError(
+                f"Collection has no simulations directory: {simulations_root}"
+            )
+        simulation_roots_by_collection.append(
+            (
+                collection_root,
+                tuple(sorted(path for path in simulations_root.iterdir() if path.is_dir())),
+            )
+        )
+    total_simulations = sum(
+        len(simulation_roots)
+        for _, simulation_roots in simulation_roots_by_collection
+    )
+    indexed_simulations = 0
+
+    for collection_root, simulation_roots in simulation_roots_by_collection:
         collection = read_collection_configuration(collection_root / "collection.yaml")
         if collection.collection_id != collection_root.name:
             raise ValueError(
@@ -160,12 +183,7 @@ def index_catalogue(
             else None
         )
 
-        simulations_root = collection_root / "simulations"
-        if not simulations_root.is_dir():
-            raise NotADirectoryError(
-                f"Collection has no simulations directory: {simulations_root}"
-            )
-        for simulation_root in sorted(path for path in simulations_root.iterdir() if path.is_dir()):
+        for simulation_root in simulation_roots:
             metadata = read_simulation_metadata(simulation_root / "metadata.yaml")
             if metadata.collection_id != collection.collection_id:
                 raise ValueError(
@@ -227,7 +245,7 @@ def index_catalogue(
                     is_default = int(result.uses_default_choices(diagnostics))
                     for value in result.values:
                         value_type, numeric_value, text_value = _index_scalar_value(value.value)
-                        derived_rows.append(
+                    derived_rows.append(
                             (
                                 collection.collection_id,
                                 metadata.simulation_id,
@@ -240,8 +258,15 @@ def index_catalogue(
                                 result.diagnostic_version,
                                 choice_key,
                                 is_default,
-                            )
                         )
+                    )
+            indexed_simulations += 1
+            if progress is not None:
+                progress(
+                    indexed_simulations,
+                    total_simulations,
+                    f"{collection.collection_id}/{metadata.simulation_id}",
+                )
 
     registry_path = catalogue_root / "registry.sqlite"
     with sqlite3.connect(registry_path) as connection:

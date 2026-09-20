@@ -13,6 +13,7 @@ catalogue operations continue to work on a lite root in the usual way.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 import hashlib
 from pathlib import Path
@@ -80,6 +81,7 @@ def import_lite_collection(
     collection_id: str,
     destination: Path,
     overwrite: bool = False,
+    progress: Callable[[int, int, str], None] | None = None,
 ) -> LiteImportReport:
     """Import one full-catalogue collection as a local lite catalogue.
 
@@ -88,6 +90,8 @@ def import_lite_collection(
         collection_id: ID of the one collection to mirror.
         destination: New or compatible existing local lite catalogue root.
         overwrite: Whether existing local lite files may be replaced.
+        progress: Optional callback forwarded to the final local catalogue
+            indexing pass after transfer completes.
 
     Returns:
         Summary of the imported lite catalogue and its source provenance.
@@ -216,7 +220,9 @@ def import_lite_collection(
             ),
             encoding="utf-8",
         )
-    index_report = index_catalogue(destination)
+    # rsync reports transfer progress itself; the callback covers the separate
+    # local indexing stage that follows a successful transfer.
+    index_report = index_catalogue(destination, progress=progress)
     return LiteImportReport(
         destination,
         source,

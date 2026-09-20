@@ -5,7 +5,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 import shutil
-import sys
+
+from tqdm import tqdm
 
 from csfdata.adapters.base import SimulationAdapter
 from csfdata.catalogue.collection import (
@@ -42,8 +43,7 @@ def import_manifest(
             requirements for this collection.
         adapter: Adapter class used to inspect each source simulation.
         dry_run: Whether to stop after preflight without changing the catalogue.
-        show_progress: Whether to print one updating progress line for each
-            simulation while copying.
+        show_progress: Whether to show retained byte-scaled copy progress.
 
     Returns:
         Final destination directories promoted during this import, in manifest
@@ -141,6 +141,18 @@ def import_manifest(
 
     destinations: list[Path] = []
     total_simulations = len(prepared)
+    progress_bar = (
+        tqdm(
+            total=sum(total_bytes for _, _, _, total_bytes in prepared),
+            desc="Importing simulations",
+            unit="B",
+            unit_scale=True,
+            dynamic_ncols=True,
+            leave=True,
+        )
+        if show_progress
+        else None
+    )
     for simulation_index, (item, configuration, raw_paths, total_bytes) in enumerate(
         prepared, start=1
     ):
@@ -149,14 +161,9 @@ def import_manifest(
         destination_path = simulations_root / item.simulation_id
         raw_root = staging_path / "raw"
         raw_root.mkdir(parents=True)
-        copied_bytes = 0
-
-        if show_progress:
-            print(
-                f"\r[{simulation_index:>4}/{total_simulations}] Importing "
-                f"{item.source_relative_path} -> {item.simulation_id}: 0.0%",
-                end="",
-                flush=True,
+        if progress_bar is not None:
+            progress_bar.set_postfix_str(
+                f"{simulation_index}/{total_simulations} {item.simulation_id}"
             )
 
         # Preserve each approved source path below raw/ with its original layout.
@@ -166,15 +173,10 @@ def import_manifest(
             shutil.copy2(raw_path, destination_raw_path)
             if destination_raw_path.stat().st_size != raw_path.stat().st_size:
                 raise OSError(f"Copied file size does not match source: {raw_path}")
-            copied_bytes += raw_path.stat().st_size
-            if show_progress:
-                percentage = 100.0 if total_bytes == 0 else 100.0 * copied_bytes / total_bytes
-                print(
-                    f"\r[{simulation_index:>4}/{total_simulations}] Importing "
-                    f"{item.source_relative_path} -> {item.simulation_id}: {percentage:5.1f}%",
-                    end="",
-                    flush=True,
-                )
+            if progress_bar is not None:
+                # copy2 is intentionally retained for metadata preservation;
+                # update after each verified file rather than reimplement it.
+                progress_bar.update(raw_path.stat().st_size)
 
         write_simulation_configuration(configuration, staging_path / "config.yaml")
         metadata = SimulationMetadata(
@@ -200,13 +202,10 @@ def import_manifest(
             raise FileExistsError(f"Destination simulation already exists: {destination_path}")
         staging_path.rename(destination_path)
         destinations.append(destination_path)
-        if show_progress:
-            print(
-                f"\r[{simulation_index:>4}/{total_simulations}] OK: "
-                f"{item.source_relative_path} -> {item.simulation_id}          "
-            )
+    if progress_bar is not None:
+        progress_bar.close()
 
-    if show_progress and total_simulations == 0 and sys.stdout.isatty():
+    if show_progress and total_simulations == 0:
         print("No simulations approved for import.")
 
     return tuple(destinations)

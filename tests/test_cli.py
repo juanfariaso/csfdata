@@ -154,8 +154,6 @@ optional_parameters: []
 
     output = capsys.readouterr().out
     assert exit_code == 0
-    assert "Importing M1000/tff3.0/07 -> 0001" in output
-    assert "OK: M1000/tff3.0/07 -> 0001" in output
     assert "Imported: 1 simulations" in output
     assert (
         catalogue_root
