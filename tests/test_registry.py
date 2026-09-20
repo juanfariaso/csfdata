@@ -150,7 +150,8 @@ grid_axes:
     assert "median 0.12" in summary
     assert "Time-series diagnostics:" in summary
     assert "lagrangian_radii" in summary
-    assert "r_l50 [pc]; choices: center" in summary
+    assert "center=origin,stellar_com" in summary
+    assert "default stellar_com" in summary
     assert "Expected combinations: 2" in summary
     assert "Indexed combinations: 1" in summary
     assert "Missing combinations: 1" in summary

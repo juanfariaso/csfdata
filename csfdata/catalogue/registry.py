@@ -618,6 +618,13 @@ def summarize_catalogue(
         )
 
     with sqlite3.connect(registry_path) as connection:
+        table = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'time_series_products'"
+        ).fetchone()
+        if table is None:
+            raise ValueError(
+                "Catalogue registry is out of date. Run index-catalogue to rebuild it."
+            )
         if collection_id is None:
             collections = connection.execute(
                 """
@@ -807,7 +814,17 @@ def summarize_catalogue(
                         for field in definition.fields
                     )
                     if definition.choices:
-                        fields += "; choices: " + ", ".join(definition.choices)
+                        choice_definitions = {
+                            choice.name: choice for choice in diagnostics.choices
+                        }
+                        fields += "; choices: " + ", ".join(
+                            (
+                                f"{name}="
+                                f"{','.join(choice_definitions[name].values)} "
+                                f"(default {choice_definitions[name].default})"
+                            )
+                            for name in definition.choices
+                        )
                     wrapped = textwrap.wrap(fields, width=field_width, break_long_words=False) or [""]
                     available_count = availability.get((definition.name, definition.version), 0)
                     available = f"{available_count}/{simulation_count}"

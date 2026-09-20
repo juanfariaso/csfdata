@@ -217,7 +217,9 @@ dcaf-grid-v1 (dcaf)
     none
   Time-series diagnostics:
     diagnostic         version  available  fields
-    lagrangian_radii   v1       1858/1858  stellar_mass [Msun], r_l50 [pc], ...
+    lagrangian_radii   v1       1858/1858  stellar_mass [Msun], r_l50 [pc], ...;
+                                               choices: center=origin,stellar_com
+                                               (default stellar_com)
   Grid coverage:
     Expected combinations: 1900
     Indexed combinations: 1858
