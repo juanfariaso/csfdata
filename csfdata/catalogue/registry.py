@@ -12,8 +12,12 @@ from dataclasses import dataclass
 from itertools import product
 from math import prod
 from pathlib import Path
+import h5py
 import json
+import shutil
 import sqlite3
+import statistics
+import textwrap
 
 from csfdata.catalogue.collection import read_collection_configuration
 from csfdata.catalogue.configuration import read_simulation_configuration
@@ -142,6 +146,7 @@ def index_catalogue(
     derived_rows: list[
         tuple[str, str, str, str, float | None, str | None, str | None, str, str, str, int]
     ] = []
+    time_series_rows: list[tuple[str, str, str, str]] = []
 
     simulation_roots_by_collection = []
     for collection_root in collection_roots:
@@ -245,7 +250,7 @@ def index_catalogue(
                     is_default = int(result.uses_default_choices(diagnostics))
                     for value in result.values:
                         value_type, numeric_value, text_value = _index_scalar_value(value.value)
-                    derived_rows.append(
+                        derived_rows.append(
                             (
                                 collection.collection_id,
                                 metadata.simulation_id,
@@ -258,6 +263,34 @@ def index_catalogue(
                                 result.diagnostic_version,
                                 choice_key,
                                 is_default,
+                            )
+                        )
+
+            if diagnostics is not None:
+                for definition in diagnostics.diagnostics:
+                    if definition.kind != "time_series":
+                        continue
+                    product_path = simulation_root / definition.relative_path
+                    if not product_path.is_file():
+                        continue
+                    # Index only a completed file with matching identity. This
+                    # keeps coverage queries fast without reading measurements.
+                    with h5py.File(product_path, "r") as product:
+                        if (
+                            product.attrs.get("complete") != True
+                            or product.attrs.get("diagnostic_name") != definition.name
+                            or f"v{product.attrs.get('diagnostic_version')}" != definition.version
+                        ):
+                            raise ValueError(
+                                f"Time-series diagnostic file is incomplete or mismatched: "
+                                f"{product_path}"
+                            )
+                    time_series_rows.append(
+                        (
+                            collection.collection_id,
+                            metadata.simulation_id,
+                            definition.name,
+                            definition.version,
                         )
                     )
             indexed_simulations += 1
@@ -326,16 +359,36 @@ def index_catalogue(
                 ON derived_values (name, is_default, numeric_value, collection_id, simulation_id);
             CREATE INDEX IF NOT EXISTS derived_text_lookup
                 ON derived_values (name, is_default, text_value, collection_id, simulation_id);
+            CREATE TABLE IF NOT EXISTS time_series_products (
+                collection_id TEXT NOT NULL,
+                simulation_id TEXT NOT NULL,
+                diagnostic_name TEXT NOT NULL,
+                diagnostic_version TEXT NOT NULL,
+                PRIMARY KEY (
+                    collection_id, simulation_id, diagnostic_name, diagnostic_version
+                ),
+                FOREIGN KEY (collection_id, simulation_id)
+                    REFERENCES simulations (collection_id, simulation_id)
+            );
+            CREATE INDEX IF NOT EXISTS time_series_product_lookup
+                ON time_series_products (
+                    collection_id, diagnostic_name, diagnostic_version, simulation_id
+                );
             """
         )
         indexed_collection_ids = tuple(row[0] for row in collection_rows)
         if collection_id is None:
+            connection.execute("DELETE FROM time_series_products")
             connection.execute("DELETE FROM derived_values")
             connection.execute("DELETE FROM parameter_values")
             connection.execute("DELETE FROM simulations")
             connection.execute("DELETE FROM collections")
         else:
             for indexed_collection_id in indexed_collection_ids:
+                connection.execute(
+                    "DELETE FROM time_series_products WHERE collection_id = ?",
+                    (indexed_collection_id,),
+                )
                 connection.execute(
                     "DELETE FROM derived_values WHERE collection_id = ?",
                     (indexed_collection_id,),
@@ -381,6 +434,14 @@ def index_catalogue(
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             derived_rows,
+        )
+        connection.executemany(
+            """
+            INSERT INTO time_series_products (
+                collection_id, simulation_id, diagnostic_name, diagnostic_version
+            ) VALUES (?, ?, ?, ?)
+            """,
+            time_series_rows,
         )
 
     return IndexReport(
@@ -589,58 +650,175 @@ def summarize_catalogue(
         if collection_id is not None and not collections:
             raise ValueError(f"Collection is not indexed: {collection_id}")
 
+        terminal_width = shutil.get_terminal_size(fallback=(100, 24)).columns
         lines = [f"Registry: {registry_path}", f"Collections: {len(collections)}"]
         for indexed_collection_id, importer, relative_path, simulation_count in collections:
+            lines.append("")
             lines.append(f"{indexed_collection_id} ({importer})")
             lines.append(f"  Simulations: {simulation_count}")
-            parameters = connection.execute(
+
+            # Configuration rows are the normal simulation query parameters.
+            parameter_rows = connection.execute(
                 """
-                SELECT
-                    name,
-                    section,
-                    value_type,
-                    unit,
-                    COUNT(*),
-                    MIN(numeric_value),
-                    MAX(numeric_value),
-                    COUNT(DISTINCT COALESCE(text_value, numeric_value))
-                FROM (
-                    SELECT collection_id, name, section, value_type, unit, numeric_value, text_value
-                    FROM parameter_values
-                    UNION ALL
-                    SELECT collection_id, name, 'derived', value_type, unit, numeric_value, text_value
-                    FROM derived_values WHERE is_default = 1
-                )
+                SELECT name, section, value_type, unit, numeric_value, text_value
+                FROM parameter_values
                 WHERE collection_id = ?
-                GROUP BY name, section, value_type, unit
-                ORDER BY section, name, value_type, unit
+                ORDER BY section, name, value_type, unit, numeric_value, text_value
                 """,
                 (indexed_collection_id,),
             ).fetchall()
-            if not parameters:
-                lines.append("  Parameters: none")
+            lines.append("  Simulation parameters:")
+            if not parameter_rows:
+                lines.append("    none")
             else:
-                lines.append("  Parameters:")
-                for (
-                    name,
-                    section,
-                    value_type,
-                    unit,
-                    available_count,
-                    minimum,
-                    maximum,
-                    distinct_text_count,
-                ) in parameters:
-                    unit_label = f" [{unit}]" if unit is not None else ""
-                    available = f"{available_count}/{simulation_count}"
-                    if value_type == "number":
-                        detail = f"range {minimum:g} to {maximum:g}"
-                    else:
-                        detail = f"{distinct_text_count} distinct values"
-                    lines.append(
-                        f"    {name}{unit_label}: {available}; {detail} "
-                        f"({section}, {value_type})"
+                name_width = min(24, max(4, max(len(row[0]) for row in parameter_rows)))
+                source_width = min(15, max(6, max(len(row[1]) for row in parameter_rows)))
+                unit_width = min(8, max(4, max(len(row[3] or "1") for row in parameter_rows)))
+                available_width = 9
+                value_width = max(12, terminal_width - name_width - source_width - unit_width - available_width - 13)
+                lines.append(
+                    f"    {'name':<{name_width}}  {'source':<{source_width}}  "
+                    f"{'unit':<{unit_width}}  {'available':>{available_width}}  values"
+                )
+                grouped_parameters: dict[tuple[str, str, str, str | None], list[object]] = {}
+                for name, section, value_type, unit, numeric_value, text_value in parameter_rows:
+                    grouped_parameters.setdefault((name, section, value_type, unit), []).append(
+                        numeric_value if value_type == "number" else text_value
                     )
+                for (name, section, value_type, unit), values in grouped_parameters.items():
+                    distinct_values = list(dict.fromkeys(values))
+                    if len(distinct_values) <= 10:
+                        detail = ", ".join(
+                            f"{value:g}" if value_type == "number" else str(value)
+                            for value in distinct_values
+                        )
+                    elif value_type == "number":
+                        detail = (
+                            f"{len(distinct_values)} distinct; "
+                            f"{min(distinct_values):g} to {max(distinct_values):g}"
+                        )
+                    else:
+                        detail = f"{len(distinct_values)} distinct values"
+                    wrapped = textwrap.wrap(detail, width=value_width, break_long_words=False) or [""]
+                    available = f"{len(values)}/{simulation_count}"
+                    prefix = (
+                        f"    {name:<{name_width}}  {section:<{source_width}}  "
+                        f"{(unit or '1'):<{unit_width}}  {available:>{available_width}}  "
+                    )
+                    lines.append(prefix + wrapped[0])
+                    continuation = " " * len(prefix)
+                    lines.extend(continuation + value for value in wrapped[1:])
+
+            # Default-choice scalar rows share the normal query space, so the
+            # summary reports their actual indexed distribution.
+            derived_rows = connection.execute(
+                """
+                SELECT diagnostic_name, diagnostic_version, name, value_type,
+                       unit, numeric_value, text_value
+                FROM derived_values
+                WHERE collection_id = ? AND is_default = 1
+                ORDER BY diagnostic_name, diagnostic_version, name, numeric_value, text_value
+                """,
+                (indexed_collection_id,),
+            ).fetchall()
+            lines.append("  Derived parameters:")
+            if not derived_rows:
+                lines.append("    none")
+            else:
+                diagnostic_width = min(24, max(10, max(len(row[0]) for row in derived_rows)))
+                field_width = min(20, max(5, max(len(row[2]) for row in derived_rows)))
+                unit_width = min(8, max(4, max(len(row[4] or "1") for row in derived_rows)))
+                available_width = 9
+                summary_width = max(12, terminal_width - diagnostic_width - field_width - unit_width - available_width - 13)
+                lines.append(
+                    f"    {'diagnostic':<{diagnostic_width}}  {'field':<{field_width}}  "
+                    f"{'unit':<{unit_width}}  {'available':>{available_width}}  summary"
+                )
+                grouped_derived: dict[tuple[str, str, str, str, str | None], list[object]] = {}
+                for diagnostic_name, version, name, value_type, unit, numeric_value, text_value in derived_rows:
+                    grouped_derived.setdefault(
+                        (diagnostic_name, version, name, value_type, unit), []
+                    ).append(numeric_value if value_type == "number" else text_value)
+                for (diagnostic_name, version, name, value_type, unit), values in grouped_derived.items():
+                    if value_type == "number":
+                        numeric_values = [float(value) for value in values]
+                        deviation = statistics.pstdev(numeric_values) if len(numeric_values) > 1 else 0.0
+                        detail = (
+                            f"{min(numeric_values):g} to {max(numeric_values):g}; "
+                            f"median {statistics.median(numeric_values):g}; "
+                            f"mean {statistics.mean(numeric_values):g} +/- {deviation:g}"
+                        )
+                    else:
+                        distinct_values = list(dict.fromkeys(values))
+                        detail = (
+                            ", ".join(str(value) for value in distinct_values)
+                            if len(distinct_values) <= 10
+                            else f"{len(distinct_values)} distinct values"
+                        )
+                    wrapped = textwrap.wrap(detail, width=summary_width, break_long_words=False) or [""]
+                    diagnostic_label = f"{diagnostic_name} {version}"
+                    available = f"{len(values)}/{simulation_count}"
+                    prefix = (
+                        f"    {diagnostic_label:<{diagnostic_width}}  {name:<{field_width}}  "
+                        f"{(unit or '1'):<{unit_width}}  {available:>{available_width}}  "
+                    )
+                    lines.append(prefix + wrapped[0])
+                    continuation = " " * len(prefix)
+                    lines.extend(continuation + value for value in wrapped[1:])
+
+            collection_root = catalogue_root / relative_path
+            diagnostics_path = collection_diagnostics_path(collection_root)
+            diagnostics = (
+                read_collection_diagnostics(diagnostics_path)
+                if diagnostics_path.is_file()
+                else None
+            )
+            lines.append("  Time-series diagnostics:")
+            if diagnostics is None or not any(
+                definition.kind == "time_series" for definition in diagnostics.diagnostics
+            ):
+                lines.append("    none")
+            else:
+                time_series_width = 24
+                version_width = 7
+                available_width = 9
+                field_width = max(12, terminal_width - time_series_width - version_width - available_width - 13)
+                lines.append(
+                    f"    {'diagnostic':<{time_series_width}}  {'version':<{version_width}}  "
+                    f"{'available':>{available_width}}  fields"
+                )
+                availability = {
+                    (name, version): count
+                    for name, version, count in connection.execute(
+                        """
+                        SELECT diagnostic_name, diagnostic_version, COUNT(*)
+                        FROM time_series_products
+                        WHERE collection_id = ?
+                        GROUP BY diagnostic_name, diagnostic_version
+                        """,
+                        (indexed_collection_id,),
+                    )
+                }
+                for definition in diagnostics.diagnostics:
+                    if definition.kind != "time_series":
+                        continue
+                    fields = ", ".join(
+                        f"{field.name} [{field.unit or '1'}]"
+                        for field in definition.fields
+                    )
+                    if definition.choices:
+                        fields += "; choices: " + ", ".join(definition.choices)
+                    wrapped = textwrap.wrap(fields, width=field_width, break_long_words=False) or [""]
+                    available_count = availability.get((definition.name, definition.version), 0)
+                    available = f"{available_count}/{simulation_count}"
+                    prefix = (
+                        f"    {definition.name:<{time_series_width}}  "
+                        f"{definition.version:<{version_width}}  "
+                        f"{available:>{available_width}}  "
+                    )
+                    lines.append(prefix + wrapped[0])
+                    continuation = " " * len(prefix)
+                    lines.extend(continuation + value for value in wrapped[1:])
             collection = read_collection_configuration(
                 catalogue_root / relative_path / "collection.yaml"
             )

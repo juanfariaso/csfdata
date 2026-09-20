@@ -3,6 +3,7 @@
 from pathlib import Path, PurePosixPath
 import sqlite3
 
+import h5py
 from pytest import CaptureFixture
 
 from csfdata.catalogue.configuration import (
@@ -11,6 +12,7 @@ from csfdata.catalogue.configuration import (
     write_simulation_configuration,
 )
 from csfdata.catalogue.diagnostics import (
+    ChoiceDefinition,
     CollectionDiagnostics,
     DiagnosticDefinition,
     DiagnosticField,
@@ -75,7 +77,14 @@ grid_axes:
         simulation_root / "config.yaml",
     )
     diagnostics = CollectionDiagnostics(
-        choices=(),
+        choices=(
+            ChoiceDefinition(
+                "center",
+                "Stellar centre definition.",
+                ("origin", "stellar_com"),
+                "stellar_com",
+            ),
+        ),
         diagnostics=(
             DiagnosticDefinition(
                 "expansion_rate",
@@ -84,6 +93,15 @@ grid_axes:
                 "Generic expansion-rate fit.",
                 PurePosixPath("derived/scalar_diagnostics.yaml"),
                 (DiagnosticField("dRdt", "Expansion rate.", "km/s"),),
+            ),
+            DiagnosticDefinition(
+                "lagrangian_radii",
+                "v1",
+                "time_series",
+                "Mass-weighted stellar Lagrangian radii.",
+                PurePosixPath("derived/diagnostics/lagrangian_radii/v1/series.h5"),
+                (DiagnosticField("r_l50", "Half-mass radius.", "pc"),),
+                ("center",),
             ),
         ),
     )
@@ -107,6 +125,12 @@ grid_axes:
         diagnostics,
         scalar_diagnostics_path,
     )
+    time_series_path = simulation_root / "derived/diagnostics/lagrangian_radii/v1/series.h5"
+    time_series_path.parent.mkdir(parents=True)
+    with h5py.File(time_series_path, "w") as output:
+        output.attrs["complete"] = True
+        output.attrs["diagnostic_name"] = "lagrangian_radii"
+        output.attrs["diagnostic_version"] = 1
 
     first_report = index_catalogue(catalogue_root)
     second_report = index_catalogue(catalogue_root, "dcaf-grid-v1")
@@ -118,8 +142,15 @@ grid_axes:
     assert "Collections: 1" in summary
     assert "dcaf-grid-v1 (dcaf)" in summary
     assert "Simulations: 1" in summary
-    assert "tff [Myr]: 1/1; range 3 to 3 (parameters, number)" in summary
-    assert "label: 1/1; 1 distinct values (code_parameters, text)" in summary
+    assert "Simulation parameters:" in summary
+    assert "tff" in summary
+    assert "parameters" in summary
+    assert "Derived parameters:" in summary
+    assert "expansion_rate v1" in summary
+    assert "median 0.12" in summary
+    assert "Time-series diagnostics:" in summary
+    assert "lagrangian_radii" in summary
+    assert "r_l50 [pc]; choices: center" in summary
     assert "Expected combinations: 2" in summary
     assert "Indexed combinations: 1" in summary
     assert "Missing combinations: 1" in summary
@@ -146,6 +177,7 @@ grid_axes:
         assert connection.execute("SELECT COUNT(*) FROM simulations").fetchone() == (1,)
         assert connection.execute("SELECT COUNT(*) FROM parameter_values").fetchone() == (3,)
         assert connection.execute("SELECT COUNT(*) FROM derived_values").fetchone() == (1,)
+        assert connection.execute("SELECT COUNT(*) FROM time_series_products").fetchone() == (1,)
         assert connection.execute(
             "SELECT numeric_value, unit FROM parameter_values WHERE name = 'tff'"
         ).fetchone() == (3.0, "Myr")
@@ -187,7 +219,8 @@ grid_axes:
     output = capsys.readouterr().out
     assert "Collections: 1" in output
     assert "empty-grid (dcaf)" in output
-    assert "Parameters: none" in output
+    assert "Simulation parameters:" in output
+    assert "Derived parameters:" in output
     assert "Expected combinations: 1" in output
     assert "Missing combinations: 1" in output
 

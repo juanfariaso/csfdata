@@ -188,10 +188,19 @@ Inspect one collection only:
 csfdata catalogue-summary /path/to/catalogue --collection dcaf-grid-v1
 ```
 
-The summary reports each collection's simulation count and each available
-parameter's section, value type, unit, availability, and either numeric range
-or number of distinct text values. It reads `registry.sqlite` and the small
-collection configuration only; it does not rescan simulation directories.
+The summary is based on the completed index. It separates normal simulation
+parameters from default-choice scalar diagnostics, because both can be used in
+catalogue queries but have different meanings. Simulation parameters show up
+to ten stored values; higher-cardinality numeric parameters show their number
+of distinct values and range. Scalar diagnostics show availability, range,
+median, and mean plus standard deviation.
+
+Time-series diagnostics are shown separately. Their fields are not ordinary
+catalogue query filters because they also require a time and sometimes a
+scientific choice. During indexing, CSFData records only whether each declared
+time-series file is complete, so the summary can show coverage without reading
+its numerical HDF5 datasets. Tables wrap long value or field lists to the
+current terminal width.
 
 For example:
 
@@ -200,9 +209,15 @@ Registry: /shared/group/csf-catalogue/registry.sqlite
 Collections: 1
 dcaf-grid-v1 (dcaf)
   Simulations: 1858
-  Parameters:
-    sfe: 1858/1858; range 0.05 to 0.3 (parameters, number)
-    tff [Myr]: 1858/1858; range 0.5 to 3 (parameters, number)
+  Simulation parameters:
+    name  source      unit  available  values
+    sfe   parameters  1     1858/1858  0.05, 0.1, 0.3
+    tff   parameters  Myr   1858/1858  0.5, 1, 3
+  Derived parameters:
+    none
+  Time-series diagnostics:
+    diagnostic         version  available  fields
+    lagrangian_radii   v1       1858/1858  stellar_mass [Msun], r_l50 [pc], ...
   Grid coverage:
     Expected combinations: 1900
     Indexed combinations: 1858
