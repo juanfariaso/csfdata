@@ -1,6 +1,6 @@
 """Tests for the rebuildable SQLite catalogue registry."""
 
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import sqlite3
 
 from pytest import CaptureFixture
@@ -9,6 +9,18 @@ from csfdata.catalogue.configuration import (
     ConfigurationParameter,
     SimulationConfiguration,
     write_simulation_configuration,
+)
+from csfdata.catalogue.diagnostics import (
+    CollectionDiagnostics,
+    DiagnosticDefinition,
+    DiagnosticField,
+    ScalarDiagnosticResult,
+    ScalarValue,
+    SimulationScalarDiagnostics,
+    collection_diagnostics_path,
+    simulation_scalar_diagnostics_path,
+    write_collection_diagnostics,
+    write_simulation_scalar_diagnostics,
 )
 from csfdata.catalogue.metadata import SimulationMetadata, write_simulation_metadata
 from csfdata.catalogue.registry import (
@@ -62,12 +74,45 @@ grid_axes:
         ),
         simulation_root / "config.yaml",
     )
+    diagnostics = CollectionDiagnostics(
+        choices=(),
+        diagnostics=(
+            DiagnosticDefinition(
+                "expansion_rate",
+                "v1",
+                "scalar",
+                "Generic expansion-rate fit.",
+                PurePosixPath("derived/scalar_diagnostics.yaml"),
+                (DiagnosticField("dRdt", "Expansion rate.", "km/s"),),
+            ),
+        ),
+    )
+    write_collection_diagnostics(
+        diagnostics,
+        collection_diagnostics_path(simulation_root.parent.parent),
+    )
+    scalar_diagnostics_path = simulation_scalar_diagnostics_path(simulation_root)
+    scalar_diagnostics_path.parent.mkdir()
+    write_simulation_scalar_diagnostics(
+        SimulationScalarDiagnostics(
+            (
+                ScalarDiagnosticResult(
+                    "expansion_rate",
+                    "v1",
+                    (),
+                    (ScalarValue("dRdt", 0.12, "km/s"),),
+                ),
+            )
+        ),
+        diagnostics,
+        scalar_diagnostics_path,
+    )
 
     first_report = index_catalogue(catalogue_root)
     second_report = index_catalogue(catalogue_root, "dcaf-grid-v1")
 
     assert first_report.simulation_count == 1
-    assert first_report.parameter_count == 3
+    assert first_report.parameter_count == 4
     assert second_report.collection_ids == ("dcaf-grid-v1",)
     summary = summarize_catalogue(catalogue_root)
     assert "Collections: 1" in summary
@@ -90,10 +135,17 @@ grid_axes:
     assert matches[0].simulation_id == "0001"
     assert matches[0].importer == "dcaf"
     assert matches[0].path == simulation_root
+    derived_matches = find_simulations(
+        catalogue_root,
+        collection_id="dcaf-grid-v1",
+        filters={"tff": 3.0, "dRdt": (0.1, None)},
+    )
+    assert derived_matches == matches
     with sqlite3.connect(catalogue_root / "registry.sqlite") as connection:
         assert connection.execute("SELECT COUNT(*) FROM collections").fetchone() == (1,)
         assert connection.execute("SELECT COUNT(*) FROM simulations").fetchone() == (1,)
         assert connection.execute("SELECT COUNT(*) FROM parameter_values").fetchone() == (3,)
+        assert connection.execute("SELECT COUNT(*) FROM derived_values").fetchone() == (1,)
         assert connection.execute(
             "SELECT numeric_value, unit FROM parameter_values WHERE name = 'tff'"
         ).fetchone() == (3.0, "Myr")

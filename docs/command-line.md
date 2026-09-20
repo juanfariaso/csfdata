@@ -89,17 +89,17 @@ a full catalogue or a lite copy without executing CSFData on the source server.
 
 ## Import Snapshots
 
-Snapshot transfer is not implemented yet. The planned command is:
+Copy the exact snapshots selected in a manifest into its matching lite
+catalogue:
 
 ```bash
 csfdata import-snapshots /path/to/lite-catalogue snapshots.yaml
 ```
 
-It will read a manifest written by `list-snapshots`, verify that its source
-identity matches the lite catalogue's `lite.yaml`, and copy only the listed
-source-relative snapshot files into their matching lite simulation folders.
-Existing files will be skipped by default; replacement will require an explicit
-`--overwrite` option.
+The command verifies the manifest against the lite catalogue's `lite.yaml` and
+local `snapshot-times.yaml` inventory, then copies only the approved
+source-relative paths with resumable `rsync`. Existing files are skipped by
+default; replacement requires an explicit `--overwrite` option.
 
 ## Clear Snapshots
 

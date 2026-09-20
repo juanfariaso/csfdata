@@ -12,6 +12,7 @@ catalogue-root/
   collections/
     dcaf-grid-v1/
       collection.yaml
+      diagnostics.yaml
       simulations/
         0001/
           metadata.yaml
@@ -36,6 +37,52 @@ Each imported simulation has two top-level YAML records:
 
 The original input files are retained unchanged under `raw/`. Derived analysis
 products belong under `derived/` and do not modify raw data.
+
+## Derived Diagnostics
+
+`diagnostics.yaml` is the collection-level, versioned description of available
+derived analysis data. It records diagnostic names, versions, output fields,
+canonical units, storage locations, and the scientific choices that affect
+each result. It does not duplicate results, which remain below each
+simulation's `derived/` directory.
+
+The analysis add-on publishes this file when it computes a diagnostic. Core
+catalogue tools can therefore inspect, index, and query existing derived data
+without importing analysis dependencies such as AMUSE. Time-series and scalar
+diagnostics use the same description format.
+
+Definitions can also declare completed diagnostic versions they require. This
+make analysis dependency chains explicit: a scalar fit can state that it
+needs particular time-series diagnostics before it can run. The catalogue
+records and validates these requirements; analysis runners later use them to
+report missing prerequisites clearly.
+
+Simulation-level derived values are stored separately in each simulation's
+`derived/scalar_diagnostics.yaml`. Each value uses the same small record format as a
+canonical catalogue parameter:
+
+```yaml
+value: 0.12
+unit: km/s
+```
+
+The surrounding scalar-diagnostic record identifies the diagnostic name, version, and
+concrete choices that produced the value. `csfdata index-catalogue` validates
+that record against the collection `diagnostics.yaml` before indexing it.
+Default-choice scalar values join the same query space as configuration
+parameters, so one filter can combine both kinds of value:
+
+```python
+find_simulations(
+    "/path/to/catalogue",
+    collection_id="example-collection",
+    filters={"tff": 1.0, "derived_parameter": (0.1, None)},
+)
+```
+
+No manual database edits are needed. A future analysis or import tool writes
+the validated scalar-diagnostics YAML; rerun `csfdata index-catalogue` to refresh the
+rebuildable SQLite registry.
 
 ## Registry
 

@@ -9,8 +9,10 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+import math
 from pathlib import Path
 import socket
+import subprocess
 
 import yaml
 
@@ -132,6 +134,21 @@ class SnapshotClearReport:
     lite_catalogue: Path
     deleted_paths: tuple[Path, ...]
     reclaimed_size_bytes: int
+
+
+@dataclass(frozen=True)
+class SnapshotImportReport:
+    """Summary of one manifest-driven snapshot transfer into a lite catalogue.
+
+    Args:
+        lite_catalogue: Lite catalogue that received the snapshot files.
+        copied_paths: Source-relative paths transferred by ``rsync``.
+        skipped_paths: Source-relative paths already present and preserved.
+    """
+
+    lite_catalogue: Path
+    copied_paths: tuple[Path, ...]
+    skipped_paths: tuple[Path, ...]
 
 
 def refresh_snapshot_times(
@@ -542,6 +559,122 @@ def write_snapshot_manifest(report: SnapshotListReport, path: Path | str) -> Pat
         encoding="utf-8",
     )
     return manifest_path
+
+
+def import_snapshots(
+    lite_catalogue: Path | str,
+    manifest_path: Path | str,
+    overwrite: bool = False,
+) -> SnapshotImportReport:
+    """Copy inventory-approved snapshots from a manifest into a lite catalogue.
+
+    Args:
+        lite_catalogue: Local lite catalogue that will receive snapshots.
+        manifest_path: YAML manifest produced by ``write_snapshot_manifest``.
+        overwrite: Whether existing local snapshots may be replaced.
+
+    Returns:
+        Source-relative paths copied and paths preserved because they existed.
+
+    Raises:
+        FileNotFoundError: If the lite catalogue, manifest, or inventory is absent.
+        ValueError: If the manifest does not match lite provenance or requests
+            files not represented by the local snapshot inventory.
+        OSError: If ``rsync`` cannot copy the approved files.
+
+    Notes:
+        The transfer reads source paths exclusively from the manifest and checks
+        every path against the lite inventory before starting ``rsync``.
+    """
+    lite_root = Path(lite_catalogue).resolve()
+    if not is_lite_catalogue(lite_root):
+        raise ValueError(f"Snapshots may be imported only into a lite catalogue: {lite_root}")
+    source = read_lite_source(lite_root)
+    inventory = read_snapshot_times(lite_root, source.collection_id)
+    with Path(manifest_path).open(encoding="utf-8") as stream:
+        manifest = yaml.safe_load(stream)
+    if not isinstance(manifest, dict) or manifest.get("schema_version") != 1:
+        raise ValueError("Snapshot manifest must use schema_version 1.")
+    manifest_source = manifest.get("source")
+    selected_snapshots = manifest.get("selected_snapshots")
+    if not isinstance(manifest_source, dict) or not isinstance(selected_snapshots, list):
+        raise ValueError("Snapshot manifest must contain source and selected_snapshots.")
+    if (
+        manifest_source.get("catalogue_root") != str(source.catalogue_root)
+        or manifest_source.get("hostname") != source.hostname
+        or manifest_source.get("collection_id") != source.collection_id
+        or manifest_source.get("collection_sha256") != source.collection_sha256
+    ):
+        raise ValueError("Snapshot manifest does not match this lite catalogue source.")
+
+    source_paths: list[Path] = []
+    for selection in selected_snapshots:
+        if not isinstance(selection, dict):
+            raise ValueError("Snapshot manifest has an invalid selected snapshot entry.")
+        simulation_id = selection.get("simulation_id")
+        snapshot_time = selection.get("snapshot_time_myr")
+        paths = selection.get("source_paths")
+        if (
+            not isinstance(simulation_id, str)
+            or not isinstance(snapshot_time, (int, float))
+            or isinstance(snapshot_time, bool)
+            or not isinstance(paths, list)
+            or not paths
+        ):
+            raise ValueError("Snapshot manifest has an invalid selected snapshot entry.")
+        expected_root = (
+            Path("collections")
+            / source.collection_id
+            / "simulations"
+            / simulation_id
+        )
+        for path_text in paths:
+            path = Path(path_text) if isinstance(path_text, str) else None
+            if (
+                path is None
+                or path.is_absolute()
+                or ".." in path.parts
+                or path in source_paths
+            ):
+                raise ValueError("Snapshot manifest has an invalid source path.")
+            try:
+                snapshot_path = path.relative_to(expected_root)
+            except ValueError as error:
+                raise ValueError("Snapshot manifest path does not match its simulation ID.") from error
+            if not snapshot_path.parts or snapshot_path.parts[0] != "raw":
+                raise ValueError("Snapshot manifest may import only raw snapshot paths.")
+            records = inventory.snapshots.get(simulation_id, ())
+            if not any(
+                record.path == snapshot_path
+                and math.isclose(record.time_myr, float(snapshot_time))
+                for record in records
+            ):
+                raise ValueError("Snapshot manifest path is absent from the lite inventory.")
+            source_paths.append(path)
+
+    copied_paths = tuple(
+        path for path in source_paths if overwrite or not (lite_root / path).exists()
+    )
+    skipped_paths = tuple(path for path in source_paths if path not in copied_paths)
+    if copied_paths:
+        source_root = f"{source.catalogue_root}/"
+        if source.hostname != socket.gethostname():
+            source_root = f"{source.hostname}:{source_root}"
+        subprocess.run(
+            [
+                "rsync",
+                "-rt",
+                "--partial",
+                "--info=progress2",
+                "--files-from=-",
+                source_root,
+                f"{lite_root}/",
+            ],
+            input="".join(f"{path}\n" for path in copied_paths),
+            text=True,
+            check=True,
+        )
+    return SnapshotImportReport(lite_root, copied_paths, skipped_paths)
 
 
 def clear_snapshots(lite_catalogue: Path | str) -> SnapshotClearReport:

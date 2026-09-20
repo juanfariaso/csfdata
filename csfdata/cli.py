@@ -25,6 +25,7 @@ from csfdata.catalogue.registry import (
 )
 from csfdata.catalogue.snapshots import (
     clear_snapshots,
+    import_snapshots,
     list_snapshots,
     refresh_snapshot_times,
     write_snapshot_manifest,
@@ -231,6 +232,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         required=True,
         help="New YAML snapshot manifest path.",
     )
+    import_snapshots_parser = subparsers.add_parser(
+        "import-snapshots",
+        help="Copy manifest-selected raw snapshots into a lite catalogue.",
+    )
+    import_snapshots_parser.add_argument(
+        "root",
+        type=Path,
+        help="Lite catalogue root that will receive the snapshots.",
+    )
+    import_snapshots_parser.add_argument(
+        "manifest",
+        type=Path,
+        help="YAML manifest written by list-snapshots.",
+    )
+    import_snapshots_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace existing local snapshot files.",
+    )
     clear_parser = subparsers.add_parser(
         "clear",
         help="Remove locally cached data from a lite catalogue.",
@@ -292,6 +312,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             filters=args.filter,
             normalization=args.normalization,
             parser=snapshots_parser,
+        )
+    if args.command == "import-snapshots":
+        return import_snapshots_command(
+            args.root,
+            args.manifest,
+            overwrite=args.overwrite,
+            parser=import_snapshots_parser,
         )
     if args.command == "clear":
         return clear_snapshots_command(args.root, parser=clear_snapshots_parser)
@@ -502,6 +529,40 @@ def refresh_snapshot_times_command(
         print(f"Simulations with issues: {len(report.issues)}")
         print(f"Inventory: {report.inventory_path}")
     return 1 if any(report.issues for report in reports) else 0
+
+
+def import_snapshots_command(
+    lite_catalogue: Path,
+    manifest_path: Path,
+    overwrite: bool = False,
+    parser: argparse.ArgumentParser | None = None,
+) -> int:
+    """Import manifest-selected raw snapshots into a lite catalogue.
+
+    Args:
+        lite_catalogue: Local lite catalogue that will receive snapshots.
+        manifest_path: YAML manifest created by ``list-snapshots``.
+        overwrite: Whether existing local snapshot files may be replaced.
+        parser: Optional CLI parser used to present transfer errors.
+
+    Returns:
+        Zero after the manifest has been checked and all required paths copied.
+
+    Raises:
+        FileNotFoundError: If an input manifest or inventory is absent.
+        OSError: If rsync cannot copy the selected files.
+        ValueError: If the manifest does not match the lite catalogue.
+    """
+    try:
+        report = import_snapshots(lite_catalogue, manifest_path, overwrite)
+    except (FileNotFoundError, OSError, ValueError, subprocess.CalledProcessError) as error:
+        if parser is None:
+            raise
+        parser.error(str(error))
+    print(f"Lite catalogue: {report.lite_catalogue}")
+    print(f"Copied snapshots: {len(report.copied_paths)}")
+    print(f"Existing snapshots skipped: {len(report.skipped_paths)}")
+    return 0
 
 
 def clear_snapshots_command(

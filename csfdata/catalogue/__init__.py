@@ -1,5 +1,21 @@
 """Catalogue configuration, metadata, and indexing for simulation collections."""
 
+from csfdata.catalogue.diagnostics import (
+    ChoiceDefinition,
+    CollectionDiagnostics,
+    DiagnosticDefinition,
+    DiagnosticField,
+    DiagnosticRequirement,
+    ScalarDiagnosticResult,
+    ScalarValue,
+    SimulationScalarDiagnostics,
+    collection_diagnostics_path,
+    read_collection_diagnostics,
+    read_simulation_scalar_diagnostics,
+    simulation_scalar_diagnostics_path,
+    write_collection_diagnostics,
+    write_simulation_scalar_diagnostics,
+)
 from csfdata.catalogue.lite import (
     LiteImportReport,
     LiteSource,
@@ -19,15 +35,29 @@ from csfdata.catalogue.registry import (
 
 __all__ = [
     "CatalogueSimulation",
+    "ChoiceDefinition",
+    "CollectionDiagnostics",
+    "DiagnosticDefinition",
+    "DiagnosticField",
+    "DiagnosticRequirement",
     "IndexReport",
     "LiteImportReport",
     "LiteSource",
+    "ScalarDiagnosticResult",
+    "ScalarValue",
+    "SimulationScalarDiagnostics",
     "file_sha256",
+    "collection_diagnostics_path",
     "find_simulations",
     "import_lite_collection",
     "index_catalogue",
     "is_lite_catalogue",
     "missing_combinations",
     "read_lite_source",
+    "read_collection_diagnostics",
+    "read_simulation_scalar_diagnostics",
+    "simulation_scalar_diagnostics_path",
     "summarize_catalogue",
+    "write_collection_diagnostics",
+    "write_simulation_scalar_diagnostics",
 ]

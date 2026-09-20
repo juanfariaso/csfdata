@@ -12,10 +12,17 @@ from dataclasses import dataclass
 from itertools import product
 from math import prod
 from pathlib import Path
+import json
 import sqlite3
 
 from csfdata.catalogue.collection import read_collection_configuration
 from csfdata.catalogue.configuration import read_simulation_configuration
+from csfdata.catalogue.diagnostics import (
+    collection_diagnostics_path,
+    read_collection_diagnostics,
+    read_simulation_scalar_diagnostics,
+    simulation_scalar_diagnostics_path,
+)
 from csfdata.catalogue.metadata import read_simulation_metadata
 
 
@@ -54,6 +61,29 @@ class CatalogueSimulation:
     simulation_id: str
     path: Path
     importer: str
+
+
+def _index_scalar_value(value: str | int | float | bool) -> tuple[str, float | None, str | None]:
+    """Convert one catalogue scalar to the SQLite comparison representation.
+
+    Args:
+        value: Known scalar from a configuration or scalar-diagnostic record.
+
+    Returns:
+        The SQLite value type plus numeric and text columns.
+
+    Raises:
+        ValueError: If the scalar cannot be represented by the registry.
+    """
+    # Both configuration and derived values use this conversion so one query
+    # applies identical numeric, text, and boolean comparison rules to both.
+    if isinstance(value, bool):
+        return "boolean", float(value), None
+    if isinstance(value, (int, float)):
+        return "number", float(value), None
+    if isinstance(value, str):
+        return "text", None, value
+    raise ValueError(f"Catalogue value has an unsupported type: {type(value).__name__}.")
 
 
 def index_catalogue(
@@ -105,6 +135,9 @@ def index_catalogue(
     collection_rows: list[tuple[str, str, str]] = []
     simulation_rows: list[tuple[str, str, str, str]] = []
     parameter_rows: list[tuple[str, str, str, str, float | None, str | None, str | None, str]] = []
+    derived_rows: list[
+        tuple[str, str, str, str, float | None, str | None, str | None, str, str, str, int]
+    ] = []
 
     for collection_root in collection_roots:
         collection = read_collection_configuration(collection_root / "collection.yaml")
@@ -119,6 +152,12 @@ def index_catalogue(
                 collection.importer,
                 str(collection_root.relative_to(catalogue_root)),
             )
+        )
+        diagnostics_path = collection_diagnostics_path(collection_root)
+        diagnostics = (
+            read_collection_diagnostics(diagnostics_path)
+            if diagnostics_path.is_file()
+            else None
         )
 
         simulations_root = collection_root / "simulations"
@@ -154,22 +193,7 @@ def index_catalogue(
                 for parameter in parameters:
                     if not parameter.is_known:
                         continue
-                    if isinstance(parameter.value, bool):
-                        value_type = "boolean"
-                        numeric_value = float(parameter.value)
-                        text_value = None
-                    elif isinstance(parameter.value, (int, float)):
-                        value_type = "number"
-                        numeric_value = float(parameter.value)
-                        text_value = None
-                    elif isinstance(parameter.value, str):
-                        value_type = "text"
-                        numeric_value = None
-                        text_value = parameter.value
-                    else:
-                        raise ValueError(
-                            f"Known parameter {parameter.name} has an unsupported value."
-                        )
+                    value_type, numeric_value, text_value = _index_scalar_value(parameter.value)
                     parameter_rows.append(
                         (
                             collection.collection_id,
@@ -182,6 +206,42 @@ def index_catalogue(
                             section,
                         )
                     )
+
+            scalar_diagnostics_path = simulation_scalar_diagnostics_path(simulation_root)
+            if scalar_diagnostics_path.is_file():
+                if diagnostics is None:
+                    raise ValueError(
+                        "Simulation scalar diagnostics has no collection definition: "
+                        f"{scalar_diagnostics_path}"
+                    )
+                scalar_diagnostics = read_simulation_scalar_diagnostics(
+                    scalar_diagnostics_path,
+                    diagnostics,
+                )
+                for result in scalar_diagnostics.results:
+                    # Store every choice combination. The default flag lets the
+                    # normal query API select the registered scientific default.
+                    choice_key = json.dumps(
+                        dict(result.choices), sort_keys=True, separators=(",", ":")
+                    )
+                    is_default = int(result.uses_default_choices(diagnostics))
+                    for value in result.values:
+                        value_type, numeric_value, text_value = _index_scalar_value(value.value)
+                        derived_rows.append(
+                            (
+                                collection.collection_id,
+                                metadata.simulation_id,
+                                value.name,
+                                value_type,
+                                numeric_value,
+                                text_value,
+                                value.unit,
+                                result.diagnostic_name,
+                                result.diagnostic_version,
+                                choice_key,
+                                is_default,
+                            )
+                        )
 
     registry_path = catalogue_root / "registry.sqlite"
     with sqlite3.connect(registry_path) as connection:
@@ -218,15 +278,43 @@ def index_catalogue(
                 ON parameter_values (name, numeric_value, collection_id, simulation_id);
             CREATE INDEX IF NOT EXISTS parameter_text_lookup
                 ON parameter_values (name, text_value, collection_id, simulation_id);
+            CREATE TABLE IF NOT EXISTS derived_values (
+                collection_id TEXT NOT NULL,
+                simulation_id TEXT NOT NULL,
+                name TEXT NOT NULL,
+                value_type TEXT NOT NULL,
+                numeric_value REAL,
+                text_value TEXT,
+                unit TEXT,
+                diagnostic_name TEXT NOT NULL,
+                diagnostic_version TEXT NOT NULL,
+                choice_key TEXT NOT NULL,
+                is_default INTEGER NOT NULL,
+                PRIMARY KEY (
+                    collection_id, simulation_id, name, diagnostic_name,
+                    diagnostic_version, choice_key
+                ),
+                FOREIGN KEY (collection_id, simulation_id)
+                    REFERENCES simulations (collection_id, simulation_id)
+            );
+            CREATE INDEX IF NOT EXISTS derived_numeric_lookup
+                ON derived_values (name, is_default, numeric_value, collection_id, simulation_id);
+            CREATE INDEX IF NOT EXISTS derived_text_lookup
+                ON derived_values (name, is_default, text_value, collection_id, simulation_id);
             """
         )
         indexed_collection_ids = tuple(row[0] for row in collection_rows)
         if collection_id is None:
+            connection.execute("DELETE FROM derived_values")
             connection.execute("DELETE FROM parameter_values")
             connection.execute("DELETE FROM simulations")
             connection.execute("DELETE FROM collections")
         else:
             for indexed_collection_id in indexed_collection_ids:
+                connection.execute(
+                    "DELETE FROM derived_values WHERE collection_id = ?",
+                    (indexed_collection_id,),
+                )
                 connection.execute(
                     "DELETE FROM parameter_values WHERE collection_id = ?",
                     (indexed_collection_id,),
@@ -259,13 +347,23 @@ def index_catalogue(
             """,
             parameter_rows,
         )
+        connection.executemany(
+            """
+            INSERT INTO derived_values (
+                collection_id, simulation_id, name, value_type, numeric_value,
+                text_value, unit, diagnostic_name, diagnostic_version,
+                choice_key, is_default
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            derived_rows,
+        )
 
     return IndexReport(
         catalogue_root=catalogue_root,
         registry_path=registry_path,
         collection_ids=tuple(row[0] for row in collection_rows),
         simulation_count=len(simulation_rows),
-        parameter_count=len(parameter_rows),
+        parameter_count=len(parameter_rows) + len(derived_rows),
     )
 
 
@@ -279,9 +377,10 @@ def find_simulations(
     Args:
         catalogue_root: Existing catalogue root containing ``registry.sqlite``.
         collection_id: Optional collection ID to restrict the search.
-        filters: Parameter filters keyed by canonical configuration name. A
-            scalar requires an exact match. A two-value tuple gives an inclusive
-            numeric range, where ``None`` means no lower or upper bound.
+        filters: Configuration and default-choice derived parameter filters.
+            A scalar requires an exact match. A two-value tuple gives an
+            inclusive numeric range, where ``None`` means no lower or upper
+            bound.
 
     Returns:
         Matching simulations ordered by collection ID and simulation ID.
@@ -308,7 +407,7 @@ def find_simulations(
         )
 
     query = [
-        "SELECT simulations.collection_id, simulations.simulation_id, ",
+        "SELECT DISTINCT simulations.collection_id, simulations.simulation_id, ",
         "simulations.relative_path, collections.importer ",
         "FROM simulations JOIN collections USING (collection_id)",
     ]
@@ -328,7 +427,10 @@ def find_simulations(
             if lower is not None and upper is not None and lower > upper:
                 raise ValueError(f"Range filter {name} has a lower bound above its upper bound.")
             query.append(
-                f" JOIN parameter_values AS {alias} ON "
+                f" JOIN (SELECT collection_id, simulation_id, name, value_type, "
+                f"numeric_value, text_value FROM parameter_values UNION ALL "
+                f"SELECT collection_id, simulation_id, name, value_type, numeric_value, "
+                f"text_value FROM derived_values WHERE is_default = 1) AS {alias} ON "
                 f"{alias}.collection_id = simulations.collection_id AND "
                 f"{alias}.simulation_id = simulations.simulation_id AND "
                 f"{alias}.name = ? AND {alias}.value_type = 'number'"
@@ -342,7 +444,10 @@ def find_simulations(
                 condition_values.append(float(upper))
         elif isinstance(filter_value, bool):
             query.append(
-                f" JOIN parameter_values AS {alias} ON "
+                f" JOIN (SELECT collection_id, simulation_id, name, value_type, "
+                f"numeric_value, text_value FROM parameter_values UNION ALL "
+                f"SELECT collection_id, simulation_id, name, value_type, numeric_value, "
+                f"text_value FROM derived_values WHERE is_default = 1) AS {alias} ON "
                 f"{alias}.collection_id = simulations.collection_id AND "
                 f"{alias}.simulation_id = simulations.simulation_id AND "
                 f"{alias}.name = ? AND {alias}.value_type = 'boolean' AND "
@@ -351,7 +456,10 @@ def find_simulations(
             join_values.extend((name, float(filter_value)))
         elif isinstance(filter_value, (int, float)):
             query.append(
-                f" JOIN parameter_values AS {alias} ON "
+                f" JOIN (SELECT collection_id, simulation_id, name, value_type, "
+                f"numeric_value, text_value FROM parameter_values UNION ALL "
+                f"SELECT collection_id, simulation_id, name, value_type, numeric_value, "
+                f"text_value FROM derived_values WHERE is_default = 1) AS {alias} ON "
                 f"{alias}.collection_id = simulations.collection_id AND "
                 f"{alias}.simulation_id = simulations.simulation_id AND "
                 f"{alias}.name = ? AND {alias}.value_type = 'number' AND "
@@ -360,7 +468,10 @@ def find_simulations(
             join_values.extend((name, float(filter_value)))
         elif isinstance(filter_value, str):
             query.append(
-                f" JOIN parameter_values AS {alias} ON "
+                f" JOIN (SELECT collection_id, simulation_id, name, value_type, "
+                f"numeric_value, text_value FROM parameter_values UNION ALL "
+                f"SELECT collection_id, simulation_id, name, value_type, numeric_value, "
+                f"text_value FROM derived_values WHERE is_default = 1) AS {alias} ON "
                 f"{alias}.collection_id = simulations.collection_id AND "
                 f"{alias}.simulation_id = simulations.simulation_id AND "
                 f"{alias}.name = ? AND {alias}.value_type = 'text' AND "
@@ -468,7 +579,13 @@ def summarize_catalogue(
                     MIN(numeric_value),
                     MAX(numeric_value),
                     COUNT(DISTINCT COALESCE(text_value, numeric_value))
-                FROM parameter_values
+                FROM (
+                    SELECT collection_id, name, section, value_type, unit, numeric_value, text_value
+                    FROM parameter_values
+                    UNION ALL
+                    SELECT collection_id, name, 'derived', value_type, unit, numeric_value, text_value
+                    FROM derived_values WHERE is_default = 1
+                )
                 WHERE collection_id = ?
                 GROUP BY name, section, value_type, unit
                 ORDER BY section, name, value_type, unit

@@ -1,6 +1,7 @@
 """Tests for snapshot-selection manifests."""
 
 from pathlib import Path
+import socket
 
 import h5py
 import pytest
@@ -14,7 +15,11 @@ from csfdata.catalogue.configuration import (
 from csfdata.catalogue.metadata import SimulationMetadata, write_simulation_metadata
 from csfdata.catalogue.lite import file_sha256
 from csfdata.catalogue.registry import index_catalogue
-from csfdata.catalogue.snapshots import clear_snapshots, refresh_snapshot_times
+from csfdata.catalogue.snapshots import (
+    clear_snapshots,
+    import_snapshots,
+    refresh_snapshot_times,
+)
 from csfdata.cli import main
 
 
@@ -124,3 +129,87 @@ source:
     output = capsys.readouterr().out
     assert "Selected snapshots: 1" in output
     assert "Deleted snapshots: 3" in output
+
+
+def test_import_snapshots_copies_only_manifest_inventory_paths(tmp_path: Path) -> None:
+    """Copy an approved source snapshot once and preserve it on a repeat run."""
+    source = tmp_path / "full-catalogue"
+    lite = tmp_path / "lite-catalogue"
+    collection_id = "example-collection"
+    collection_text = """schema_version: 1
+id: example-collection
+importer: dcaf
+config_schema_version: 1
+required_parameters: []
+optional_parameters: []
+"""
+    source_collection = source / "collections" / collection_id
+    lite_collection = lite / "collections" / collection_id
+    source_collection.mkdir(parents=True)
+    lite_collection.mkdir(parents=True)
+    (source_collection / "collection.yaml").write_text(collection_text, encoding="utf-8")
+    (lite_collection / "collection.yaml").write_text(collection_text, encoding="utf-8")
+    snapshot_path = Path("collections/example-collection/simulations/0001/raw/stars_000.amuse")
+    source_snapshot = source / snapshot_path
+    source_snapshot.parent.mkdir(parents=True)
+    source_snapshot.write_bytes(b"snapshot")
+    collection_hash = file_sha256(source_collection / "collection.yaml")
+    inventory = {
+        "schema_version": 1,
+        "collection_id": collection_id,
+        "collection_sha256": collection_hash,
+        "summary": {"simulations": 1, "snapshots": 1, "simulations_with_issues": 0},
+        "snapshot_times": {
+            "0001": [
+                {"path": "raw/stars_000.amuse", "time_myr": 10.0, "size_bytes": 8}
+            ]
+        },
+        "issues": {},
+    }
+    (lite_collection / "snapshot-times.yaml").write_text(
+        yaml.safe_dump(inventory, sort_keys=False),
+        encoding="utf-8",
+    )
+    (lite / "lite.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "source": {
+                    "catalogue_root": str(source),
+                    "hostname": socket.gethostname(),
+                    "collection_id": collection_id,
+                    "collection_sha256": collection_hash,
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "snapshots.yaml"
+    manifest.write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 1,
+                "source": {
+                    "catalogue_root": str(source),
+                    "hostname": socket.gethostname(),
+                    "collection_id": collection_id,
+                    "collection_sha256": collection_hash,
+                },
+                "selected_snapshots": [
+                    {
+                        "simulation_id": "0001",
+                        "snapshot_time_myr": 10.0,
+                        "source_paths": [str(snapshot_path)],
+                    }
+                ],
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    first = import_snapshots(lite, manifest)
+    assert first.copied_paths == (snapshot_path,)
+    assert (lite / snapshot_path).read_bytes() == b"snapshot"
+    assert import_snapshots(lite, manifest).skipped_paths == (snapshot_path,)

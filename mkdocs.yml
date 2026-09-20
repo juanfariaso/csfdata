@@ -42,6 +42,7 @@ nav:
   - Units: units.md
   - Command Line: command-line.md
   - Catalogue: catalogue.md
+  - Catalogue Maintenance: catalogue-maintenance.md
   - Catalogue Workflow: catalogue-workflow.md
   - Lite Catalogue Workflow: lite-catalogue-workflow.md
   - Analysis Add-Ons: analysis-add-ons.md
