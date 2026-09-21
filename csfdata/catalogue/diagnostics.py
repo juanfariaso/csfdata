@@ -8,10 +8,14 @@ analysis package.
 
 from __future__ import annotations
 
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
+from itertools import product
 from pathlib import Path, PurePosixPath
 from typing import Literal
 
+import h5py
+import numpy
 import yaml
 
 from csfdata.catalogue.configuration import ParameterScalar
@@ -398,6 +402,403 @@ class CollectionDiagnostics:
                 raise ValueError(
                     f"Diagnostic {diagnostic.name!r} uses unpublished requirements: {names}."
                 )
+
+
+@dataclass(frozen=True)
+class SimulationDiagnostic:
+    """Lazy access to one stored diagnostic version for one simulation.
+
+    Args:
+        simulation_root: Imported simulation directory containing ``derived/``.
+        definition: Published collection definition for this diagnostic.
+        collection_diagnostics: Published choices and definitions for the
+            containing collection.
+
+    Notes:
+        This object reads only file metadata until :meth:`read` or
+        :meth:`iter_data` is called. Time-series reads return NumPy arrays;
+        scalar reads return canonical Python scalar values.
+    """
+
+    simulation_root: Path
+    definition: DiagnosticDefinition
+    collection_diagnostics: CollectionDiagnostics
+
+    @property
+    def path(self) -> Path:
+        """Return the diagnostic result file path.
+
+        Returns:
+            Path: Path below this simulation's ``derived/`` directory.
+        """
+        return self.simulation_root / self.definition.relative_path
+
+    @property
+    def fields(self) -> dict[str, str | None]:
+        """Return declared result fields and their canonical units.
+
+        Returns:
+            Mapping from field name to canonical unit, or ``None`` for a
+            dimensionless or textual field.
+        """
+        return {field.name: field.unit for field in self.definition.fields}
+
+    @property
+    def choices(self) -> dict[str, tuple[str, ...]]:
+        """Return declared scientific choice values for this diagnostic.
+
+        Returns:
+            Mapping from each relevant choice name to its allowed values.
+        """
+        available = {choice.name: choice for choice in self.collection_diagnostics.choices}
+        return {
+            name: available[name].values
+            for name in self.definition.choices
+        }
+
+    @property
+    def complete(self) -> bool:
+        """Return whether every declared result choice is stored completely.
+
+        Returns:
+            ``True`` when this diagnostic can provide every declared choice
+            combination for this simulation.
+        """
+        if self.definition.kind == "time_series":
+            if not self.path.is_file():
+                return False
+            # Read only identifying attributes so a broken or partial HDF5
+            # result never appears as a completed catalogue product.
+            with h5py.File(self.path, "r") as result_file:
+                return (
+                    bool(result_file.attrs.get("complete", False))
+                    and result_file.attrs.get("diagnostic_name") == self.definition.name
+                    and f"v{result_file.attrs.get('diagnostic_version')}" == self.definition.version
+                )
+
+        if not self.path.is_file():
+            return False
+        scalar_diagnostics = read_simulation_scalar_diagnostics(
+            self.path,
+            self.collection_diagnostics,
+        )
+        stored = {
+            result.choices
+            for result in scalar_diagnostics.results
+            if result.diagnostic_name == self.definition.name
+            and result.diagnostic_version == self.definition.version
+        }
+        values = [self.choices[name] for name in self.definition.choices]
+        expected = {
+            tuple(zip(self.definition.choices, combination, strict=True))
+            for combination in product(*values)
+        } if values else {()}
+        return expected <= stored
+
+    @property
+    def available_choices(self) -> tuple[dict[str, str], ...]:
+        """Return stored choice combinations without loading result values.
+
+        Returns:
+            Choice mappings for every stored time-series group or scalar
+            result. The order follows the stored file order.
+        """
+        return tuple(self.iter_choices())
+
+    def iter_choices(self) -> Iterator[dict[str, str]]:
+        """Yield each stored scientific choice combination.
+
+        Yields:
+            Mapping from choice name to one stored selected value.
+
+        Raises:
+            ValueError: If a time-series diagnostic uses more than one choice
+                dimension, which the current HDF5 group layout cannot represent.
+        """
+        if self.definition.kind == "time_series":
+            if not self.complete:
+                return
+            if not self.definition.choices:
+                yield {}
+                return
+            if len(self.definition.choices) != 1:
+                raise ValueError(
+                    "Time-series choice iteration currently requires exactly one choice dimension."
+                )
+            choice_name = self.definition.choices[0]
+            with h5py.File(self.path, "r") as result_file:
+                try:
+                    choices_group = result_file["choices"]
+                except KeyError as error:
+                    raise ValueError(f"Time-series result has no choices group: {self.path}") from error
+                for value in choices_group:
+                    yield {choice_name: value}
+            return
+
+        if not self.path.is_file():
+            return
+        scalar_diagnostics = read_simulation_scalar_diagnostics(
+            self.path,
+            self.collection_diagnostics,
+        )
+        for result in scalar_diagnostics.results:
+            if (
+                result.diagnostic_name == self.definition.name
+                and result.diagnostic_version == self.definition.version
+            ):
+                yield dict(result.choices)
+
+    def read(
+        self,
+        choices: Mapping[str, str] | None = None,
+        fields: Sequence[str] | None = None,
+    ) -> dict[str, numpy.ndarray] | dict[str, ParameterScalar]:
+        """Read one stored diagnostic choice combination.
+
+        Args:
+            choices: Exact scientific choices selecting one stored result.
+                Diagnostics without choices require ``None`` or an empty map.
+            fields: Optional field names to read. ``None`` reads every
+                declared field. Time-series reads always also include
+                ``"time_myr"``.
+
+        Returns:
+            Time-series NumPy arrays or scalar canonical values keyed by field
+            name.
+
+        Raises:
+            KeyError: If the selected choice combination or field is absent.
+            ValueError: If supplied choices do not match the diagnostic schema
+                or the stored time-series layout is not supported.
+        """
+        selected_choices = dict(choices or {})
+        if set(selected_choices) != set(self.definition.choices):
+            raise ValueError(
+                f"Diagnostic {self.definition.name!r} requires choices "
+                f"{list(self.definition.choices)}."
+            )
+        selected_fields = tuple(fields) if fields is not None else tuple(self.fields)
+        unknown_fields = set(selected_fields) - set(self.fields)
+        if unknown_fields:
+            raise KeyError(
+                f"Diagnostic {self.definition.name!r} has no fields: "
+                f"{', '.join(sorted(unknown_fields))}."
+            )
+
+        if self.definition.kind == "time_series":
+            if not self.complete:
+                raise KeyError(f"Time-series diagnostic is unavailable: {self.path}")
+            if len(self.definition.choices) > 1:
+                raise ValueError(
+                    "Time-series reads currently require at most one choice dimension."
+                )
+            with h5py.File(self.path, "r") as result_file:
+                source = result_file
+                if self.definition.choices:
+                    choice_name = self.definition.choices[0]
+                    try:
+                        source = result_file["choices"][selected_choices[choice_name]]
+                    except KeyError as error:
+                        raise KeyError(
+                            f"Time-series choice is unavailable: {selected_choices[choice_name]}"
+                        ) from error
+                try:
+                    return {
+                        "time_myr": numpy.asarray(result_file["time_myr"]),
+                        **{
+                            field: numpy.asarray(source[field])
+                            for field in selected_fields
+                        },
+                    }
+                except KeyError as error:
+                    raise KeyError(f"Time-series result is missing a stored field: {error}") from error
+
+        if not self.path.is_file():
+            raise KeyError(f"Scalar diagnostic is unavailable: {self.path}")
+        scalar_diagnostics = read_simulation_scalar_diagnostics(
+            self.path,
+            self.collection_diagnostics,
+        )
+        for result in scalar_diagnostics.results:
+            if (
+                result.diagnostic_name == self.definition.name
+                and result.diagnostic_version == self.definition.version
+                and dict(result.choices) == selected_choices
+            ):
+                values = {value.name: value.value for value in result.values}
+                return {field: values[field] for field in selected_fields}
+        raise KeyError(
+            f"Scalar choice combination is unavailable: {selected_choices}."
+        )
+
+    def iter_data(
+        self,
+        fields: Sequence[str] | None = None,
+    ) -> Iterator[tuple[dict[str, str], dict[str, numpy.ndarray] | dict[str, ParameterScalar]]]:
+        """Yield one stored choice mapping and its result data at a time.
+
+        Args:
+            fields: Optional field names passed to :meth:`read` for each
+                choice combination.
+
+        Yields:
+            The stored choice mapping and its selected NumPy arrays or scalar
+            canonical values.
+        """
+        for choices in self.iter_choices():
+            yield choices, self.read(choices, fields)
+
+    def __repr__(self) -> str:
+        """Return a complete compact representation for interactive inspection."""
+        return (
+            f"SimulationDiagnostic(\n"
+            f"  name={self.definition.name!r}, version={self.definition.version!r}, "
+            f"kind={self.definition.kind!r}, complete={self.complete},\n"
+            f"  fields={self.fields!r},\n"
+            f"  choices={self.choices!r},\n"
+            f"  available_choices={self.available_choices!r},\n"
+            f"  path={self.path!s}\n"
+            f")"
+        )
+
+    __str__ = __repr__
+
+
+@dataclass(frozen=True)
+class SimulationDiagnosticResults(Mapping[tuple[str, str], SimulationDiagnostic]):
+    """Read-only mapping of available diagnostic versions of one storage kind.
+
+    Args:
+        simulation_root: Imported simulation directory containing results.
+        collection_diagnostics: Published definitions for its collection.
+        kind: Storage kind exposed by this mapping.
+    """
+
+    simulation_root: Path
+    collection_diagnostics: CollectionDiagnostics
+    kind: DiagnosticKind
+
+    def __getitem__(self, key: tuple[str, str]) -> SimulationDiagnostic:
+        """Return one available diagnostic result by its name and version.
+
+        Args:
+            key: ``(name, version)`` identity, for example
+                ``("lagrangian_radii", "v1")``.
+
+        Returns:
+            Lazy diagnostic result object.
+
+        Raises:
+            KeyError: If the identity is invalid, belongs to another kind, or
+                is not available for this simulation.
+        """
+        if not isinstance(key, tuple) or len(key) != 2 or not all(
+            isinstance(value, str) for value in key
+        ):
+            raise KeyError("Diagnostic keys must be (name, version) string tuples.")
+        for definition in self.collection_diagnostics.diagnostics:
+            if (
+                (definition.name, definition.version) == key
+                and definition.kind == self.kind
+            ):
+                result = SimulationDiagnostic(
+                    self.simulation_root,
+                    definition,
+                    self.collection_diagnostics,
+                )
+                if result.complete or (
+                    self.kind == "scalar" and result.available_choices
+                ):
+                    return result
+                break
+        raise KeyError(f"Diagnostic result is unavailable: {key[0]} {key[1]}.")
+
+    def __iter__(self) -> Iterator[tuple[str, str]]:
+        """Yield identities of available diagnostic results.
+
+        Yields:
+            ``(name, version)`` identities in collection declaration order.
+        """
+        for definition in self.collection_diagnostics.diagnostics:
+            if definition.kind != self.kind:
+                continue
+            result = SimulationDiagnostic(
+                self.simulation_root,
+                definition,
+                self.collection_diagnostics,
+            )
+            if result.complete or (self.kind == "scalar" and result.available_choices):
+                yield definition.name, definition.version
+
+    def __len__(self) -> int:
+        """Return the number of available diagnostic versions.
+
+        Returns:
+            Number of keys yielded by this mapping.
+        """
+        return sum(1 for _ in self)
+
+    def __repr__(self) -> str:
+        """Return an interactive representation of available result identities."""
+        return f"SimulationDiagnosticResults(kind={self.kind!r}, keys={list(self)!r})"
+
+    __str__ = __repr__
+
+
+@dataclass(frozen=True)
+class SimulationDiagnostics:
+    """Lazy diagnostic catalogue attached to one imported simulation.
+
+    Args:
+        simulation_root: Imported simulation directory containing ``derived/``.
+        collection_root: Parent collection directory containing
+            ``diagnostics.yaml``.
+
+    Notes:
+        Use :attr:`time_series` and :attr:`scalar` as read-only mappings keyed
+        by ``(name, version)``. Their values are :class:`SimulationDiagnostic`
+        objects that load numerical data only when requested.
+    """
+
+    simulation_root: Path
+    collection_root: Path
+
+    @property
+    def time_series(self) -> SimulationDiagnosticResults:
+        """Return available time-series diagnostic results.
+
+        Returns:
+            Read-only mapping keyed by diagnostic name and version.
+        """
+        return SimulationDiagnosticResults(
+            self.simulation_root,
+            read_collection_diagnostics(collection_diagnostics_path(self.collection_root)),
+            "time_series",
+        )
+
+    @property
+    def scalar(self) -> SimulationDiagnosticResults:
+        """Return available scalar diagnostic results.
+
+        Returns:
+            Read-only mapping keyed by diagnostic name and version.
+        """
+        return SimulationDiagnosticResults(
+            self.simulation_root,
+            read_collection_diagnostics(collection_diagnostics_path(self.collection_root)),
+            "scalar",
+        )
+
+    def __repr__(self) -> str:
+        """Return a complete compact representation for interactive inspection."""
+        return (
+            f"SimulationDiagnostics(\n"
+            f"  time_series={list(self.time_series.values())!r},\n"
+            f"  scalar={list(self.scalar.values())!r}\n"
+            f")"
+        )
+
+    __str__ = __repr__
 
 
 def collection_diagnostics_path(collection_root: Path) -> Path:

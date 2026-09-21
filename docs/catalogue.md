@@ -84,6 +84,49 @@ No manual database edits are needed. A future analysis or import tool writes
 the validated scalar-diagnostics YAML; rerun `csfdata index-catalogue` to refresh the
 rebuildable SQLite registry.
 
+## Accessing Diagnostics
+
+Every `CatalogueSimulation` is the entry point to its stored diagnostic data.
+Its `diagnostics` property is lazy: typing it or printing it shows available
+diagnostic names, versions, fields, choices, completion state, and paths, but
+does not load numerical arrays.
+
+```python
+simulation = find_simulations(
+    "/path/to/catalogue",
+    collection_id="example-collection",
+)[0]
+
+simulation.diagnostics
+```
+
+Time-series and scalar results are separate read-only mappings, both keyed by
+`(name, version)`:
+
+```python
+radii = simulation.diagnostics.time_series[("lagrangian_radii", "v1")]
+rates = simulation.diagnostics.scalar[("expansion_rate", "v1")]
+```
+
+Each result exposes its declared `fields`, `choices`, stored
+`available_choices`, `path`, and `complete` state. Read one choice combination
+only when needed:
+
+```python
+data = radii.read(
+    choices={"center": "stellar_com"},
+    fields=("r_l50", "n_stars"),
+)
+
+rate = rates.read(
+    choices={"center": "stellar_com", "lagrangian_radius": "r_l50"},
+)
+```
+
+Time-series reads return NumPy arrays, including `time_myr`. Scalar reads
+return canonical Python scalar values. To process choices without loading all
+of them at once, use `iter_choices()` or `iter_data()`.
+
 ## Registry
 
 `registry.sqlite` is a rebuildable SQLite search index. It is not the source of

@@ -22,6 +22,7 @@ import textwrap
 from csfdata.catalogue.collection import read_collection_configuration
 from csfdata.catalogue.configuration import read_simulation_configuration
 from csfdata.catalogue.diagnostics import (
+    SimulationDiagnostics,
     collection_diagnostics_path,
     read_collection_diagnostics,
     read_simulation_scalar_diagnostics,
@@ -65,6 +66,21 @@ class CatalogueSimulation:
     simulation_id: str
     path: Path
     importer: str
+
+    @property
+    def diagnostics(self) -> SimulationDiagnostics:
+        """Return lazy access to this simulation's completed diagnostics.
+
+        Returns:
+            View exposing available time-series and scalar diagnostic results.
+
+        Notes:
+            The standard simulation location is
+            ``collections/<collection>/simulations/<simulation>``. This view
+            uses the parent collection's ``diagnostics.yaml`` schema and does
+            not load result arrays until the user requests them.
+        """
+        return SimulationDiagnostics(self.path, self.path.parent.parent)
 
 
 def _index_scalar_value(value: str | int | float | bool) -> tuple[str, float | None, str | None]:
