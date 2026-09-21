@@ -1816,7 +1816,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
               </td>
             </tr>
             <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            list_snapshots(catalogue_root, collection_id, time_myr, filters=None, normalization=None, progress=None) (csfdata.catalogue.snapshots.list_snapshots)" href="#csfdata.catalogue.snapshots.list_snapshots">list_snapshots</a></code></td>
+              <td><code><a class="autorefs autorefs-internal" title="            list_snapshots(catalogue_root, collection_id, time, filters=None, normalization=None, progress=None) (csfdata.catalogue.snapshots.list_snapshots)" href="#csfdata.catalogue.snapshots.list_snapshots">list_snapshots</a></code></td>
               <td>
                 <div class="doc-md-description">
                   <p>Select the closest valid inventory snapshot for every filtered simulation.</p>
@@ -1914,7 +1914,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>time_myr</code>
+                <code>time</code>
             </td>
             <td>
                   <code><span title="float">float</span></code>
@@ -1976,12 +1976,12 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        path: Path relative to the simulation root, normally below ``raw/``.</span>
-<span class="sd">        time_myr: Exact stored model time in canonical Myr.</span>
+<span class="sd">        time: Exact stored model time in canonical Myr.</span>
 <span class="sd">        size_bytes: Source snapshot size in bytes at inventory-refresh time.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span>
-    <span class="n">time_myr</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">size_bytes</span><span class="p">:</span> <span class="nb">int</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -2077,7 +2077,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
                 <code>snapshots</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="            SnapshotTime
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="            SnapshotTime
 
 
   
@@ -2098,7 +2098,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
                 <code>issues</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="tuple">tuple</span>[<span title="str">str</span>, ...]]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="tuple">tuple</span>[<span title="str">str</span>, ...]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2150,8 +2150,8 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
 
     <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">collection_sha256</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">snapshots</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SnapshotTime</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
-    <span class="n">issues</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+    <span class="n">snapshots</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SnapshotTime</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+    <span class="n">issues</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2262,7 +2262,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
                 <code>issues</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="tuple">tuple</span>[<span title="str">str</span>, ...]]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="tuple">tuple</span>[<span title="str">str</span>, ...]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2315,7 +2315,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
     <span class="n">inventory_path</span><span class="p">:</span> <span class="n">Path</span>
     <span class="n">simulation_count</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">snapshot_count</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">issues</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+    <span class="n">issues</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2391,7 +2391,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>target_time_myr</code>
+                <code>target_time</code>
             </td>
             <td>
                   <code><span title="float">float</span></code>
@@ -2407,7 +2407,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>snapshot_time_myr</code>
+                <code>snapshot_time</code>
             </td>
             <td>
                   <code><span title="float">float</span> | None</code>
@@ -2423,7 +2423,7 @@ and lite catalogues to select snapshots without reopening raw output files.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>tolerance_myr</code>
+                <code>tolerance</code>
             </td>
             <td>
                   <code><span title="float">float</span> | None</code>
@@ -2527,9 +2527,9 @@ cannot be determined.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        simulation_id: Stable ID of the selected simulation.</span>
-<span class="sd">        target_time_myr: Requested physical time after optional normalization.</span>
-<span class="sd">        snapshot_time_myr: Stored snapshot time, or ``None`` when unmatched.</span>
-<span class="sd">        tolerance_myr: Adaptive allowed time difference, or ``None`` when it</span>
+<span class="sd">        target_time: Requested physical time after optional normalization.</span>
+<span class="sd">        snapshot_time: Stored snapshot time, or ``None`` when unmatched.</span>
+<span class="sd">        tolerance: Adaptive allowed time difference, or ``None`` when it</span>
 <span class="sd">            cannot be determined.</span>
 <span class="sd">        source_paths: Required paths relative to the source catalogue root.</span>
 <span class="sd">        source_size_bytes: Total expected source-file size from the inventory.</span>
@@ -2537,9 +2537,9 @@ cannot be determined.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">simulation_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">target_time_myr</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">snapshot_time_myr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
-    <span class="n">tolerance_myr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">target_time</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">snapshot_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">source_paths</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
     <span class="n">source_size_bytes</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">issue</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
@@ -2666,7 +2666,7 @@ cannot be determined.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>time_myr</code>
+                <code>time</code>
             </td>
             <td>
                   <code><span title="float">float</span></code>
@@ -2701,7 +2701,7 @@ cannot be determined.</p>
                 <code>filters</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="str">str</span> | <span title="int">int</span> | <span title="float">float</span> | <span title="bool">bool</span> | <span title="tuple">tuple</span>[<span title="float">float</span> | None, <span title="float">float</span> | None]]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span> | <span title="int">int</span> | <span title="float">float</span> | <span title="bool">bool</span> | <span title="tuple">tuple</span>[<span title="float">float</span> | None, <span title="float">float</span> | None]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2778,7 +2778,7 @@ cannot be determined.</p>
 <span class="sd">        source_hostname: Host recorded for the source catalogue.</span>
 <span class="sd">        collection_id: Collection from which simulations were selected.</span>
 <span class="sd">        collection_sha256: Digest of the source ``collection.yaml``.</span>
-<span class="sd">        time_myr: Requested physical time, or multiplier when normalized.</span>
+<span class="sd">        time: Requested physical time, or multiplier when normalized.</span>
 <span class="sd">        normalization: Optional Myr-valued configuration parameter name.</span>
 <span class="sd">        filters: Indexed parameter filters used to select simulations.</span>
 <span class="sd">        selections: One result for every simulation matched by ``filters``.</span>
@@ -2788,9 +2788,9 @@ cannot be determined.</p>
     <span class="n">source_hostname</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">collection_sha256</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">time_myr</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">normalization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
-    <span class="n">filters</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]</span>
+    <span class="n">filters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]</span>
     <span class="n">selections</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SnapshotSelection</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -3411,10 +3411,10 @@ partially unreadable collection. Callers should treat a non-empty
             <span class="n">records</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
                 <span class="n">SnapshotTime</span><span class="p">(</span>
                     <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;raw&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">relative_path</span><span class="p">,</span>
-                    <span class="n">time_myr</span><span class="p">,</span>
+                    <span class="n">time</span><span class="p">,</span>
                     <span class="p">(</span><span class="n">adapter</span><span class="o">.</span><span class="n">run_root</span> <span class="o">/</span> <span class="n">relative_path</span><span class="p">)</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="k">for</span> <span class="n">relative_path</span><span class="p">,</span> <span class="n">time_myr</span> <span class="ow">in</span> <span class="n">times</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">relative_path</span><span class="p">,</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">times</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="n">issues</span><span class="p">[</span><span class="n">simulation</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">),)</span>
@@ -3431,7 +3431,7 @@ partially unreadable collection. Callers should treat a non-empty
     <span class="n">inventory_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
         <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;schema_version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;schema_version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
                 <span class="s2">&quot;collection_id&quot;</span><span class="p">:</span> <span class="n">inventory</span><span class="o">.</span><span class="n">collection_id</span><span class="p">,</span>
                 <span class="s2">&quot;collection_sha256&quot;</span><span class="p">:</span> <span class="n">inventory</span><span class="o">.</span><span class="n">collection_sha256</span><span class="p">,</span>
                 <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -3443,7 +3443,7 @@ partially unreadable collection. Callers should treat a non-empty
                     <span class="n">simulation_id</span><span class="p">:</span> <span class="p">[</span>
                         <span class="p">{</span>
                             <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
-                            <span class="s2">&quot;time_myr&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">time_myr</span><span class="p">,</span>
+                            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
                             <span class="s2">&quot;size_bytes&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">size_bytes</span><span class="p">,</span>
                         <span class="p">}</span>
                         <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span>
@@ -3692,8 +3692,8 @@ partially unreadable collection. Callers should treat a non-empty
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection configuration is missing: </span><span class="si">{</span><span class="n">collection_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">inventory_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
         <span class="n">contents</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="n">contents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;schema_version&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot inventory must use schema_version 1.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">contents</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="n">contents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;schema_version&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot inventory must use schema_version 2; refresh it first.&quot;</span><span class="p">)</span>
     <span class="n">collection_sha256</span> <span class="o">=</span> <span class="n">contents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;collection_sha256&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">contents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;collection_id&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">collection_id</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">collection_sha256</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot inventory has an invalid collection identity.&quot;</span><span class="p">)</span>
@@ -3713,21 +3713,21 @@ partially unreadable collection. Callers should treat a non-empty
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot inventory has an invalid snapshot record.&quot;</span><span class="p">)</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;path&quot;</span><span class="p">)</span>
-            <span class="n">time_myr</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time_myr&quot;</span><span class="p">)</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
             <span class="n">size_bytes</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size_bytes&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span>
                 <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
                 <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;raw/&quot;</span><span class="p">)</span>
                 <span class="ow">or</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">()</span>
                 <span class="ow">or</span> <span class="s2">&quot;..&quot;</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">parts</span>
-                <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_myr</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
-                <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_myr</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+                <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
                 <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size_bytes</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
                 <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size_bytes</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
                 <span class="ow">or</span> <span class="n">size_bytes</span> <span class="o">&lt;</span> <span class="mi">0</span>
             <span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot inventory has an invalid snapshot record.&quot;</span><span class="p">)</span>
-            <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SnapshotTime</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">time_myr</span><span class="p">),</span> <span class="n">size_bytes</span><span class="p">))</span>
+            <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SnapshotTime</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">),</span> <span class="n">size_bytes</span><span class="p">))</span>
         <span class="n">snapshots</span><span class="p">[</span><span class="n">simulation_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
     <span class="n">issues</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">simulation_id</span><span class="p">,</span> <span class="n">messages</span> <span class="ow">in</span> <span class="n">stored_issues</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -3749,7 +3749,7 @@ partially unreadable collection. Callers should treat a non-empty
 
 
 <h2 id="csfdata.catalogue.snapshots.list_snapshots" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">list_snapshots</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">time_myr</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">normalization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">list_snapshots</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">normalization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 </h2>
 
@@ -3804,7 +3804,7 @@ partially unreadable collection. Callers should treat a non-empty
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>time_myr</code>
+                <code>time</code>
             </td>
             <td>
                   <code><span title="float">float</span></code>
@@ -3823,7 +3823,7 @@ partially unreadable collection. Callers should treat a non-empty
                 <code>filters</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="str">str</span> | <span title="int">int</span> | <span title="float">float</span> | <span title="bool">bool</span> | <span title="tuple">tuple</span>[<span title="float">float</span> | None, <span title="float">float</span> | None]] | None</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span> | <span title="int">int</span> | <span title="float">float</span> | <span title="bool">bool</span> | <span title="tuple">tuple</span>[<span title="float">float</span> | None, <span title="float">float</span> | None]] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4088,8 +4088,8 @@ simulation ID.</p>
 <span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">list_snapshots</span><span class="p">(</span>
     <span class="n">catalogue_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">time_myr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">filters</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">filters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span>
         <span class="nb">str</span><span class="p">,</span>
         <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
     <span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4101,7 +4101,7 @@ simulation ID.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        catalogue_root: Indexed full or lite catalogue root.</span>
 <span class="sd">        collection_id: One collection ID to inspect.</span>
-<span class="sd">        time_myr: Physical target time in Myr, or multiplier when normalized.</span>
+<span class="sd">        time: Physical target time in Myr, or multiplier when normalized.</span>
 <span class="sd">        filters: Exact or inclusive-range indexed configuration filters.</span>
 <span class="sd">        normalization: Optional known canonical configuration parameter in Myr.</span>
 <span class="sd">        progress: Optional callback invoked before each selected simulation is</span>
@@ -4129,7 +4129,7 @@ simulation ID.</p>
     <span class="k">for</span> <span class="n">simulation_number</span><span class="p">,</span> <span class="n">simulation</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">simulations</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">progress</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">progress</span><span class="p">(</span><span class="n">simulation_number</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">simulations</span><span class="p">),</span> <span class="n">simulation</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">)</span>
-        <span class="n">target_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time_myr</span><span class="p">)</span>
+        <span class="n">target_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">normalization</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">parameter</span> <span class="o">=</span> <span class="n">read_simulation_configuration</span><span class="p">(</span>
                 <span class="n">simulation</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;config.yaml&quot;</span>
@@ -4164,7 +4164,7 @@ simulation ID.</p>
         <span class="n">records</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="nb">sorted</span><span class="p">(</span>
                 <span class="n">inventory</span><span class="o">.</span><span class="n">snapshots</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">simulation</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">,</span> <span class="p">()),</span>
-                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">record</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">time_myr</span><span class="p">,</span>
+                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">record</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">records</span><span class="p">:</span>
@@ -4182,20 +4182,20 @@ simulation ID.</p>
             <span class="k">continue</span>
         <span class="n">selected_index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
             <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">records</span><span class="p">)),</span>
-            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">index</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">time_myr</span> <span class="o">-</span> <span class="n">target_time</span><span class="p">),</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">index</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">target_time</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="n">selected</span> <span class="o">=</span> <span class="n">records</span><span class="p">[</span><span class="n">selected_index</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">records</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">tolerance</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="k">elif</span> <span class="n">target_time</span> <span class="o">&lt;</span> <span class="n">selected</span><span class="o">.</span><span class="n">time_myr</span> <span class="ow">and</span> <span class="n">selected_index</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span><span class="n">selected</span><span class="o">.</span><span class="n">time_myr</span> <span class="o">-</span> <span class="n">records</span><span class="p">[</span><span class="n">selected_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_myr</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
-        <span class="k">elif</span> <span class="n">target_time</span> <span class="o">&gt;</span> <span class="n">selected</span><span class="o">.</span><span class="n">time_myr</span> <span class="ow">and</span> <span class="n">selected_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">records</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="n">selected_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_myr</span> <span class="o">-</span> <span class="n">selected</span><span class="o">.</span><span class="n">time_myr</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="k">elif</span> <span class="n">target_time</span> <span class="o">&lt;</span> <span class="n">selected</span><span class="o">.</span><span class="n">time</span> <span class="ow">and</span> <span class="n">selected_index</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span><span class="n">selected</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">records</span><span class="p">[</span><span class="n">selected_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="k">elif</span> <span class="n">target_time</span> <span class="o">&gt;</span> <span class="n">selected</span><span class="o">.</span><span class="n">time</span> <span class="ow">and</span> <span class="n">selected_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">records</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="n">selected_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">selected</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
         <span class="k">elif</span> <span class="n">selected_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_myr</span> <span class="o">-</span> <span class="n">selected</span><span class="o">.</span><span class="n">time_myr</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">selected</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span><span class="n">selected</span><span class="o">.</span><span class="n">time_myr</span> <span class="o">-</span> <span class="n">records</span><span class="p">[</span><span class="n">selected_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time_myr</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
-        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">selected</span><span class="o">.</span><span class="n">time_myr</span> <span class="o">-</span> <span class="n">target_time</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="n">tolerance</span> <span class="o">=</span> <span class="p">(</span><span class="n">selected</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">records</span><span class="p">[</span><span class="n">selected_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">selected</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">target_time</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">:</span>
             <span class="n">selections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">SnapshotSelection</span><span class="p">(</span>
                     <span class="n">simulation</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">,</span>
@@ -4219,7 +4219,7 @@ simulation ID.</p>
             <span class="n">SnapshotSelection</span><span class="p">(</span>
                 <span class="n">simulation</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">,</span>
                 <span class="n">target_time</span><span class="p">,</span>
-                <span class="n">selected</span><span class="o">.</span><span class="n">time_myr</span><span class="p">,</span>
+                <span class="n">selected</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
                 <span class="n">tolerance</span><span class="p">,</span>
                 <span class="p">(</span><span class="n">source_path</span><span class="p">,),</span>
                 <span class="n">selected</span><span class="o">.</span><span class="n">size_bytes</span><span class="p">,</span>
@@ -4231,7 +4231,7 @@ simulation ID.</p>
         <span class="n">source_hostname</span><span class="p">,</span>
         <span class="n">collection_id</span><span class="p">,</span>
         <span class="n">inventory</span><span class="o">.</span><span class="n">collection_sha256</span><span class="p">,</span>
-        <span class="nb">float</span><span class="p">(</span><span class="n">time_myr</span><span class="p">),</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
         <span class="n">normalization</span><span class="p">,</span>
         <span class="nb">dict</span><span class="p">(</span><span class="n">filters</span> <span class="ow">or</span> <span class="p">{}),</span>
         <span class="nb">tuple</span><span class="p">(</span><span class="n">selections</span><span class="p">),</span>
@@ -4437,8 +4437,7 @@ simulation ID.</p>
 <span class="normal">563</span>
 <span class="normal">564</span>
 <span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_snapshot_manifest</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="n">SnapshotListReport</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="normal">566</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_snapshot_manifest</span><span class="p">(</span><span class="n">report</span><span class="p">:</span> <span class="n">SnapshotListReport</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a portable YAML manifest for one snapshot-selection report.</span>
 
 <span class="sd">    Args:</span>
@@ -4461,8 +4460,8 @@ simulation ID.</p>
             <span class="n">unmatched</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
                     <span class="s2">&quot;simulation_id&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">,</span>
-                    <span class="s2">&quot;target_time_myr&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">target_time_myr</span><span class="p">,</span>
-                    <span class="s2">&quot;tolerance_myr&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">tolerance_myr</span><span class="p">,</span>
+                    <span class="s2">&quot;target_time&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">target_time</span><span class="p">,</span>
+                    <span class="s2">&quot;tolerance&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
                     <span class="s2">&quot;issue&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">issue</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
@@ -4470,11 +4469,10 @@ simulation ID.</p>
         <span class="n">selected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;simulation_id&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">simulation_id</span><span class="p">,</span>
-                <span class="s2">&quot;target_time_myr&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">target_time_myr</span><span class="p">,</span>
-                <span class="s2">&quot;snapshot_time_myr&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">snapshot_time_myr</span><span class="p">,</span>
-                <span class="s2">&quot;time_offset_myr&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">snapshot_time_myr</span>
-                <span class="o">-</span> <span class="n">selection</span><span class="o">.</span><span class="n">target_time_myr</span><span class="p">,</span>
-                <span class="s2">&quot;tolerance_myr&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">tolerance_myr</span><span class="p">,</span>
+                <span class="s2">&quot;target_time&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">target_time</span><span class="p">,</span>
+                <span class="s2">&quot;snapshot_time&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">snapshot_time</span><span class="p">,</span>
+                <span class="s2">&quot;time_offset&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">snapshot_time</span> <span class="o">-</span> <span class="n">selection</span><span class="o">.</span><span class="n">target_time</span><span class="p">,</span>
+                <span class="s2">&quot;tolerance&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
                 <span class="s2">&quot;source_paths&quot;</span><span class="p">:</span> <span class="p">[</span>
                     <span class="nb">str</span><span class="p">(</span><span class="n">source_path</span><span class="p">)</span> <span class="k">for</span> <span class="n">source_path</span> <span class="ow">in</span> <span class="n">selection</span><span class="o">.</span><span class="n">source_paths</span>
                 <span class="p">],</span>
@@ -4485,7 +4483,7 @@ simulation ID.</p>
     <span class="n">manifest_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
         <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;schema_version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;schema_version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
                 <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
                     <span class="s2">&quot;catalogue_root&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">source_catalogue</span><span class="p">),</span>
                     <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="n">report</span><span class="o">.</span><span class="n">source_hostname</span><span class="p">,</span>
@@ -4493,7 +4491,7 @@ simulation ID.</p>
                     <span class="s2">&quot;collection_sha256&quot;</span><span class="p">:</span> <span class="n">report</span><span class="o">.</span><span class="n">collection_sha256</span><span class="p">,</span>
                 <span class="p">},</span>
                 <span class="s2">&quot;selection&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;time_myr&quot;</span><span class="p">:</span> <span class="n">report</span><span class="o">.</span><span class="n">time_myr</span><span class="p">,</span>
+                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">report</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
                     <span class="s2">&quot;normalization&quot;</span><span class="p">:</span> <span class="n">report</span><span class="o">.</span><span class="n">normalization</span><span class="p">,</span>
                     <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;nearest_with_adaptive_tolerance&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;filters&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">filters</span><span class="p">),</span>
@@ -4684,7 +4682,8 @@ every path against the lite inventory before starting <code>rsync</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/snapshots.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">570</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
+<span class="normal">570</span>
 <span class="normal">571</span>
 <span class="normal">572</span>
 <span class="normal">573</span>
@@ -4796,8 +4795,7 @@ every path against the lite inventory before starting <code>rsync</code>.</p>
 <span class="normal">679</span>
 <span class="normal">680</span>
 <span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_snapshots</span><span class="p">(</span>
+<span class="normal">682</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_snapshots</span><span class="p">(</span>
     <span class="n">lite_catalogue</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">manifest_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -4829,8 +4827,8 @@ every path against the lite inventory before starting <code>rsync</code>.</p>
     <span class="n">inventory</span> <span class="o">=</span> <span class="n">read_snapshot_times</span><span class="p">(</span><span class="n">lite_root</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">collection_id</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">Path</span><span class="p">(</span><span class="n">manifest_path</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
         <span class="n">manifest</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;schema_version&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot manifest must use schema_version 1.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;schema_version&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot manifest must use schema_version 2.&quot;</span><span class="p">)</span>
     <span class="n">manifest_source</span> <span class="o">=</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)</span>
     <span class="n">selected_snapshots</span> <span class="o">=</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;selected_snapshots&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manifest_source</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selected_snapshots</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -4848,7 +4846,7 @@ every path against the lite inventory before starting <code>rsync</code>.</p>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot manifest has an invalid selected snapshot entry.&quot;</span><span class="p">)</span>
         <span class="n">simulation_id</span> <span class="o">=</span> <span class="n">selection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;simulation_id&quot;</span><span class="p">)</span>
-        <span class="n">snapshot_time</span> <span class="o">=</span> <span class="n">selection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapshot_time_myr&quot;</span><span class="p">)</span>
+        <span class="n">snapshot_time</span> <span class="o">=</span> <span class="n">selection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapshot_time&quot;</span><span class="p">)</span>
         <span class="n">paths</span> <span class="o">=</span> <span class="n">selection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_paths&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simulation_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
@@ -4882,7 +4880,7 @@ every path against the lite inventory before starting <code>rsync</code>.</p>
             <span class="n">records</span> <span class="o">=</span> <span class="n">inventory</span><span class="o">.</span><span class="n">snapshots</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">simulation_id</span><span class="p">,</span> <span class="p">())</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
                 <span class="n">record</span><span class="o">.</span><span class="n">path</span> <span class="o">==</span> <span class="n">snapshot_path</span>
-                <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">time_myr</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">snapshot_time</span><span class="p">))</span>
+                <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">snapshot_time</span><span class="p">))</span>
                 <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span>
             <span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Snapshot manifest path is absent from the lite inventory.&quot;</span><span class="p">)</span>
@@ -5060,7 +5058,8 @@ configuration, derived products, and raw support files such as
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/snapshots.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">686</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">685</span>
+<span class="normal">686</span>
 <span class="normal">687</span>
 <span class="normal">688</span>
 <span class="normal">689</span>
@@ -5108,8 +5107,7 @@ configuration, derived products, and raw support files such as
 <span class="normal">731</span>
 <span class="normal">732</span>
 <span class="normal">733</span>
-<span class="normal">734</span>
-<span class="normal">735</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clear_snapshots</span><span class="p">(</span>
+<span class="normal">734</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clear_snapshots</span><span class="p">(</span>
     <span class="n">lite_catalogue</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SnapshotClearReport</span><span class="p">:</span>

@@ -4780,7 +4780,8 @@ scalar reads return canonical Python scalar values.</p>
 <span class="normal">661</span>
 <span class="normal">662</span>
 <span class="normal">663</span>
-<span class="normal">664</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">664</span>
+<span class="normal">665</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationDiagnostic</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Lazy access to one stored diagnostic version for one simulation.</span>
 
@@ -4814,7 +4815,7 @@ scalar reads return canonical Python scalar values.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return declared result fields and their canonical units.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Mapping from field name to canonical unit, or ``None`` for a</span>
+<span class="sd">            Dictionary from field name to canonical unit, or ``None`` for a</span>
 <span class="sd">            dimensionless or textual field.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">field</span><span class="o">.</span><span class="n">unit</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="o">.</span><span class="n">fields</span><span class="p">}</span>
@@ -4824,7 +4825,7 @@ scalar reads return canonical Python scalar values.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return declared scientific choice values for this diagnostic.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Mapping from each relevant choice name to its allowed values.</span>
+<span class="sd">            Dictionary from each relevant choice name to its allowed values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">available</span> <span class="o">=</span> <span class="p">{</span><span class="n">choice</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">choice</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection_diagnostics</span><span class="o">.</span><span class="n">choices</span><span class="p">}</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -4848,6 +4849,7 @@ scalar reads return canonical Python scalar values.</p>
             <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result_file</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">(</span>
                     <span class="nb">bool</span><span class="p">(</span><span class="n">result_file</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;complete&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+                    <span class="ow">and</span> <span class="n">result_file</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;format_schema_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
                     <span class="ow">and</span> <span class="n">result_file</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;diagnostic_name&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="o">.</span><span class="n">name</span>
                     <span class="ow">and</span> <span class="sa">f</span><span class="s2">&quot;v</span><span class="si">{</span><span class="n">result_file</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;diagnostic_version&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="o">.</span><span class="n">version</span>
                 <span class="p">)</span>
@@ -4885,7 +4887,7 @@ scalar reads return canonical Python scalar values.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield each stored scientific choice combination.</span>
 
 <span class="sd">        Yields:</span>
-<span class="sd">            Mapping from choice name to one stored selected value.</span>
+<span class="sd">            Dictionary from choice name to one stored selected value.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If a time-series diagnostic uses more than one choice</span>
@@ -4926,7 +4928,7 @@ scalar reads return canonical Python scalar values.</p>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">choices</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">choices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ParameterScalar</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read one stored diagnostic choice combination.</span>
@@ -4936,7 +4938,7 @@ scalar reads return canonical Python scalar values.</p>
 <span class="sd">                Diagnostics without choices require ``None`` or an empty map.</span>
 <span class="sd">            fields: Optional field names to read. ``None`` reads every</span>
 <span class="sd">                declared field. Time-series reads always also include</span>
-<span class="sd">                ``&quot;time_myr&quot;``.</span>
+<span class="sd">                ``&quot;time&quot;``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Time-series NumPy arrays or scalar canonical values keyed by field</span>
@@ -4980,7 +4982,7 @@ scalar reads return canonical Python scalar values.</p>
                         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="k">return</span> <span class="p">{</span>
-                        <span class="s2">&quot;time_myr&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result_file</span><span class="p">[</span><span class="s2">&quot;time_myr&quot;</span><span class="p">]),</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result_file</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]),</span>
                         <span class="o">**</span><span class="p">{</span>
                             <span class="n">field</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">source</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
                             <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">selected_fields</span>
@@ -5130,7 +5132,7 @@ scalar reads return canonical Python scalar values.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Mapping from field name to canonical unit, or <code>None</code> for a</p>
+                <p>Dictionary from field name to canonical unit, or <code>None</code> for a</p>
               </div>
             </td>
           </tr>
@@ -5185,7 +5187,7 @@ scalar reads return canonical Python scalar values.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Mapping from each relevant choice name to its allowed values.</p>
+                <p>Dictionary from each relevant choice name to its allowed values.</p>
               </div>
             </td>
           </tr>
@@ -5338,7 +5340,7 @@ scalar reads return canonical Python scalar values.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Mapping from choice name to one stored selected value.</p>
+                <p>Dictionary from choice name to one stored selected value.</p>
               </div>
             </td>
           </tr>
@@ -5372,8 +5374,7 @@ dimension, which the current HDF5 group layout cannot represent.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">508</span>
-<span class="normal">509</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
 <span class="normal">512</span>
@@ -5413,11 +5414,12 @@ dimension, which the current HDF5 group layout cannot represent.</p>
 <span class="normal">546</span>
 <span class="normal">547</span>
 <span class="normal">548</span>
-<span class="normal">549</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iter_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="normal">549</span>
+<span class="normal">550</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iter_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield each stored scientific choice combination.</span>
 
 <span class="sd">    Yields:</span>
-<span class="sd">        Mapping from choice name to one stored selected value.</span>
+<span class="sd">        Dictionary from choice name to one stored selected value.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If a time-series diagnostic uses more than one choice</span>
@@ -5491,7 +5493,7 @@ dimension, which the current HDF5 group layout cannot represent.</p>
                 <code>choices</code>
             </td>
             <td>
-                  <code><span title="collections.abc.Mapping">Mapping</span>[<span title="str">str</span>, <span title="str">str</span>] | None</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5514,7 +5516,7 @@ Diagnostics without choices require <code>None</code> or an empty map.</p>
               <div class="doc-md-description">
                 <p>Optional field names to read. <code>None</code> reads every
 declared field. Time-series reads always also include
-<code>"time_myr"</code>.</p>
+<code>"time"</code>.</p>
               </div>
             </td>
             <td>
@@ -5602,8 +5604,7 @@ or the stored time-series layout is not supported.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">551</span>
-<span class="normal">552</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">552</span>
 <span class="normal">553</span>
 <span class="normal">554</span>
 <span class="normal">555</span>
@@ -5683,9 +5684,10 @@ or the stored time-series layout is not supported.</p>
 <span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span>
-<span class="normal">632</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
+<span class="normal">632</span>
+<span class="normal">633</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">choices</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">choices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ParameterScalar</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read one stored diagnostic choice combination.</span>
@@ -5695,7 +5697,7 @@ or the stored time-series layout is not supported.</p>
 <span class="sd">            Diagnostics without choices require ``None`` or an empty map.</span>
 <span class="sd">        fields: Optional field names to read. ``None`` reads every</span>
 <span class="sd">            declared field. Time-series reads always also include</span>
-<span class="sd">            ``&quot;time_myr&quot;``.</span>
+<span class="sd">            ``&quot;time&quot;``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Time-series NumPy arrays or scalar canonical values keyed by field</span>
@@ -5739,7 +5741,7 @@ or the stored time-series layout is not supported.</p>
                     <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">{</span>
-                    <span class="s2">&quot;time_myr&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result_file</span><span class="p">[</span><span class="s2">&quot;time_myr&quot;</span><span class="p">]),</span>
+                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result_file</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]),</span>
                     <span class="o">**</span><span class="p">{</span>
                         <span class="n">field</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">source</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
                         <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">selected_fields</span>
@@ -5856,8 +5858,7 @@ choice combination.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">634</span>
-<span class="normal">635</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">635</span>
 <span class="normal">636</span>
 <span class="normal">637</span>
 <span class="normal">638</span>
@@ -5871,7 +5872,8 @@ choice combination.</p>
 <span class="normal">646</span>
 <span class="normal">647</span>
 <span class="normal">648</span>
-<span class="normal">649</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iter_data</span><span class="p">(</span>
+<span class="normal">649</span>
+<span class="normal">650</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iter_data</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ParameterScalar</span><span class="p">]]]:</span>
@@ -6012,8 +6014,7 @@ choice combination.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">667</span>
-<span class="normal">668</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">668</span>
 <span class="normal">669</span>
 <span class="normal">670</span>
 <span class="normal">671</span>
@@ -6090,7 +6091,8 @@ choice combination.</p>
 <span class="normal">742</span>
 <span class="normal">743</span>
 <span class="normal">744</span>
-<span class="normal">745</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">745</span>
+<span class="normal">746</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationDiagnosticResults</span><span class="p">(</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">SimulationDiagnostic</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read-only mapping of available diagnostic versions of one storage kind.</span>
 
@@ -6280,8 +6282,7 @@ objects that load numerical data only when requested.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">748</span>
-<span class="normal">749</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">749</span>
 <span class="normal">750</span>
 <span class="normal">751</span>
 <span class="normal">752</span>
@@ -6333,7 +6334,8 @@ objects that load numerical data only when requested.</p>
 <span class="normal">798</span>
 <span class="normal">799</span>
 <span class="normal">800</span>
-<span class="normal">801</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">801</span>
+<span class="normal">802</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationDiagnostics</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Lazy diagnostic catalogue attached to one imported simulation.</span>
 
@@ -6582,8 +6584,7 @@ objects that load numerical data only when requested.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">804</span>
-<span class="normal">805</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">805</span>
 <span class="normal">806</span>
 <span class="normal">807</span>
 <span class="normal">808</span>
@@ -6591,7 +6592,8 @@ objects that load numerical data only when requested.</p>
 <span class="normal">810</span>
 <span class="normal">811</span>
 <span class="normal">812</span>
-<span class="normal">813</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">collection_diagnostics_path</span><span class="p">(</span><span class="n">collection_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="normal">813</span>
+<span class="normal">814</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">collection_diagnostics_path</span><span class="p">(</span><span class="n">collection_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the standard published-diagnostics path for one collection.</span>
 
 <span class="sd">    Args:</span>
@@ -6677,8 +6679,7 @@ objects that load numerical data only when requested.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">816</span>
-<span class="normal">817</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">817</span>
 <span class="normal">818</span>
 <span class="normal">819</span>
 <span class="normal">820</span>
@@ -6686,7 +6687,8 @@ objects that load numerical data only when requested.</p>
 <span class="normal">822</span>
 <span class="normal">823</span>
 <span class="normal">824</span>
-<span class="normal">825</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulation_scalar_diagnostics_path</span><span class="p">(</span><span class="n">simulation_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="normal">825</span>
+<span class="normal">826</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simulation_scalar_diagnostics_path</span><span class="p">(</span><span class="n">simulation_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the standard scalar-diagnostics path for one simulation.</span>
 
 <span class="sd">    Args:</span>
@@ -6793,8 +6795,7 @@ objects that load numerical data only when requested.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">828</span>
-<span class="normal">829</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">829</span>
 <span class="normal">830</span>
 <span class="normal">831</span>
 <span class="normal">832</span>
@@ -6851,7 +6852,8 @@ objects that load numerical data only when requested.</p>
 <span class="normal">883</span>
 <span class="normal">884</span>
 <span class="normal">885</span>
-<span class="normal">886</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_collection_diagnostics</span><span class="p">(</span>
+<span class="normal">886</span>
+<span class="normal">887</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_collection_diagnostics</span><span class="p">(</span>
     <span class="n">diagnostics</span><span class="p">:</span> <span class="n">CollectionDiagnostics</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -7044,8 +7046,7 @@ objects that load numerical data only when requested.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">889</span>
-<span class="normal">890</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">890</span>
 <span class="normal">891</span>
 <span class="normal">892</span>
 <span class="normal">893</span>
@@ -7153,7 +7154,8 @@ objects that load numerical data only when requested.</p>
 <span class="normal">995</span>
 <span class="normal">996</span>
 <span class="normal">997</span>
-<span class="normal">998</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_collection_diagnostics</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CollectionDiagnostics</span><span class="p">:</span>
+<span class="normal">998</span>
+<span class="normal">999</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_collection_diagnostics</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CollectionDiagnostics</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read published diagnostic definitions from a collection YAML file.</span>
 
 <span class="sd">    Args:</span>
@@ -7391,8 +7393,7 @@ objects that load numerical data only when requested.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1001</span>
-<span class="normal">1002</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1002</span>
 <span class="normal">1003</span>
 <span class="normal">1004</span>
 <span class="normal">1005</span>
@@ -7443,7 +7444,8 @@ objects that load numerical data only when requested.</p>
 <span class="normal">1050</span>
 <span class="normal">1051</span>
 <span class="normal">1052</span>
-<span class="normal">1053</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_simulation_scalar_diagnostics</span><span class="p">(</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_simulation_scalar_diagnostics</span><span class="p">(</span>
     <span class="n">scalar_diagnostics</span><span class="p">:</span> <span class="n">SimulationScalarDiagnostics</span><span class="p">,</span>
     <span class="n">diagnostics</span><span class="p">:</span> <span class="n">CollectionDiagnostics</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
@@ -7652,8 +7654,7 @@ diagnostic definitions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/diagnostics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1056</span>
-<span class="normal">1057</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1057</span>
 <span class="normal">1058</span>
 <span class="normal">1059</span>
 <span class="normal">1060</span>
@@ -7718,7 +7719,8 @@ diagnostic definitions.</p>
 <span class="normal">1119</span>
 <span class="normal">1120</span>
 <span class="normal">1121</span>
-<span class="normal">1122</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_simulation_scalar_diagnostics</span><span class="p">(</span>
+<span class="normal">1122</span>
+<span class="normal">1123</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_simulation_scalar_diagnostics</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">diagnostics</span><span class="p">:</span> <span class="n">CollectionDiagnostics</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationScalarDiagnostics</span><span class="p">:</span>

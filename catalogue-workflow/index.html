@@ -1760,7 +1760,7 @@ be separate collections.</p>
 <p>A <strong>validation report</strong> is the YAML file written by <code>csfdata validate</code>. It
 records the source hostname and root, lists simulations approved for transfer,
 and records simulations with validation issues.</p>
-<p>During an import, <code>csfdata</code> creates an in-memory mapping from approved source
+<p>During an import, <code>csfdata</code> creates an in-memory dictionary from approved source
 paths to local simulation IDs such as <code>0001</code>. The imported simulations' metadata
 records this permanent association; users do not manage a separate manifest file.</p>
 <h2 id="validation-report">Validation Report</h2>
@@ -1949,7 +1949,7 @@ different source files while producing the same catalogue-facing structure.</p>
 <ul>
 <li>D-CAF validation and YAML validation reports.</li>
 <li>Importer validation-report reader.</li>
-<li>In-memory import mapping and deterministic ID assignment.</li>
+<li>In-memory import dictionary and deterministic ID assignment.</li>
 <li>Collection configuration model and required-parameter checks.</li>
 <li>D-CAF canonical configuration extraction and raw-payload selection.</li>
 <li>Version-1 simulation metadata.</li>

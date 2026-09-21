@@ -2469,21 +2469,21 @@ gas time series, and stellar snapshots.</p>
 <span class="sd">    gas time series, and stellar snapshots.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">tolerance_myr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the adapter.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            run_root: Directory containing the D-CAF simulation run.</span>
-<span class="sd">            tolerance_myr: Maximum allowed difference between the final recorded</span>
+<span class="sd">            tolerance: Maximum allowed difference between the final recorded</span>
 <span class="sd">                model time and configured ``t_end``, in Myr.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If ``tolerance_myr`` is negative.</span>
+<span class="sd">            ValueError: If ``tolerance`` is negative.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">tolerance_myr</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tolerance</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Validation tolerance must be non-negative.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_root</span> <span class="o">=</span> <span class="n">run_root</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance_myr</span> <span class="o">=</span> <span class="n">tolerance_myr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">tolerance</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">is_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether this directory has the minimum D-CAF run marker.</span>
@@ -2576,7 +2576,7 @@ gas time series, and stellar snapshots.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Map D-CAF stellar snapshot paths to their stored model times.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Mapping from paths relative to ``run_root`` to exact snapshot times</span>
+<span class="sd">            Dictionary from paths relative to ``run_root`` to exact snapshot times</span>
 <span class="sd">            in Myr, ordered by D-CAF output segment and filename.</span>
 
 <span class="sd">        Raises:</span>
@@ -2938,12 +2938,12 @@ gas time series, and stellar snapshots.</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span>
                 <span class="n">final_snapshot_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">final_snapshot_time</span> <span class="o">-</span> <span class="n">configured_end_time</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance_myr</span>
+                <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">final_snapshot_time</span> <span class="o">-</span> <span class="n">configured_end_time</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span>
             <span class="p">):</span>
                 <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="s2">&quot;Final model time &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">final_snapshot_time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr differs from configured t_end &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configured_end_time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr by more than </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance_myr</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configured_end_time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr by more than </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr.&quot;</span>
                 <span class="p">)</span>
 
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">issues</span><span class="p">)</span>
@@ -3563,7 +3563,7 @@ contains an invalid time value.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Mapping from paths relative to <code>run_root</code> to exact snapshot times</p>
+                <p>Dictionary from paths relative to <code>run_root</code> to exact snapshot times</p>
               </div>
             </td>
           </tr>
@@ -3633,7 +3633,7 @@ contain a readable model time.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Map D-CAF stellar snapshot paths to their stored model times.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Mapping from paths relative to ``run_root`` to exact snapshot times</span>
+<span class="sd">        Dictionary from paths relative to ``run_root`` to exact snapshot times</span>
 <span class="sd">        in Myr, ordered by D-CAF output segment and filename.</span>
 
 <span class="sd">    Raises:</span>
@@ -4546,12 +4546,12 @@ one segment and duplicate segment timelines.</p>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">final_snapshot_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">final_snapshot_time</span> <span class="o">-</span> <span class="n">configured_end_time</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance_myr</span>
+            <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">final_snapshot_time</span> <span class="o">-</span> <span class="n">configured_end_time</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span>
         <span class="p">):</span>
             <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="s2">&quot;Final model time &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">final_snapshot_time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr differs from configured t_end &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configured_end_time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr by more than </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance_myr</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">configured_end_time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr by more than </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr.&quot;</span>
             <span class="p">)</span>
 
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">issues</span><span class="p">)</span>

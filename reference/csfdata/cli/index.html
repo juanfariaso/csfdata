@@ -1811,7 +1811,7 @@
               </td>
             </tr>
             <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            list_snapshots_command(catalogue_root, collection_id, time_myr, output_path, filters=(), normalization=None, parser=None) (csfdata.cli.list_snapshots_command)" href="#csfdata.cli.list_snapshots_command">list_snapshots_command</a></code></td>
+              <td><code><a class="autorefs autorefs-internal" title="            list_snapshots_command(catalogue_root, collection_id, time, output_path, filters=(), normalization=None, parser=None) (csfdata.cli.list_snapshots_command)" href="#csfdata.cli.list_snapshots_command">list_snapshots_command</a></code></td>
               <td>
                 <div class="doc-md-description">
                   <p>Select snapshots and write a transfer-ready YAML manifest.</p>
@@ -2879,7 +2879,7 @@ arguments from the command line.</p>
 
 
 <h2 id="csfdata.cli.list_snapshots_command" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">list_snapshots_command</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">time_myr</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">(),</span> <span class="n">normalization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">list_snapshots_command</span><span class="p">(</span><span class="n">catalogue_root</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">(),</span> <span class="n">normalization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 </h2>
 
@@ -2934,7 +2934,7 @@ arguments from the command line.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>time_myr</code>
+                <code>time</code>
             </td>
             <td>
                   <code><span title="float">float</span></code>
@@ -3185,7 +3185,7 @@ parser is supplied.</p>
 <span class="normal">487</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">list_snapshots_command</span><span class="p">(</span>
     <span class="n">catalogue_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">time_myr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">filters</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="n">normalization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3196,7 +3196,7 @@ parser is supplied.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        catalogue_root: Indexed full or lite catalogue root.</span>
 <span class="sd">        collection_id: One collection ID to inspect.</span>
-<span class="sd">        time_myr: Physical target time in Myr, or normalized multiplier.</span>
+<span class="sd">        time: Physical target time in Myr, or normalized multiplier.</span>
 <span class="sd">        output_path: New YAML manifest path to write.</span>
 <span class="sd">        filters: Repeated ``NAME=VALUE`` or ``NAME=LOWER:UPPER`` filters.</span>
 <span class="sd">        normalization: Optional Myr-valued parameter used to normalize time.</span>
@@ -3253,7 +3253,7 @@ parser is supplied.</p>
             <span class="n">report</span> <span class="o">=</span> <span class="n">list_snapshots</span><span class="p">(</span>
                 <span class="n">catalogue_root</span><span class="p">,</span>
                 <span class="n">collection_id</span><span class="p">,</span>
-                <span class="n">time_myr</span><span class="p">,</span>
+                <span class="n">time</span><span class="p">,</span>
                 <span class="n">parsed_filters</span><span class="p">,</span>
                 <span class="n">normalization</span><span class="p">,</span>
                 <span class="n">progress</span><span class="o">=</span><span class="n">update_progress</span><span class="p">,</span>
@@ -3266,7 +3266,7 @@ parser is supplied.</p>
     <span class="n">selected</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">selection</span> <span class="k">for</span> <span class="n">selection</span> <span class="ow">in</span> <span class="n">report</span><span class="o">.</span><span class="n">selections</span> <span class="k">if</span> <span class="n">selection</span><span class="o">.</span><span class="n">issue</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">unmatched</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">selection</span> <span class="k">for</span> <span class="n">selection</span> <span class="ow">in</span> <span class="n">report</span><span class="o">.</span><span class="n">selections</span> <span class="k">if</span> <span class="n">selection</span><span class="o">.</span><span class="n">issue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collection: </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">collection_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Requested time: </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">time_myr</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Requested time: </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Myr&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">report</span><span class="o">.</span><span class="n">normalization</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Normalization: </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">normalization</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched simulations: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">selections</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
