@@ -392,7 +392,7 @@ def import_lite_command(
 def list_snapshots_command(
     catalogue_root: Path,
     collection_id: str,
-    time_myr: float,
+    time: float,
     output_path: Path,
     filters: Sequence[str] = (),
     normalization: str | None = None,
@@ -403,7 +403,7 @@ def list_snapshots_command(
     Args:
         catalogue_root: Indexed full or lite catalogue root.
         collection_id: One collection ID to inspect.
-        time_myr: Physical target time in Myr, or normalized multiplier.
+        time: Physical target time in Myr, or normalized multiplier.
         output_path: New YAML manifest path to write.
         filters: Repeated ``NAME=VALUE`` or ``NAME=LOWER:UPPER`` filters.
         normalization: Optional Myr-valued parameter used to normalize time.
@@ -460,7 +460,7 @@ def list_snapshots_command(
             report = list_snapshots(
                 catalogue_root,
                 collection_id,
-                time_myr,
+                time,
                 parsed_filters,
                 normalization,
                 progress=update_progress,
@@ -473,7 +473,7 @@ def list_snapshots_command(
     selected = tuple(selection for selection in report.selections if selection.issue is None)
     unmatched = tuple(selection for selection in report.selections if selection.issue is not None)
     print(f"Collection: {report.collection_id}")
-    print(f"Requested time: {report.time_myr:g} Myr")
+    print(f"Requested time: {report.time:g} Myr")
     if report.normalization is not None:
         print(f"Normalization: {report.normalization}")
     print(f"Matched simulations: {len(report.selections)}")

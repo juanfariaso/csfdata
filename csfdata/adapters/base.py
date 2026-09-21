@@ -59,7 +59,7 @@ class SimulationAdapter(ABC):
         """Return every primary snapshot path mapped to its model time.
 
         Returns:
-            Mapping from paths relative to this adapter's ``run_root`` to
+            Dictionary from paths relative to this adapter's ``run_root`` to
             exact model times in canonical ``Myr``.
 
         Raises:

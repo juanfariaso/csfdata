@@ -29,7 +29,7 @@ A **validation report** is the YAML file written by `csfdata validate`. It
 records the source hostname and root, lists simulations approved for transfer,
 and records simulations with validation issues.
 
-During an import, `csfdata` creates an in-memory mapping from approved source
+During an import, `csfdata` creates an in-memory dictionary from approved source
 paths to local simulation IDs such as `0001`. The imported simulations' metadata
 records this permanent association; users do not manage a separate manifest file.
 
@@ -266,7 +266,7 @@ Implemented now:
 
 - D-CAF validation and YAML validation reports.
 - Importer validation-report reader.
-- In-memory import mapping and deterministic ID assignment.
+- In-memory import dictionary and deterministic ID assignment.
 - Collection configuration model and required-parameter checks.
 - D-CAF canonical configuration extraction and raw-payload selection.
 - Version-1 simulation metadata.

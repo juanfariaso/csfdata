@@ -129,6 +129,7 @@ grid_axes:
     time_series_path.parent.mkdir(parents=True)
     with h5py.File(time_series_path, "w") as output:
         output.attrs["complete"] = True
+        output.attrs["format_schema_version"] = 2
         output.attrs["diagnostic_name"] = "lagrangian_radii"
         output.attrs["diagnostic_version"] = 1
 

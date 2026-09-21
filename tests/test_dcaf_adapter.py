@@ -104,7 +104,7 @@ def test_dcaf_adapter_reports_time_mismatch_and_missing_segment(tmp_path: Path) 
     assert "Missing background-gas segment(s): 1." in issues
     assert "Missing output segment(s): 1." in issues
     assert any("differs from configured t_end" in issue for issue in issues)
-    assert DcafAdapter(run_root, tolerance_myr=5.0).validate_simulation()[:2] == issues[:2]
+    assert DcafAdapter(run_root, tolerance=5.0).validate_simulation()[:2] == issues[:2]
 
 
 def test_dcaf_adapter_fast_validation_reports_segment_count_mismatch(tmp_path: Path) -> None:
@@ -169,8 +169,8 @@ def _write_segment(
         _write_snapshot(output_root / f"stars_{index:03d}.amuse", time)
 
 
-def _write_snapshot(path: Path, time_myr: float) -> None:
+def _write_snapshot(path: Path, time: float) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with h5py.File(path, "w") as snapshot_file:
         group = snapshot_file.create_group("data/0000000001")
-        group.attrs["model_time"] = time_myr * _MYR_IN_SECONDS
+        group.attrs["model_time"] = time * _MYR_IN_SECONDS

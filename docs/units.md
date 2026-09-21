@@ -40,8 +40,8 @@ converter = UnitConverter()
 radius = converter.parse_string("10.0 parsec")
 print(radius.value, radius.unit)  # 10.0 pc
 
-time_myr = converter.convert(1000.0, "kyr", "Myr")
-print(time_myr)  # 1.0
+time = converter.convert(1000.0, "kyr", "Myr")
+print(time)  # 1.0
 ```
 
 Unsupported or incompatible units raise `ValueError` rather than being

@@ -123,7 +123,7 @@ rate = rates.read(
 )
 ```
 
-Time-series reads return NumPy arrays, including `time_myr`. Scalar reads
+Time-series reads return NumPy arrays, including `time`. Scalar reads
 return canonical Python scalar values. To process choices without loading all
 of them at once, use `iter_choices()` or `iter_data()`.
 

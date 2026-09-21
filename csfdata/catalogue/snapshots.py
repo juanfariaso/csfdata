@@ -7,7 +7,7 @@ and lite catalogues to select snapshots without reopening raw output files.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from dataclasses import dataclass
 import math
 from pathlib import Path
@@ -29,12 +29,12 @@ class SnapshotTime:
 
     Args:
         path: Path relative to the simulation root, normally below ``raw/``.
-        time_myr: Exact stored model time in canonical Myr.
+        time: Exact stored model time in canonical Myr.
         size_bytes: Source snapshot size in bytes at inventory-refresh time.
     """
 
     path: Path
-    time_myr: float
+    time: float
     size_bytes: int
 
 
@@ -51,8 +51,8 @@ class SnapshotTimeInventory:
 
     collection_id: str
     collection_sha256: str
-    snapshots: Mapping[str, tuple[SnapshotTime, ...]]
-    issues: Mapping[str, tuple[str, ...]]
+    snapshots: dict[str, tuple[SnapshotTime, ...]]
+    issues: dict[str, tuple[str, ...]]
 
 
 @dataclass(frozen=True)
@@ -69,7 +69,7 @@ class SnapshotTimeRefreshReport:
     inventory_path: Path
     simulation_count: int
     snapshot_count: int
-    issues: Mapping[str, tuple[str, ...]]
+    issues: dict[str, tuple[str, ...]]
 
 
 @dataclass(frozen=True)
@@ -78,9 +78,9 @@ class SnapshotSelection:
 
     Args:
         simulation_id: Stable ID of the selected simulation.
-        target_time_myr: Requested physical time after optional normalization.
-        snapshot_time_myr: Stored snapshot time, or ``None`` when unmatched.
-        tolerance_myr: Adaptive allowed time difference, or ``None`` when it
+        target_time: Requested physical time after optional normalization.
+        snapshot_time: Stored snapshot time, or ``None`` when unmatched.
+        tolerance: Adaptive allowed time difference, or ``None`` when it
             cannot be determined.
         source_paths: Required paths relative to the source catalogue root.
         source_size_bytes: Total expected source-file size from the inventory.
@@ -88,9 +88,9 @@ class SnapshotSelection:
     """
 
     simulation_id: str
-    target_time_myr: float
-    snapshot_time_myr: float | None
-    tolerance_myr: float | None
+    target_time: float
+    snapshot_time: float | None
+    tolerance: float | None
     source_paths: tuple[Path, ...]
     source_size_bytes: int
     issue: str | None
@@ -105,7 +105,7 @@ class SnapshotListReport:
         source_hostname: Host recorded for the source catalogue.
         collection_id: Collection from which simulations were selected.
         collection_sha256: Digest of the source ``collection.yaml``.
-        time_myr: Requested physical time, or multiplier when normalized.
+        time: Requested physical time, or multiplier when normalized.
         normalization: Optional Myr-valued configuration parameter name.
         filters: Indexed parameter filters used to select simulations.
         selections: One result for every simulation matched by ``filters``.
@@ -115,9 +115,9 @@ class SnapshotListReport:
     source_hostname: str
     collection_id: str
     collection_sha256: str
-    time_myr: float
+    time: float
     normalization: str | None
-    filters: Mapping[str, str | int | float | bool | tuple[float | None, float | None]]
+    filters: dict[str, str | int | float | bool | tuple[float | None, float | None]]
     selections: tuple[SnapshotSelection, ...]
 
 
@@ -198,10 +198,10 @@ def refresh_snapshot_times(
             records = tuple(
                 SnapshotTime(
                     Path("raw") / relative_path,
-                    time_myr,
+                    time,
                     (adapter.run_root / relative_path).stat().st_size,
                 )
-                for relative_path, time_myr in times.items()
+                for relative_path, time in times.items()
             )
         except (OSError, ValueError) as error:
             issues[simulation.simulation_id] = (str(error),)
@@ -218,7 +218,7 @@ def refresh_snapshot_times(
     inventory_path.write_text(
         yaml.safe_dump(
             {
-                "schema_version": 1,
+                "schema_version": 2,
                 "collection_id": inventory.collection_id,
                 "collection_sha256": inventory.collection_sha256,
                 "summary": {
@@ -230,7 +230,7 @@ def refresh_snapshot_times(
                     simulation_id: [
                         {
                             "path": str(record.path),
-                            "time_myr": record.time_myr,
+                            "time": record.time,
                             "size_bytes": record.size_bytes,
                         }
                         for record in records
@@ -280,8 +280,8 @@ def read_snapshot_times(
         raise FileNotFoundError(f"Collection configuration is missing: {collection_path}")
     with inventory_path.open(encoding="utf-8") as stream:
         contents = yaml.safe_load(stream)
-    if not isinstance(contents, dict) or contents.get("schema_version") != 1:
-        raise ValueError("Snapshot inventory must use schema_version 1.")
+    if not isinstance(contents, dict) or contents.get("schema_version") != 2:
+        raise ValueError("Snapshot inventory must use schema_version 2; refresh it first.")
     collection_sha256 = contents.get("collection_sha256")
     if contents.get("collection_id") != collection_id or not isinstance(collection_sha256, str):
         raise ValueError("Snapshot inventory has an invalid collection identity.")
@@ -301,21 +301,21 @@ def read_snapshot_times(
             if not isinstance(value, dict):
                 raise ValueError("Snapshot inventory has an invalid snapshot record.")
             path = value.get("path")
-            time_myr = value.get("time_myr")
+            time = value.get("time")
             size_bytes = value.get("size_bytes")
             if (
                 not isinstance(path, str)
                 or not path.startswith("raw/")
                 or Path(path).is_absolute()
                 or ".." in Path(path).parts
-                or not isinstance(time_myr, (int, float))
-                or isinstance(time_myr, bool)
+                or not isinstance(time, (int, float))
+                or isinstance(time, bool)
                 or not isinstance(size_bytes, int)
                 or isinstance(size_bytes, bool)
                 or size_bytes < 0
             ):
                 raise ValueError("Snapshot inventory has an invalid snapshot record.")
-            records.append(SnapshotTime(Path(path), float(time_myr), size_bytes))
+            records.append(SnapshotTime(Path(path), float(time), size_bytes))
         snapshots[simulation_id] = tuple(records)
     issues: dict[str, tuple[str, ...]] = {}
     for simulation_id, messages in stored_issues.items():
@@ -332,8 +332,8 @@ def read_snapshot_times(
 def list_snapshots(
     catalogue_root: Path | str,
     collection_id: str,
-    time_myr: float,
-    filters: Mapping[
+    time: float,
+    filters: dict[
         str,
         str | int | float | bool | tuple[float | None, float | None],
     ] | None = None,
@@ -345,7 +345,7 @@ def list_snapshots(
     Args:
         catalogue_root: Indexed full or lite catalogue root.
         collection_id: One collection ID to inspect.
-        time_myr: Physical target time in Myr, or multiplier when normalized.
+        time: Physical target time in Myr, or multiplier when normalized.
         filters: Exact or inclusive-range indexed configuration filters.
         normalization: Optional known canonical configuration parameter in Myr.
         progress: Optional callback invoked before each selected simulation is
@@ -373,7 +373,7 @@ def list_snapshots(
     for simulation_number, simulation in enumerate(simulations, start=1):
         if progress is not None:
             progress(simulation_number, len(simulations), simulation.simulation_id)
-        target_time = float(time_myr)
+        target_time = float(time)
         if normalization is not None:
             parameter = read_simulation_configuration(
                 simulation.path / "config.yaml"
@@ -408,7 +408,7 @@ def list_snapshots(
         records = tuple(
             sorted(
                 inventory.snapshots.get(simulation.simulation_id, ()),
-                key=lambda record: record.time_myr,
+                key=lambda record: record.time,
             )
         )
         if not records:
@@ -426,20 +426,20 @@ def list_snapshots(
             continue
         selected_index = min(
             range(len(records)),
-            key=lambda index: abs(records[index].time_myr - target_time),
+            key=lambda index: abs(records[index].time - target_time),
         )
         selected = records[selected_index]
         if len(records) == 1:
             tolerance = 0.0
-        elif target_time < selected.time_myr and selected_index > 0:
-            tolerance = (selected.time_myr - records[selected_index - 1].time_myr) / 2.0
-        elif target_time > selected.time_myr and selected_index < len(records) - 1:
-            tolerance = (records[selected_index + 1].time_myr - selected.time_myr) / 2.0
+        elif target_time < selected.time and selected_index > 0:
+            tolerance = (selected.time - records[selected_index - 1].time) / 2.0
+        elif target_time > selected.time and selected_index < len(records) - 1:
+            tolerance = (records[selected_index + 1].time - selected.time) / 2.0
         elif selected_index == 0:
-            tolerance = (records[1].time_myr - selected.time_myr) / 2.0
+            tolerance = (records[1].time - selected.time) / 2.0
         else:
-            tolerance = (selected.time_myr - records[selected_index - 1].time_myr) / 2.0
-        if abs(selected.time_myr - target_time) > tolerance:
+            tolerance = (selected.time - records[selected_index - 1].time) / 2.0
+        if abs(selected.time - target_time) > tolerance:
             selections.append(
                 SnapshotSelection(
                     simulation.simulation_id,
@@ -463,7 +463,7 @@ def list_snapshots(
             SnapshotSelection(
                 simulation.simulation_id,
                 target_time,
-                selected.time_myr,
+                selected.time,
                 tolerance,
                 (source_path,),
                 selected.size_bytes,
@@ -475,7 +475,7 @@ def list_snapshots(
         source_hostname,
         collection_id,
         inventory.collection_sha256,
-        float(time_myr),
+        float(time),
         normalization,
         dict(filters or {}),
         tuple(selections),
@@ -505,8 +505,8 @@ def write_snapshot_manifest(report: SnapshotListReport, path: Path | str) -> Pat
             unmatched.append(
                 {
                     "simulation_id": selection.simulation_id,
-                    "target_time_myr": selection.target_time_myr,
-                    "tolerance_myr": selection.tolerance_myr,
+                    "target_time": selection.target_time,
+                    "tolerance": selection.tolerance,
                     "issue": selection.issue,
                 }
             )
@@ -514,11 +514,10 @@ def write_snapshot_manifest(report: SnapshotListReport, path: Path | str) -> Pat
         selected.append(
             {
                 "simulation_id": selection.simulation_id,
-                "target_time_myr": selection.target_time_myr,
-                "snapshot_time_myr": selection.snapshot_time_myr,
-                "time_offset_myr": selection.snapshot_time_myr
-                - selection.target_time_myr,
-                "tolerance_myr": selection.tolerance_myr,
+                "target_time": selection.target_time,
+                "snapshot_time": selection.snapshot_time,
+                "time_offset": selection.snapshot_time - selection.target_time,
+                "tolerance": selection.tolerance,
                 "source_paths": [
                     str(source_path) for source_path in selection.source_paths
                 ],
@@ -529,7 +528,7 @@ def write_snapshot_manifest(report: SnapshotListReport, path: Path | str) -> Pat
     manifest_path.write_text(
         yaml.safe_dump(
             {
-                "schema_version": 1,
+                "schema_version": 2,
                 "source": {
                     "catalogue_root": str(report.source_catalogue),
                     "hostname": report.source_hostname,
@@ -537,7 +536,7 @@ def write_snapshot_manifest(report: SnapshotListReport, path: Path | str) -> Pat
                     "collection_sha256": report.collection_sha256,
                 },
                 "selection": {
-                    "time_myr": report.time_myr,
+                    "time": report.time,
                     "normalization": report.normalization,
                     "method": "nearest_with_adaptive_tolerance",
                     "filters": dict(report.filters),
@@ -599,8 +598,8 @@ def import_snapshots(
     inventory = read_snapshot_times(lite_root, source.collection_id)
     with Path(manifest_path).open(encoding="utf-8") as stream:
         manifest = yaml.safe_load(stream)
-    if not isinstance(manifest, dict) or manifest.get("schema_version") != 1:
-        raise ValueError("Snapshot manifest must use schema_version 1.")
+    if not isinstance(manifest, dict) or manifest.get("schema_version") != 2:
+        raise ValueError("Snapshot manifest must use schema_version 2.")
     manifest_source = manifest.get("source")
     selected_snapshots = manifest.get("selected_snapshots")
     if not isinstance(manifest_source, dict) or not isinstance(selected_snapshots, list):
@@ -618,7 +617,7 @@ def import_snapshots(
         if not isinstance(selection, dict):
             raise ValueError("Snapshot manifest has an invalid selected snapshot entry.")
         simulation_id = selection.get("simulation_id")
-        snapshot_time = selection.get("snapshot_time_myr")
+        snapshot_time = selection.get("snapshot_time")
         paths = selection.get("source_paths")
         if (
             not isinstance(simulation_id, str)
@@ -652,7 +651,7 @@ def import_snapshots(
             records = inventory.snapshots.get(simulation_id, ())
             if not any(
                 record.path == snapshot_path
-                and math.isclose(record.time_myr, float(snapshot_time))
+                and math.isclose(record.time, float(snapshot_time))
                 for record in records
             ):
                 raise ValueError("Snapshot manifest path is absent from the lite inventory.")

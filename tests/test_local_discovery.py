@@ -39,7 +39,7 @@ def _write_dcaf_run(run_root: Path, final_time: float) -> None:
     _write_snapshot(output_root / "stars_001.amuse", final_time)
 
 
-def _write_snapshot(path: Path, time_myr: float) -> None:
+def _write_snapshot(path: Path, time: float) -> None:
     with h5py.File(path, "w") as snapshot_file:
         group = snapshot_file.create_group("data/0000000001")
-        group.attrs["model_time"] = time_myr * _MYR_IN_SECONDS
+        group.attrs["model_time"] = time * _MYR_IN_SECONDS

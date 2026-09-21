@@ -438,7 +438,7 @@ class SimulationDiagnostic:
         """Return declared result fields and their canonical units.
 
         Returns:
-            Mapping from field name to canonical unit, or ``None`` for a
+            Dictionary from field name to canonical unit, or ``None`` for a
             dimensionless or textual field.
         """
         return {field.name: field.unit for field in self.definition.fields}
@@ -448,7 +448,7 @@ class SimulationDiagnostic:
         """Return declared scientific choice values for this diagnostic.
 
         Returns:
-            Mapping from each relevant choice name to its allowed values.
+            Dictionary from each relevant choice name to its allowed values.
         """
         available = {choice.name: choice for choice in self.collection_diagnostics.choices}
         return {
@@ -472,6 +472,7 @@ class SimulationDiagnostic:
             with h5py.File(self.path, "r") as result_file:
                 return (
                     bool(result_file.attrs.get("complete", False))
+                    and result_file.attrs.get("format_schema_version") == 2
                     and result_file.attrs.get("diagnostic_name") == self.definition.name
                     and f"v{result_file.attrs.get('diagnostic_version')}" == self.definition.version
                 )
@@ -509,7 +510,7 @@ class SimulationDiagnostic:
         """Yield each stored scientific choice combination.
 
         Yields:
-            Mapping from choice name to one stored selected value.
+            Dictionary from choice name to one stored selected value.
 
         Raises:
             ValueError: If a time-series diagnostic uses more than one choice
@@ -550,7 +551,7 @@ class SimulationDiagnostic:
 
     def read(
         self,
-        choices: Mapping[str, str] | None = None,
+        choices: dict[str, str] | None = None,
         fields: Sequence[str] | None = None,
     ) -> dict[str, numpy.ndarray] | dict[str, ParameterScalar]:
         """Read one stored diagnostic choice combination.
@@ -560,7 +561,7 @@ class SimulationDiagnostic:
                 Diagnostics without choices require ``None`` or an empty map.
             fields: Optional field names to read. ``None`` reads every
                 declared field. Time-series reads always also include
-                ``"time_myr"``.
+                ``"time"``.
 
         Returns:
             Time-series NumPy arrays or scalar canonical values keyed by field
@@ -604,7 +605,7 @@ class SimulationDiagnostic:
                         ) from error
                 try:
                     return {
-                        "time_myr": numpy.asarray(result_file["time_myr"]),
+                        "time": numpy.asarray(result_file["time"]),
                         **{
                             field: numpy.asarray(source[field])
                             for field in selected_fields

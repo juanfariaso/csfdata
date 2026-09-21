@@ -7,7 +7,7 @@ truth for simulation identity, provenance, and scientific parameters.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from dataclasses import dataclass
 from itertools import product
 from math import prod
@@ -472,7 +472,7 @@ def index_catalogue(
 def find_simulations(
     catalogue_root: Path,
     collection_id: str | None = None,
-    filters: Mapping[str, str | int | float | bool | tuple[float | None, float | None]] | None = None,
+    filters: dict[str, str | int | float | bool | tuple[float | None, float | None]] | None = None,
 ) -> tuple[CatalogueSimulation, ...]:
     """Return catalogue simulations matching indexed parameter filters.
 

@@ -178,9 +178,10 @@ def test_catalogue_simulation_exposes_lazy_diagnostic_results(tmp_path: Path) ->
     time_series_path.parent.mkdir(parents=True)
     with h5py.File(time_series_path, "w") as result_file:
         result_file.attrs["complete"] = True
+        result_file.attrs["format_schema_version"] = 2
         result_file.attrs["diagnostic_name"] = "lagrangian_radii"
         result_file.attrs["diagnostic_version"] = 1
-        result_file.create_dataset("time_myr", data=(1.0, 2.0))
+        result_file.create_dataset("time", data=(1.0, 2.0))
         choices_group = result_file.create_group("choices")
         center_group = choices_group.create_group("stellar_com")
         center_group.create_dataset("r_l50", data=(1.5, 2.5))
@@ -218,7 +219,7 @@ def test_catalogue_simulation_exposes_lazy_diagnostic_results(tmp_path: Path) ->
     assert radii.fields == {"r_l50": "pc", "n_stars": "1"}
     assert radii.choices == {"center": ("origin", "stellar_com")}
     assert radii.available_choices == ({"center": "stellar_com"},)
-    assert radii.read({"center": "stellar_com"}, ("r_l50",))["time_myr"].tolist() == [1.0, 2.0]
+    assert radii.read({"center": "stellar_com"}, ("r_l50",))["time"].tolist() == [1.0, 2.0]
     assert radii.read({"center": "stellar_com"}, ("r_l50",))["r_l50"].tolist() == [1.5, 2.5]
     assert list(radii.iter_data(("n_stars",)))[0][1]["n_stars"].tolist() == [10, 20]
     assert rates.complete is True

@@ -28,21 +28,21 @@ class DcafAdapter(SimulationAdapter):
     gas time series, and stellar snapshots.
     """
 
-    def __init__(self, run_root: Path, tolerance_myr: float = 0.5) -> None:
+    def __init__(self, run_root: Path, tolerance: float = 0.5) -> None:
         """Initialize the adapter.
 
         Args:
             run_root: Directory containing the D-CAF simulation run.
-            tolerance_myr: Maximum allowed difference between the final recorded
+            tolerance: Maximum allowed difference between the final recorded
                 model time and configured ``t_end``, in Myr.
 
         Raises:
-            ValueError: If ``tolerance_myr`` is negative.
+            ValueError: If ``tolerance`` is negative.
         """
-        if tolerance_myr < 0:
+        if tolerance < 0:
             raise ValueError("Validation tolerance must be non-negative.")
         self.run_root = run_root
-        self.tolerance_myr = tolerance_myr
+        self.tolerance = tolerance
 
     def is_simulation(self) -> bool:
         """Return whether this directory has the minimum D-CAF run marker.
@@ -135,7 +135,7 @@ class DcafAdapter(SimulationAdapter):
         """Map D-CAF stellar snapshot paths to their stored model times.
 
         Returns:
-            Mapping from paths relative to ``run_root`` to exact snapshot times
+            Dictionary from paths relative to ``run_root`` to exact snapshot times
             in Myr, ordered by D-CAF output segment and filename.
 
         Raises:
@@ -497,12 +497,12 @@ class DcafAdapter(SimulationAdapter):
         else:
             if (
                 final_snapshot_time is not None
-                and abs(final_snapshot_time - configured_end_time) > self.tolerance_myr
+                and abs(final_snapshot_time - configured_end_time) > self.tolerance
             ):
                 issues.append(
                     "Final model time "
                     f"{final_snapshot_time:g} Myr differs from configured t_end "
-                    f"{configured_end_time:g} Myr by more than {self.tolerance_myr:g} Myr."
+                    f"{configured_end_time:g} Myr by more than {self.tolerance:g} Myr."
                 )
 
         return tuple(issues)

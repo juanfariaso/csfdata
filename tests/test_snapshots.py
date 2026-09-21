@@ -62,10 +62,10 @@ optional_parameters: []
     )
     raw_output = simulation / "raw" / "dcaf_output"
     raw_output.mkdir(parents=True)
-    for index, time_myr in enumerate((0.0, 10.0, 20.0)):
+    for index, time in enumerate((0.0, 10.0, 20.0)):
         with h5py.File(raw_output / f"stars_{index:03d}.amuse", "w") as snapshot:
             group = snapshot.create_group("data/0000000001")
-            group.attrs["model_time"] = time_myr * 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
+            group.attrs["model_time"] = time * 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
     index_catalogue(catalogue)
     progress: list[tuple[int, int, str]] = []
     refresh_snapshot_times(
@@ -102,10 +102,10 @@ optional_parameters: []
     assert contents["selected_snapshots"] == [
         {
             "simulation_id": "0001",
-            "target_time_myr": 16.0,
-            "snapshot_time_myr": 20.0,
-            "time_offset_myr": 4.0,
-            "tolerance_myr": 5.0,
+            "target_time": 16.0,
+            "snapshot_time": 20.0,
+            "time_offset": 4.0,
+            "tolerance": 5.0,
             "source_paths": [
                 "collections/example-collection/simulations/0001/raw/dcaf_output/stars_002.amuse"
             ],
@@ -155,13 +155,13 @@ optional_parameters: []
     source_snapshot.write_bytes(b"snapshot")
     collection_hash = file_sha256(source_collection / "collection.yaml")
     inventory = {
-        "schema_version": 1,
+        "schema_version": 2,
         "collection_id": collection_id,
         "collection_sha256": collection_hash,
         "summary": {"simulations": 1, "snapshots": 1, "simulations_with_issues": 0},
         "snapshot_times": {
             "0001": [
-                {"path": "raw/stars_000.amuse", "time_myr": 10.0, "size_bytes": 8}
+                {"path": "raw/stars_000.amuse", "time": 10.0, "size_bytes": 8}
             ]
         },
         "issues": {},
@@ -189,7 +189,7 @@ optional_parameters: []
     manifest.write_text(
         yaml.safe_dump(
             {
-                "schema_version": 1,
+                "schema_version": 2,
                 "source": {
                     "catalogue_root": str(source),
                     "hostname": socket.gethostname(),
@@ -199,7 +199,7 @@ optional_parameters: []
                 "selected_snapshots": [
                     {
                         "simulation_id": "0001",
-                        "snapshot_time_myr": 10.0,
+                        "snapshot_time": 10.0,
                         "source_paths": [str(snapshot_path)],
                     }
                 ],
