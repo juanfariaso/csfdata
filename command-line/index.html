@@ -1043,6 +1043,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/csfdata/catalogue/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/csfdata/catalogue/lite/" class="md-nav__link">
         
   
@@ -1772,9 +1800,10 @@
 <p>Update only a newly imported or changed collection:</p>
 <pre><code class="language-bash">csfdata index-catalogue /path/to/catalogue --collection dcaf-grid-v1
 </code></pre>
-<p>The command writes <code>registry.sqlite</code> at the catalogue root. It indexes each
-simulation's canonical <code>metadata.yaml</code> and <code>config.yaml</code>; those YAML files
-remain the source of truth and the SQLite file can always be rebuilt.</p>
+<p>The command writes <code>registry.sqlite</code> at the catalogue root and shows a retained
+simulation progress bar. It indexes each simulation's canonical <code>metadata.yaml</code>
+and <code>config.yaml</code>; those YAML files remain the source of truth and the SQLite
+file can always be rebuilt.</p>
 <h2 id="catalogue-summary">Catalogue Summary</h2>
 <p>Print available indexed parameters, their units, availability, and value
 ranges without rescanning the catalogue YAML files:</p>
@@ -1974,10 +2003,9 @@ and then promotes the simulation into the collection.</p>
 <p>Each simulation is staged below <code>.staging/</code> before promotion. If an import
 fails, its staging directory is kept for inspection. The command never
 overwrites an existing simulation or follows a symbolic link in raw data.</p>
-<p>During a real import, one updating terminal line shows the current simulation
-and the fraction of its raw-data bytes copied. It updates after each copied raw
-file; individual filenames are not printed. Each completed simulation leaves
-one <code>OK</code> line.</p>
+<p>During a real import, a retained byte-scaled progress bar shows the current
+simulation and cumulative copied raw data. It updates after each copied raw
+file; individual filenames are not printed.</p>
 <h2 id="current-scope">Current Scope</h2>
 <p>The current commands understand D-CAF directories only. They do not repair
 simulations, import from remote hosts, submit scheduler jobs, or calculate

@@ -363,6 +363,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#derived-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Derived Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#accessing-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Accessing Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#registry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -982,6 +1004,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../reference/csfdata/catalogue/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../reference/csfdata/catalogue/lite/" class="md-nav__link">
         
   
@@ -1549,6 +1599,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#derived-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Derived Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#accessing-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Accessing Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#registry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1652,6 +1724,7 @@ data live in a separate shared catalogue directory.</p>
   collections/
     dcaf-grid-v1/
       collection.yaml
+      diagnostics.yaml
       simulations/
         0001/
           metadata.yaml
@@ -1673,6 +1746,73 @@ for example future MHD simulations, belong in separate collections.</p>
 </ul>
 <p>The original input files are retained unchanged under <code>raw/</code>. Derived analysis
 products belong under <code>derived/</code> and do not modify raw data.</p>
+<h2 id="derived-diagnostics">Derived Diagnostics</h2>
+<p><code>diagnostics.yaml</code> is the collection-level, versioned description of available
+derived analysis data. It records diagnostic names, versions, output fields,
+canonical units, storage locations, and the scientific choices that affect
+each result. It does not duplicate results, which remain below each
+simulation's <code>derived/</code> directory.</p>
+<p>The analysis add-on publishes this file when it computes a diagnostic. Core
+catalogue tools can therefore inspect, index, and query existing derived data
+without importing analysis dependencies such as AMUSE. Time-series and scalar
+diagnostics use the same description format.</p>
+<p>Definitions can also declare completed diagnostic versions they require. This
+make analysis dependency chains explicit: a scalar fit can state that it
+needs particular time-series diagnostics before it can run. The catalogue
+records and validates these requirements; analysis runners later use them to
+report missing prerequisites clearly.</p>
+<p>Simulation-level derived values are stored separately in each simulation's
+<code>derived/scalar_diagnostics.yaml</code>. Each value uses the same small record format as a
+canonical catalogue parameter:</p>
+<pre><code class="language-yaml">value: 0.12
+unit: km/s
+</code></pre>
+<p>The surrounding scalar-diagnostic record identifies the diagnostic name, version, and
+concrete choices that produced the value. <code>csfdata index-catalogue</code> validates
+that record against the collection <code>diagnostics.yaml</code> before indexing it.
+Default-choice scalar values join the same query space as configuration
+parameters, so one filter can combine both kinds of value:</p>
+<pre><code class="language-python">find_simulations(
+    &quot;/path/to/catalogue&quot;,
+    collection_id=&quot;example-collection&quot;,
+    filters={&quot;tff&quot;: 1.0, &quot;derived_parameter&quot;: (0.1, None)},
+)
+</code></pre>
+<p>No manual database edits are needed. A future analysis or import tool writes
+the validated scalar-diagnostics YAML; rerun <code>csfdata index-catalogue</code> to refresh the
+rebuildable SQLite registry.</p>
+<h2 id="accessing-diagnostics">Accessing Diagnostics</h2>
+<p>Every <code>CatalogueSimulation</code> is the entry point to its stored diagnostic data.
+Its <code>diagnostics</code> property is lazy: typing it or printing it shows available
+diagnostic names, versions, fields, choices, completion state, and paths, but
+does not load numerical arrays.</p>
+<pre><code class="language-python">simulation = find_simulations(
+    &quot;/path/to/catalogue&quot;,
+    collection_id=&quot;example-collection&quot;,
+)[0]
+
+simulation.diagnostics
+</code></pre>
+<p>Time-series and scalar results are separate read-only mappings, both keyed by
+<code>(name, version)</code>:</p>
+<pre><code class="language-python">radii = simulation.diagnostics.time_series[(&quot;lagrangian_radii&quot;, &quot;v1&quot;)]
+rates = simulation.diagnostics.scalar[(&quot;expansion_rate&quot;, &quot;v1&quot;)]
+</code></pre>
+<p>Each result exposes its declared <code>fields</code>, <code>choices</code>, stored
+<code>available_choices</code>, <code>path</code>, and <code>complete</code> state. Read one choice combination
+only when needed:</p>
+<pre><code class="language-python">data = radii.read(
+    choices={&quot;center&quot;: &quot;stellar_com&quot;},
+    fields=(&quot;r_l50&quot;, &quot;n_stars&quot;),
+)
+
+rate = rates.read(
+    choices={&quot;center&quot;: &quot;stellar_com&quot;, &quot;lagrangian_radius&quot;: &quot;r_l50&quot;},
+)
+</code></pre>
+<p>Time-series reads return NumPy arrays, including <code>time_myr</code>. Scalar reads
+return canonical Python scalar values. To process choices without loading all
+of them at once, use <code>iter_choices()</code> or <code>iter_data()</code>.</p>
 <h2 id="registry">Registry</h2>
 <p><code>registry.sqlite</code> is a rebuildable SQLite search index. It is not the source of
 truth: the YAML files remain authoritative and readable without database
@@ -1743,18 +1883,34 @@ inspect or update.</p>
 <p>Inspect one collection only:</p>
 <pre><code class="language-bash">csfdata catalogue-summary /path/to/catalogue --collection dcaf-grid-v1
 </code></pre>
-<p>The summary reports each collection's simulation count and each available
-parameter's section, value type, unit, availability, and either numeric range
-or number of distinct text values. It reads <code>registry.sqlite</code> and the small
-collection configuration only; it does not rescan simulation directories.</p>
+<p>The summary is based on the completed index. It separates normal simulation
+parameters from default-choice scalar diagnostics, because both can be used in
+catalogue queries but have different meanings. Simulation parameters show up
+to ten stored values; higher-cardinality numeric parameters show their number
+of distinct values and range. Scalar diagnostics show availability, range,
+median, and mean plus standard deviation.</p>
+<p>Time-series diagnostics are shown separately. Their fields are not ordinary
+catalogue query filters because they also require a time and sometimes a
+scientific choice. During indexing, CSFData records only whether each declared
+time-series file is complete, so the summary can show coverage without reading
+its numerical HDF5 datasets. Tables wrap long value or field lists to the
+current terminal width.</p>
 <p>For example:</p>
 <pre><code class="language-text">Registry: /shared/group/csf-catalogue/registry.sqlite
 Collections: 1
 dcaf-grid-v1 (dcaf)
   Simulations: 1858
-  Parameters:
-    sfe: 1858/1858; range 0.05 to 0.3 (parameters, number)
-    tff [Myr]: 1858/1858; range 0.5 to 3 (parameters, number)
+  Simulation parameters:
+    name  source      unit  available  values
+    sfe   parameters  1     1858/1858  0.05, 0.1, 0.3
+    tff   parameters  Myr   1858/1858  0.5, 1, 3
+  Derived parameters:
+    none
+  Time-series diagnostics:
+    diagnostic         version  available  fields
+    lagrangian_radii   v1       1858/1858  stellar_mass [Msun], r_l50 [pc], ...;
+                                               choices: center=origin,stellar_com
+                                               (default stellar_com)
   Grid coverage:
     Expected combinations: 1900
     Indexed combinations: 1858

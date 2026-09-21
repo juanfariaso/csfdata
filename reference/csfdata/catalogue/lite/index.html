@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../configuration/">
+        <link rel="prev" href="../diagnostics/">
       
       
         <link rel="next" href="../metadata/">
@@ -839,6 +839,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    csfdata.catalogue.diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1631,7 +1659,7 @@ catalogue operations continue to work on a lite root in the usual way.</p>
               </td>
             </tr>
             <tr class="doc-section-item">
-              <td><code><a class="autorefs autorefs-internal" title="            import_lite_collection(source_catalogue, collection_id, destination, overwrite=False) (csfdata.catalogue.lite.import_lite_collection)" href="#csfdata.catalogue.lite.import_lite_collection">import_lite_collection</a></code></td>
+              <td><code><a class="autorefs autorefs-internal" title="            import_lite_collection(source_catalogue, collection_id, destination, overwrite=False, progress=None) (csfdata.catalogue.lite.import_lite_collection)" href="#csfdata.catalogue.lite.import_lite_collection">import_lite_collection</a></code></td>
               <td>
                 <div class="doc-md-description">
                   <p>Import one full-catalogue collection as a local lite catalogue.</p>
@@ -1781,8 +1809,7 @@ catalogue operations continue to work on a lite root in the usual way.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">28</span>
-<span class="normal">29</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
@@ -1795,7 +1822,8 @@ catalogue operations continue to work on a lite root in the usual way.</p>
 <span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
-<span class="normal">42</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">42</span>
+<span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">LiteSource</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Provenance needed to read raw data for one lite collection.</span>
 
@@ -1955,8 +1983,7 @@ catalogue operations continue to work on a lite root in the usual way.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">45</span>
-<span class="normal">46</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
@@ -1969,7 +1996,8 @@ catalogue operations continue to work on a lite root in the usual way.</p>
 <span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
-<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">59</span>
+<span class="normal">60</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">LiteImportReport</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Summary of one completed lite-collection import.</span>
 
@@ -2079,8 +2107,7 @@ catalogue operations continue to work on a lite root in the usual way.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">62</span>
-<span class="normal">63</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">63</span>
 <span class="normal">64</span>
 <span class="normal">65</span>
 <span class="normal">66</span>
@@ -2092,7 +2119,8 @@ catalogue operations continue to work on a lite root in the usual way.</p>
 <span class="normal">72</span>
 <span class="normal">73</span>
 <span class="normal">74</span>
-<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">file_sha256</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">75</span>
+<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">file_sha256</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SHA-256 digest of one regular file.</span>
 
 <span class="sd">    Args:</span>
@@ -2116,7 +2144,7 @@ catalogue operations continue to work on a lite root in the usual way.</p>
 
 
 <h2 id="csfdata.catalogue.lite.import_lite_collection" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">import_lite_collection</span><span class="p">(</span><span class="n">source_catalogue</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">import_lite_collection</span><span class="p">(</span><span class="n">source_catalogue</span><span class="p">,</span> <span class="n">collection_id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 </h2>
 
@@ -2199,6 +2227,23 @@ catalogue operations continue to work on a lite root in the usual way.</p>
             </td>
             <td>
                   <code>False</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>progress</code>
+            </td>
+            <td>
+                  <code><span title="collections.abc.Callable">Callable</span>[[<span title="int">int</span>, <span title="int">int</span>, <span title="str">str</span>], None] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional callback forwarded to the final local catalogue
+indexing pass after transfer completes.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -2297,8 +2342,7 @@ Remote transfers use the caller's ordinary SSH credentials.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 78</span>
-<span class="normal"> 79</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 79</span>
 <span class="normal"> 80</span>
 <span class="normal"> 81</span>
 <span class="normal"> 82</span>
@@ -2444,11 +2488,18 @@ Remote transfers use the caller's ordinary SSH credentials.</p>
 <span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
-<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_lite_collection</span><span class="p">(</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_lite_collection</span><span class="p">(</span>
     <span class="n">source_catalogue</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">collection_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">destination</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LiteImportReport</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Import one full-catalogue collection as a local lite catalogue.</span>
 
@@ -2457,6 +2508,8 @@ Remote transfers use the caller's ordinary SSH credentials.</p>
 <span class="sd">        collection_id: ID of the one collection to mirror.</span>
 <span class="sd">        destination: New or compatible existing local lite catalogue root.</span>
 <span class="sd">        overwrite: Whether existing local lite files may be replaced.</span>
+<span class="sd">        progress: Optional callback forwarded to the final local catalogue</span>
+<span class="sd">            indexing pass after transfer completes.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Summary of the imported lite catalogue and its source provenance.</span>
@@ -2585,7 +2638,9 @@ Remote transfers use the caller's ordinary SSH credentials.</p>
             <span class="p">),</span>
             <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="n">index_report</span> <span class="o">=</span> <span class="n">index_catalogue</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+    <span class="c1"># rsync reports transfer progress itself; the callback covers the separate</span>
+    <span class="c1"># local indexing stage that follows a successful transfer.</span>
+    <span class="n">index_report</span> <span class="o">=</span> <span class="n">index_catalogue</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">LiteImportReport</span><span class="p">(</span>
         <span class="n">destination</span><span class="p">,</span>
         <span class="n">source</span><span class="p">,</span>
@@ -2668,16 +2723,16 @@ Remote transfers use the caller's ordinary SSH credentials.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
 <span class="normal">235</span>
 <span class="normal">236</span>
-<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_lite_catalogue</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_lite_catalogue</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return whether a path is the root of a version-1 lite catalogue.</span>
 
 <span class="sd">    Args:</span>
@@ -2801,13 +2856,7 @@ Remote transfers use the caller's ordinary SSH credentials.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>csfdata/catalogue/lite.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
@@ -2831,7 +2880,13 @@ Remote transfers use the caller's ordinary SSH credentials.</p>
 <span class="normal">267</span>
 <span class="normal">268</span>
 <span class="normal">269</span>
-<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lite_source</span><span class="p">(</span><span class="n">lite_catalogue</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LiteSource</span><span class="p">:</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_lite_source</span><span class="p">(</span><span class="n">lite_catalogue</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LiteSource</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the source provenance recorded in one lite catalogue.</span>
 
 <span class="sd">    Args:</span>
