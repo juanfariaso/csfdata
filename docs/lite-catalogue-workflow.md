@@ -37,8 +37,8 @@ From a node that can read the full catalogue, create the lite working copy:
 ```bash
 csfdata import-lite \
   /path/to/source-catalogue \
-  --collection example-collection \
-  /path/to/working-directory
+  /path/to/working-directory \
+  --collection example-collection
 ```
 
 The default root name is `catalogue`, so this creates:
@@ -62,9 +62,9 @@ The collection ID appears only below `collections/`. The root is always named
 ```bash
 csfdata import-lite \
   /path/to/source-catalogue \
+  /path/to/working-directory \
   --collection example-collection \
-  --root analysis-catalogue \
-  /path/to/working-directory
+  --root analysis-catalogue
 ```
 
 Re-run the same import to fill missing lite-catalogue files. It checks that the
@@ -76,8 +76,8 @@ To import directly from a remote source, use the normal SSH source syntax:
 ```bash
 csfdata import-lite \
   USER@HOST:/path/to/source-catalogue \
-  --collection example-collection \
-  /path/to/working-directory
+  /path/to/working-directory \
+  --collection example-collection
 ```
 
 CSFData runs `rsync` internally. SSH handles the caller's usual credentials.

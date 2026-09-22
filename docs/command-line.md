@@ -94,7 +94,7 @@ Copy the exact snapshots selected in a manifest into its matching lite
 catalogue:
 
 ```bash
-csfdata import-snapshots /path/to/lite-catalogue snapshots.yaml
+csfdata import-snapshots snapshots.yaml /path/to/lite-catalogue
 ```
 
 The command verifies the manifest against the lite catalogue's `lite.yaml` and
@@ -244,8 +244,7 @@ transfer, the number with issues, and the report path.
 Use `import` after reviewing a validation report:
 
 ```bash
-csfdata import /shared/group/csf-catalogue \
-  --report validation-report.yaml \
+csfdata import validation-report.yaml /shared/group/csf-catalogue \
   --collection collection.yaml
 ```
 
@@ -253,8 +252,7 @@ Before a real transfer, use `--dry-run` to run the same preflight checks
 without creating catalogue directories or copying files:
 
 ```bash
-csfdata import /shared/group/csf-catalogue \
-  --report validation-report.yaml \
+csfdata import validation-report.yaml /shared/group/csf-catalogue \
   --collection collection.yaml \
   --dry-run
 ```

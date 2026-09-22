@@ -131,7 +131,7 @@ parameter rather than a physical Myr value.
 Then copy the approved snapshots into that same lite catalogue:
 
 ```bash
-csfdata import-snapshots /path/to/lite-catalogue snapshots.yaml
+csfdata import-snapshots snapshots.yaml /path/to/lite-catalogue
 ```
 
 The importer checks the source identity and local snapshot inventory before it

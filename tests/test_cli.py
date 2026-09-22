@@ -127,9 +127,8 @@ optional_parameters: []
     dry_run_exit_code = main(
         [
             "import",
-            str(catalogue_root),
-            "--report",
             str(report_path),
+            str(catalogue_root),
             "--collection",
             str(collection_path),
             "--dry-run",
@@ -144,9 +143,8 @@ optional_parameters: []
     exit_code = main(
         [
             "import",
-            str(catalogue_root),
-            "--report",
             str(report_path),
+            str(catalogue_root),
             "--collection",
             str(collection_path),
         ]

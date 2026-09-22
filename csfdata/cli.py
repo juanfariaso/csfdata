@@ -75,15 +75,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
     )
     import_parser.add_argument(
-        "root",
+        "report",
         type=Path,
-        help="Existing catalogue root; collection folders are created below it.",
+        help="Reviewed YAML validation report.",
     )
     import_parser.add_argument(
-        "--report",
+        "destination",
         type=Path,
-        required=True,
-        help="Reviewed YAML validation report.",
+        help="Existing catalogue root; collection folders are created below it.",
     )
     import_parser.add_argument(
         "--collection",
@@ -237,14 +236,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Copy manifest-selected raw snapshots into a lite catalogue.",
     )
     import_snapshots_parser.add_argument(
-        "root",
-        type=Path,
-        help="Lite catalogue root that will receive the snapshots.",
-    )
-    import_snapshots_parser.add_argument(
         "manifest",
         type=Path,
         help="YAML manifest written by list-snapshots.",
+    )
+    import_snapshots_parser.add_argument(
+        "destination",
+        type=Path,
+        help="Lite catalogue root that will receive the snapshots.",
     )
     import_snapshots_parser.add_argument(
         "--overwrite",
@@ -271,7 +270,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return validate_grid(args.root, args.report, parser=validate_parser)
     if args.command == "import":
         return import_collection(
-            args.root,
+            args.destination,
             args.report,
             args.collection,
             parser=import_parser,
@@ -315,8 +314,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     if args.command == "import-snapshots":
         return import_snapshots_command(
-            args.root,
             args.manifest,
+            args.destination,
             overwrite=args.overwrite,
             parser=import_snapshots_parser,
         )
@@ -560,16 +559,16 @@ def refresh_snapshot_times_command(
 
 
 def import_snapshots_command(
-    lite_catalogue: Path,
     manifest_path: Path,
+    lite_catalogue: Path,
     overwrite: bool = False,
     parser: argparse.ArgumentParser | None = None,
 ) -> int:
     """Import manifest-selected raw snapshots into a lite catalogue.
 
     Args:
-        lite_catalogue: Local lite catalogue that will receive snapshots.
         manifest_path: YAML manifest created by ``list-snapshots``.
+        lite_catalogue: Local lite catalogue that will receive snapshots.
         overwrite: Whether existing local snapshot files may be replaced.
         parser: Optional CLI parser used to present transfer errors.
 
