@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import socket
+import sqlite3
 
 import h5py
 import pytest
@@ -18,6 +19,7 @@ from csfdata.catalogue.registry import index_catalogue
 from csfdata.catalogue.snapshots import (
     clear_snapshots,
     import_snapshots,
+    read_snapshot_times,
     refresh_snapshot_times,
 )
 from csfdata.cli import main
@@ -76,6 +78,9 @@ optional_parameters: []
         ),
     )
     assert progress == [(1, 1, "0001")]
+    inventory = read_snapshot_times(catalogue, "example-collection")
+    assert [record.time for record in inventory.snapshots["0001"]] == [0.0, 10.0, 20.0]
+    assert inventory.snapshots["0001"][-1].path == Path("raw/dcaf_output/stars_002.amuse")
 
     manifest = tmp_path / "snapshots.yaml"
     assert main(
@@ -154,22 +159,31 @@ optional_parameters: []
     source_snapshot.parent.mkdir(parents=True)
     source_snapshot.write_bytes(b"snapshot")
     collection_hash = file_sha256(source_collection / "collection.yaml")
-    inventory = {
-        "schema_version": 2,
-        "collection_id": collection_id,
-        "collection_sha256": collection_hash,
-        "summary": {"simulations": 1, "snapshots": 1, "simulations_with_issues": 0},
-        "snapshot_times": {
-            "0001": [
-                {"path": "raw/stars_000.amuse", "time": 10.0, "size_bytes": 8}
-            ]
-        },
-        "issues": {},
-    }
-    (lite_collection / "snapshot-times.yaml").write_text(
-        yaml.safe_dump(inventory, sort_keys=False),
-        encoding="utf-8",
-    )
+    with sqlite3.connect(lite_collection / "snapshot-times.sqlite") as connection:
+        connection.executescript(
+            """
+            CREATE TABLE inventory (
+                schema_version INTEGER NOT NULL,
+                collection_id TEXT NOT NULL,
+                collection_sha256 TEXT NOT NULL
+            );
+            CREATE TABLE snapshots (
+                simulation_id TEXT NOT NULL,
+                relative_path TEXT NOT NULL,
+                time REAL NOT NULL,
+                size_bytes INTEGER NOT NULL
+            );
+            CREATE TABLE issues (simulation_id TEXT NOT NULL, message TEXT NOT NULL);
+            """
+        )
+        connection.execute(
+            "INSERT INTO inventory VALUES (?, ?, ?)",
+            (1, collection_id, collection_hash),
+        )
+        connection.execute(
+            "INSERT INTO snapshots VALUES (?, ?, ?, ?)",
+            ("0001", "raw/stars_000.amuse", 10.0, 8),
+        )
     (lite / "lite.yaml").write_text(
         yaml.safe_dump(
             {

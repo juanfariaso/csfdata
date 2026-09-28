@@ -202,7 +202,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     snapshots_parser.add_argument(
         "root",
         type=Path,
-        help="Indexed full or lite catalogue root with snapshot-times.yaml.",
+        help="Indexed full or lite catalogue root with snapshot-times.sqlite.",
     )
     snapshots_parser.add_argument(
         "--collection",
@@ -980,13 +980,17 @@ def import_collection(
     print(f"Catalogue root: {catalogue_root}")
     if dry_run:
         return 0
-    # The inventory uses the registry's stable simulation IDs created by import.
+    # The refresh uses stable simulation IDs from the initial registry.
     index_catalogue(catalogue_root, collection.collection_id)
-    return refresh_snapshot_times_command(
+    refresh_status = refresh_snapshot_times_command(
         catalogue_root,
         collection.collection_id,
         parser=parser,
     )
+    # Store even partial refresh results so snapshot selection can use every
+    # readable record while the command still reports any refresh failures.
+    index_catalogue(catalogue_root, collection.collection_id)
+    return refresh_status
 
 
 if __name__ == "__main__":

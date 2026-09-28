@@ -82,6 +82,33 @@ class CatalogueSimulation:
         """
         return SimulationDiagnostics(self.path, self.path.parent.parent)
 
+    def __str__(self) -> str:
+        """Return this simulation's concise catalogue identity.
+
+        Returns:
+            Collection and simulation IDs followed by the importing adapter.
+        """
+        return f"{self.collection_id}/{self.simulation_id} [{self.importer}]"
+
+    def __repr__(self) -> str:
+        """Return a complete representation for interactive inspection.
+
+        Returns:
+            Class name and the stored identity, importer, and local path.
+
+        Notes:
+            This representation uses only the fields already stored on the
+            object. It does not load configuration, diagnostics, or raw data.
+        """
+        return (
+            "CatalogueSimulation(\n"
+            f"  collection_id={self.collection_id!r},\n"
+            f"  simulation_id={self.simulation_id!r},\n"
+            f"  importer={self.importer!r},\n"
+            f"  path={str(self.path)!r}\n"
+            ")"
+        )
+
 
 def _index_scalar_value(value: str | int | float | bool) -> tuple[str, float | None, str | None]:
     """Convert one catalogue scalar to the SQLite comparison representation.
@@ -203,7 +230,6 @@ def index_catalogue(
             if diagnostics_path.is_file()
             else None
         )
-
         for simulation_root in simulation_roots:
             metadata = read_simulation_metadata(simulation_root / "metadata.yaml")
             if metadata.collection_id != collection.collection_id:
@@ -392,6 +418,9 @@ def index_catalogue(
                 );
             """
         )
+        # Snapshot records now belong to each collection's dedicated SQLite
+        # inventory. Remove rows left by the short-lived global-table layout.
+        connection.execute("DROP TABLE IF EXISTS snapshot_times")
         indexed_collection_ids = tuple(row[0] for row in collection_rows)
         if collection_id is None:
             connection.execute("DELETE FROM time_series_products")

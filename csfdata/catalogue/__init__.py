@@ -1,5 +1,6 @@
 """Catalogue configuration, metadata, and indexing for simulation collections."""
 
+from csfdata.catalogue.collection import CollectionConfiguration, read_collection
 from csfdata.catalogue.diagnostics import (
     ChoiceDefinition,
     CollectionDiagnostics,
@@ -38,6 +39,7 @@ from csfdata.catalogue.registry import (
 
 __all__ = [
     "CatalogueSimulation",
+    "CollectionConfiguration",
     "ChoiceDefinition",
     "CollectionDiagnostics",
     "DiagnosticDefinition",
@@ -61,6 +63,7 @@ __all__ = [
     "missing_combinations",
     "read_lite_source",
     "read_collection_diagnostics",
+    "read_collection",
     "read_simulation_scalar_diagnostics",
     "simulation_scalar_diagnostics_path",
     "summarize_catalogue",

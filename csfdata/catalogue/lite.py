@@ -168,8 +168,8 @@ def import_lite_collection(
         [
             "rsync",
             "-rt",
-            f"{source_collection_argument.rstrip('/')}/snapshot-times.yaml",
-            str(destination_collection / "snapshot-times.yaml"),
+            f"{source_collection_argument.rstrip('/')}/snapshot-times.sqlite",
+            str(destination_collection / "snapshot-times.sqlite"),
         ],
         check=True,
     )

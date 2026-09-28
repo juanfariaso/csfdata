@@ -25,6 +25,23 @@ Each collection is one coherent simulation grid or campaign. Simulation IDs
 such as `0001` are permanent within their collection. Different code families,
 for example future MHD simulations, belong in separate collections.
 
+## Read A Collection
+
+Use [`read_collection`](reference/csfdata/catalogue/collection.md#csfdata.catalogue.collection.read_collection)
+to access collection-level configuration by catalogue root and collection ID.
+Callers do not need to construct paths inside the catalogue:
+
+```python
+from csfdata.catalogue import read_collection
+
+collection = read_collection("/path/to/catalogue", "collection-id")
+grid_axes = dict(collection.grid_axes)
+```
+
+`grid_axes` contains the expected values for independently varied parameters
+when the collection declares them. It is empty when the collection does not
+define an expected Cartesian grid.
+
 ## Simulation Records
 
 Each imported simulation has two top-level YAML records:
@@ -194,7 +211,7 @@ Import it with `csfdata import-lite`, compute derived data inside the lite
 catalogue, then use `csfdata analysis import-derived` from a writable node to
 validate and copy only completed products back into the recorded source.
 
-Each full collection also has one `snapshot-times.yaml` inventory. It records
+Each full collection also has one `snapshot-times.sqlite` inventory. It records
 snapshot paths, times, and sizes for the whole collection and is created after
 an import. Run `csfdata refresh-snapshot-times` after raw files change. Lite
 imports copy this small file, allowing snapshot selection without accessing the

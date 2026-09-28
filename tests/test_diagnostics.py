@@ -5,6 +5,7 @@ from pathlib import Path, PurePosixPath
 import h5py
 import pytest
 
+import csfdata.catalogue.diagnostics as catalogue_diagnostics
 from csfdata.catalogue import CatalogueSimulation
 from csfdata.catalogue.diagnostics import (
     ChoiceDefinition,
@@ -92,6 +93,42 @@ def test_collection_diagnostics_rejects_unknown_choice() -> None:
         CollectionDiagnostics(choices=(), diagnostics=(diagnostic,))
 
 
+def test_diagnostic_name_selects_the_latest_declared_version(tmp_path: Path) -> None:
+    """A versionless lookup follows collection declaration order, not file order."""
+    collection_root = tmp_path / "collection"
+    collection_root.mkdir()
+    definitions = tuple(
+        DiagnosticDefinition(
+            "example",
+            version,
+            "time_series",
+            "Synthetic time-series result.",
+            PurePosixPath(f"derived/diagnostics/example/{version}/series.h5"),
+            (DiagnosticField("value", "Synthetic value.", None),),
+        )
+        for version in ("v1", "v2")
+    )
+    write_collection_diagnostics(
+        CollectionDiagnostics(choices=(), diagnostics=definitions),
+        collection_diagnostics_path(collection_root),
+    )
+    simulation_root = collection_root / "simulations" / "0001"
+    for definition in definitions:
+        output_path = simulation_root / definition.relative_path
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        with h5py.File(output_path, "w") as output:
+            output.attrs["complete"] = True
+            output.attrs["format_schema_version"] = 2
+            output.attrs["diagnostic_name"] = definition.name
+            output.attrs["diagnostic_version"] = int(definition.version[1:])
+            output.create_dataset("time", data=(0.0,))
+            output.create_dataset("value", data=(1.0,))
+
+    simulation = CatalogueSimulation("collection", "0001", simulation_root, "dcaf")
+
+    assert simulation.diagnostics.time_series["example"].definition.version == "v2"
+
+
 def test_simulation_scalar_diagnostics_round_trip(tmp_path: Path) -> None:
     """Persist choice-specific scalar results using their published schema."""
     diagnostics = CollectionDiagnostics(
@@ -134,7 +171,7 @@ def test_simulation_scalar_diagnostics_round_trip(tmp_path: Path) -> None:
     assert read_simulation_scalar_diagnostics(path, diagnostics) == scalar_diagnostics
 
 
-def test_catalogue_simulation_exposes_lazy_diagnostic_results(tmp_path: Path) -> None:
+def test_catalogue_simulation_exposes_lazy_diagnostic_results(tmp_path: Path, monkeypatch) -> None:
     """One simulation provides inspectable, lazy time-series and scalar results."""
     collection_root = tmp_path / "catalogue" / "collections" / "example-grid"
     simulation_root = collection_root / "simulations" / "0001"
@@ -219,7 +256,19 @@ def test_catalogue_simulation_exposes_lazy_diagnostic_results(tmp_path: Path) ->
     assert radii.fields == {"r_l50": "pc", "n_stars": "1"}
     assert radii.choices == {"center": ("origin", "stellar_com")}
     assert radii.available_choices == ({"center": "stellar_com"},)
+
+    file_opens = 0
+    open_file = catalogue_diagnostics.h5py.File
+
+    def count_file_opens(*args, **kwargs):
+        """Count time-series file opens while preserving normal HDF5 access."""
+        nonlocal file_opens
+        file_opens += 1
+        return open_file(*args, **kwargs)
+
+    monkeypatch.setattr(catalogue_diagnostics.h5py, "File", count_file_opens)
     assert radii.read({"center": "stellar_com"}, ("r_l50",))["time"].tolist() == [1.0, 2.0]
+    assert file_opens == 1
     assert radii.read({"center": "stellar_com"}, ("r_l50",))["r_l50"].tolist() == [1.5, 2.5]
     assert list(radii.iter_data(("n_stars",)))[0][1]["n_stars"].tolist() == [10, 20]
     assert rates.complete is True
@@ -228,4 +277,25 @@ def test_catalogue_simulation_exposes_lazy_diagnostic_results(tmp_path: Path) ->
         {"center": "stellar_com"},
     )
     assert rates.read({"center": "stellar_com"}) == {"dRdt": 0.12}
-    assert "available_choices" in repr(simulation.diagnostics)
+    assert simulation.diagnostics.time_series["lagrangian_radii"] == radii
+    assert simulation.diagnostics.scalar["expansion_rate"] == rates
+    assert repr(simulation.diagnostics) == (
+        "SimulationDiagnostics(\n"
+        "  Time series:\n"
+        "    lagrangian_radii [v1] | fields: r_l50, n_stars | "
+        "choices: center=stellar_com [stored: stellar_com]\n"
+        "  Scalar:\n"
+        "    expansion_rate [v1] | fields: dRdt | "
+        "choices: center=stellar_com [stored: origin, stellar_com]\n"
+        ")"
+    )
+    assert str(simulation.diagnostics) == repr(simulation.diagnostics)
+    assert str(simulation) == "example-grid/0001 [dcaf]"
+    assert repr(simulation) == (
+        "CatalogueSimulation(\n"
+        "  collection_id='example-grid',\n"
+        "  simulation_id='0001',\n"
+        "  importer='dcaf',\n"
+        f"  path='{simulation_root}'\n"
+        ")"
+    )

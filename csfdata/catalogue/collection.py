@@ -179,3 +179,44 @@ def read_collection_configuration(path: Path) -> CollectionConfiguration:
         grid_axes=tuple(parsed_grid_axes),
         lite_include=tuple(lite_include),
     )
+
+
+def read_collection(
+    catalogue_root: Path | str,
+    collection_id: str,
+) -> CollectionConfiguration:
+    """Read one collection configuration by its catalogue identity.
+
+    Args:
+        catalogue_root: Root directory of the full or lite catalogue.
+        collection_id: ID of the collection to read.
+
+    Returns:
+        Validated configuration for the requested collection.
+
+    Raises:
+        ValueError: If collection_id is empty or the collection directory and
+            its configuration declare different IDs.
+        FileNotFoundError: If the collection configuration does not exist.
+        OSError: If the configuration cannot be read.
+        yaml.YAMLError: If the configuration is not valid YAML.
+
+    Notes:
+        This is the public catalogue-level interface. The path-based
+        :func:`read_collection_configuration` parser remains available for
+        import workflows that receive a standalone collection.yaml file.
+    """
+    if not isinstance(collection_id, str) or not collection_id:
+        raise ValueError("collection_id must be a non-empty string.")
+
+    # Keep the catalogue layout private to callers while retaining the
+    # existing standalone-file parser for import and validation code.
+    configuration = read_collection_configuration(
+        Path(catalogue_root) / "collections" / collection_id / "collection.yaml"
+    )
+    if configuration.collection_id != collection_id:
+        raise ValueError(
+            "Collection directory name does not match collection.yaml id: "
+            f"{collection_id} != {configuration.collection_id}."
+        )
+    return configuration

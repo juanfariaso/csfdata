@@ -83,7 +83,7 @@ csfdata import-lite \
 CSFData runs `rsync` internally. SSH handles the caller's usual credentials.
 Raw snapshots are excluded, while any files declared under `lite.include` in
 the source `collection.yaml` are retained. The collection-level
-`snapshot-times.yaml` inventory is also copied, so the lite catalogue can list
+`snapshot-times.sqlite` inventory is also copied, so the lite catalogue can list
 available remote snapshots locally without starting CSFData on the source host.
 
 ## 2. Compute On A Worker Node

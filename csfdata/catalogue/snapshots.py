@@ -1,17 +1,18 @@
-"""Maintain collection snapshot inventories and select cached raw snapshots.
+"""Maintain SQLite snapshot inventories and select cached raw snapshots.
 
-One ``snapshot-times.yaml`` file belongs to each collection. It records the
+One ``snapshot-times.sqlite`` file belongs to each collection. It records the
 time, size, and relative path of every usable primary snapshot, allowing full
 and lite catalogues to select snapshots without reopening raw output files.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 import math
 from pathlib import Path
 import socket
+import sqlite3
 import subprocess
 
 import yaml
@@ -60,7 +61,7 @@ class SnapshotTimeRefreshReport:
     """Summary of one collection snapshot-inventory refresh.
 
     Args:
-        inventory_path: Written ``snapshot-times.yaml`` path.
+        inventory_path: Written ``snapshot-times.sqlite`` path.
         simulation_count: Number of indexed simulations inspected.
         snapshot_count: Number of usable snapshots recorded.
         issues: Failures grouped by simulation ID.
@@ -214,39 +215,60 @@ def refresh_snapshot_times(
         snapshots,
         issues,
     )
-    inventory_path = collection_root / "snapshot-times.yaml"
-    inventory_path.write_text(
-        yaml.safe_dump(
-            {
-                "schema_version": 2,
-                "collection_id": inventory.collection_id,
-                "collection_sha256": inventory.collection_sha256,
-                "summary": {
-                    "simulations": len(simulations),
-                    "snapshots": sum(len(records) for records in snapshots.values()),
-                    "simulations_with_issues": len(issues),
-                },
-                "snapshot_times": {
-                    simulation_id: [
-                        {
-                            "path": str(record.path),
-                            "time": record.time,
-                            "size_bytes": record.size_bytes,
-                        }
-                        for record in records
-                    ]
-                    for simulation_id, records in snapshots.items()
-                },
-                "issues": {
-                    simulation_id: list(messages)
-                    for simulation_id, messages in issues.items()
-                },
-            },
-            allow_unicode=False,
-            sort_keys=False,
-        ),
-        encoding="utf-8",
-    )
+    inventory_path = collection_root / "snapshot-times.sqlite"
+    with sqlite3.connect(inventory_path) as connection:
+        # The inventory is a collection-local database so lite copies can
+        # transfer exactly one collection without copying the global registry.
+        connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS inventory (
+                schema_version INTEGER NOT NULL,
+                collection_id TEXT NOT NULL,
+                collection_sha256 TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS snapshots (
+                simulation_id TEXT NOT NULL,
+                relative_path TEXT NOT NULL,
+                time REAL NOT NULL,
+                size_bytes INTEGER NOT NULL,
+                PRIMARY KEY (simulation_id, relative_path)
+            );
+            CREATE INDEX IF NOT EXISTS snapshot_time_lookup
+                ON snapshots (simulation_id, time);
+            CREATE TABLE IF NOT EXISTS issues (
+                simulation_id TEXT NOT NULL,
+                message TEXT NOT NULL,
+                PRIMARY KEY (simulation_id, message)
+            );
+            """
+        )
+        # Replacing all rows in one transaction removes stale snapshots while
+        # preserving the prior complete inventory if this refresh is interrupted.
+        connection.execute("DELETE FROM inventory")
+        connection.execute("DELETE FROM snapshots")
+        connection.execute("DELETE FROM issues")
+        connection.execute(
+            "INSERT INTO inventory (schema_version, collection_id, collection_sha256) "
+            "VALUES (?, ?, ?)",
+            (1, inventory.collection_id, inventory.collection_sha256),
+        )
+        connection.executemany(
+            "INSERT INTO snapshots (simulation_id, relative_path, time, size_bytes) "
+            "VALUES (?, ?, ?, ?)",
+            [
+                (simulation_id, str(record.path), record.time, record.size_bytes)
+                for simulation_id, records in inventory.snapshots.items()
+                for record in records
+            ],
+        )
+        connection.executemany(
+            "INSERT INTO issues (simulation_id, message) VALUES (?, ?)",
+            [
+                (simulation_id, message)
+                for simulation_id, messages in inventory.issues.items()
+                for message in messages
+            ],
+        )
     return SnapshotTimeRefreshReport(
         inventory_path,
         len(simulations),
@@ -258,12 +280,15 @@ def refresh_snapshot_times(
 def read_snapshot_times(
     catalogue_root: Path | str,
     collection_id: str,
+    simulation_ids: Sequence[str] | None = None,
 ) -> SnapshotTimeInventory:
-    """Read and validate one collection's durable snapshot inventory.
+    """Read and validate one collection's SQLite snapshot inventory.
 
     Args:
         catalogue_root: Full or lite catalogue root containing the collection.
         collection_id: Expected collection ID.
+        simulation_ids: Optional simulation IDs to read. When omitted, read
+            every recorded simulation in the collection.
 
     Returns:
         Parsed snapshot paths, times, sizes, and refresh issues.
@@ -275,58 +300,74 @@ def read_snapshot_times(
     root = Path(catalogue_root).resolve()
     collection_root = root / "collections" / collection_id
     collection_path = collection_root / "collection.yaml"
-    inventory_path = collection_root / "snapshot-times.yaml"
+    inventory_path = collection_root / "snapshot-times.sqlite"
     if not collection_path.is_file():
         raise FileNotFoundError(f"Collection configuration is missing: {collection_path}")
-    with inventory_path.open(encoding="utf-8") as stream:
-        contents = yaml.safe_load(stream)
-    if not isinstance(contents, dict) or contents.get("schema_version") != 2:
-        raise ValueError("Snapshot inventory must use schema_version 2; refresh it first.")
-    collection_sha256 = contents.get("collection_sha256")
-    if contents.get("collection_id") != collection_id or not isinstance(collection_sha256, str):
-        raise ValueError("Snapshot inventory has an invalid collection identity.")
-    if collection_sha256 != file_sha256(collection_path):
-        raise ValueError("Snapshot inventory does not match collection.yaml; refresh it first.")
-    stored_snapshots = contents.get("snapshot_times")
-    stored_issues = contents.get("issues")
-    if not isinstance(stored_snapshots, dict) or not isinstance(stored_issues, dict):
-        raise ValueError("Snapshot inventory must contain snapshot_times and issues mappings.")
+    if not inventory_path.is_file():
+        raise FileNotFoundError(
+            f"Snapshot inventory is missing: {inventory_path}. Run refresh-snapshot-times first."
+        )
+    if simulation_ids is not None and not all(isinstance(value, str) for value in simulation_ids):
+        raise ValueError("simulation_ids must be a sequence of simulation ID strings.")
 
-    snapshots: dict[str, tuple[SnapshotTime, ...]] = {}
-    for simulation_id, values in stored_snapshots.items():
-        if not isinstance(simulation_id, str) or not isinstance(values, list):
-            raise ValueError("Snapshot inventory has an invalid snapshot_times entry.")
-        records: list[SnapshotTime] = []
-        for value in values:
-            if not isinstance(value, dict):
-                raise ValueError("Snapshot inventory has an invalid snapshot record.")
-            path = value.get("path")
-            time = value.get("time")
-            size_bytes = value.get("size_bytes")
-            if (
-                not isinstance(path, str)
-                or not path.startswith("raw/")
-                or Path(path).is_absolute()
-                or ".." in Path(path).parts
-                or not isinstance(time, (int, float))
-                or isinstance(time, bool)
-                or not isinstance(size_bytes, int)
-                or isinstance(size_bytes, bool)
-                or size_bytes < 0
-            ):
-                raise ValueError("Snapshot inventory has an invalid snapshot record.")
-            records.append(SnapshotTime(Path(path), float(time), size_bytes))
-        snapshots[simulation_id] = tuple(records)
-    issues: dict[str, tuple[str, ...]] = {}
-    for simulation_id, messages in stored_issues.items():
+    with sqlite3.connect(inventory_path) as connection:
+        # Validate both the collection identity and schema before trusting
+        # paths that may later be sent to rsync or opened by analysis code.
+        inventory_table = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'inventory'"
+        ).fetchone()
+        if inventory_table is None:
+            raise ValueError("Snapshot inventory has an unsupported schema; refresh it first.")
+        metadata = connection.execute(
+            "SELECT schema_version, collection_id, collection_sha256 FROM inventory"
+        ).fetchone()
+        if metadata is None or metadata[0] != 1 or metadata[1] != collection_id:
+            raise ValueError("Snapshot inventory has an invalid collection identity.")
+        collection_sha256 = metadata[2]
+        if collection_sha256 != file_sha256(collection_path):
+            raise ValueError("Snapshot inventory does not match collection.yaml; refresh it first.")
+
+        where = ""
+        arguments: list[str] = []
+        if simulation_ids:
+            where = " WHERE simulation_id IN (" + ", ".join("?" for _ in simulation_ids) + ")"
+            arguments.extend(simulation_ids)
+        rows = connection.execute(
+            "SELECT simulation_id, relative_path, time, size_bytes FROM snapshots"
+            + where
+            + " ORDER BY simulation_id, time, relative_path",
+            arguments,
+        ).fetchall()
+        issue_rows = connection.execute(
+            "SELECT simulation_id, message FROM issues"
+            + where
+            + " ORDER BY simulation_id, message",
+            arguments,
+        ).fetchall()
+
+    snapshots: dict[str, list[SnapshotTime]] = {}
+    for simulation_id, path, time, size_bytes in rows:
+        relative_path = Path(path)
         if (
-            not isinstance(simulation_id, str)
-            or not isinstance(messages, list)
-            or not all(isinstance(message, str) for message in messages)
+            not relative_path.parts
+            or relative_path.parts[0] != "raw"
+            or relative_path.is_absolute()
+            or ".." in relative_path.parts
+            or size_bytes < 0
         ):
-            raise ValueError("Snapshot inventory has an invalid issues entry.")
-        issues[simulation_id] = tuple(messages)
-    return SnapshotTimeInventory(collection_id, collection_sha256, snapshots, issues)
+            raise ValueError("Snapshot inventory has an invalid snapshot record.")
+        snapshots.setdefault(simulation_id, []).append(
+            SnapshotTime(relative_path, float(time), int(size_bytes))
+        )
+    issues: dict[str, list[str]] = {}
+    for simulation_id, message in issue_rows:
+        issues.setdefault(simulation_id, []).append(message)
+    return SnapshotTimeInventory(
+        collection_id,
+        collection_sha256,
+        {simulation_id: tuple(records) for simulation_id, records in snapshots.items()},
+        {simulation_id: tuple(messages) for simulation_id, messages in issues.items()},
+    )
 
 
 def list_snapshots(

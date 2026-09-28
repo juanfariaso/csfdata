@@ -157,7 +157,7 @@ optional_parameters: []
         catalogue_root
         / "collections"
         / "dcaf-tff-grid-v1"
-        / "snapshot-times.yaml"
+        / "snapshot-times.sqlite"
     ).is_file()
     assert (
         catalogue_root
@@ -187,7 +187,7 @@ def test_refresh_snapshot_times_without_collection_refreshes_every_collection(
     ) -> SnapshotTimeRefreshReport:
         refreshed.append(collection_id)
         return SnapshotTimeRefreshReport(
-            catalogue / "collections" / collection_id / "snapshot-times.yaml",
+            catalogue / "collections" / collection_id / "snapshot-times.sqlite",
             1,
             2,
             {},

@@ -587,13 +587,21 @@ class SimulationDiagnostic:
             )
 
         if self.definition.kind == "time_series":
-            if not self.complete:
-                raise KeyError(f"Time-series diagnostic is unavailable: {self.path}")
             if len(self.definition.choices) > 1:
                 raise ValueError(
                     "Time-series reads currently require at most one choice dimension."
                 )
             with h5py.File(self.path, "r") as result_file:
+                # Validate the same completion contract here, in the file open
+                # that also reads data, rather than opening the HDF5 file once
+                # for validation and again immediately afterward for arrays.
+                if not (
+                    bool(result_file.attrs.get("complete", False))
+                    and result_file.attrs.get("format_schema_version") == 2
+                    and result_file.attrs.get("diagnostic_name") == self.definition.name
+                    and f"v{result_file.attrs.get('diagnostic_version')}" == self.definition.version
+                ):
+                    raise KeyError(f"Time-series diagnostic is unavailable: {self.path}")
                 source = result_file
                 if self.definition.choices:
                     choice_name = self.definition.choices[0]
@@ -679,12 +687,13 @@ class SimulationDiagnosticResults(Mapping[tuple[str, str], SimulationDiagnostic]
     collection_diagnostics: CollectionDiagnostics
     kind: DiagnosticKind
 
-    def __getitem__(self, key: tuple[str, str]) -> SimulationDiagnostic:
-        """Return one available diagnostic result by its name and version.
+    def __getitem__(self, key: tuple[str, str] | str) -> SimulationDiagnostic:
+        """Return one available diagnostic result by its identity or name.
 
         Args:
-            key: ``(name, version)`` identity, for example
-                ``("lagrangian_radii", "v1")``.
+            key: Exact ``(name, version)`` identity, for example
+                ``("lagrangian_radii", "v1")``, or a diagnostic name. A name
+                selects its latest version in collection declaration order.
 
         Returns:
             Lazy diagnostic result object.
@@ -693,10 +702,30 @@ class SimulationDiagnosticResults(Mapping[tuple[str, str], SimulationDiagnostic]
             KeyError: If the identity is invalid, belongs to another kind, or
                 is not available for this simulation.
         """
+        if isinstance(key, str):
+            # The collection declaration, rather than file order, defines the
+            # current version so an updated diagnostic stays reproducible.
+            definitions = [
+                definition
+                for definition in self.collection_diagnostics.diagnostics
+                if definition.name == key and definition.kind == self.kind
+            ]
+            if not definitions:
+                raise KeyError(f"Diagnostic is unavailable: {key}.")
+            definition = definitions[-1]
+            result = SimulationDiagnostic(
+                self.simulation_root,
+                definition,
+                self.collection_diagnostics,
+            )
+            if result.complete or (self.kind == "scalar" and result.available_choices):
+                return result
+            raise KeyError(f"Diagnostic result is unavailable: {definition.name} {definition.version}.")
+
         if not isinstance(key, tuple) or len(key) != 2 or not all(
             isinstance(value, str) for value in key
         ):
-            raise KeyError("Diagnostic keys must be (name, version) string tuples.")
+            raise KeyError("Diagnostic keys must be names or (name, version) string tuples.")
         for definition in self.collection_diagnostics.diagnostics:
             if (
                 (definition.name, definition.version) == key
@@ -791,13 +820,44 @@ class SimulationDiagnostics:
         )
 
     def __repr__(self) -> str:
-        """Return a complete compact representation for interactive inspection."""
-        return (
-            f"SimulationDiagnostics(\n"
-            f"  time_series={list(self.time_series.values())!r},\n"
-            f"  scalar={list(self.scalar.values())!r}\n"
-            f")"
-        )
+        """Return a compact inventory of this simulation's stored diagnostics.
+
+        Returns:
+            Human-readable time-series and scalar sections containing each
+            available diagnostic's identity, fields, and stored choices.
+
+        Notes:
+            The inventory reads diagnostic metadata and choice names, but does
+            not load any time-series numerical arrays.
+        """
+        lines = ["SimulationDiagnostics("]
+        for label, results in (("Time series", self.time_series), ("Scalar", self.scalar)):
+            lines.append(f"  {label}:")
+            identities = tuple(results)
+            if not identities:
+                lines.append("    none")
+                continue
+
+            # Show the collection default beside actual stored values so an
+            # interactive reader can tell both the ordinary selection and any
+            # alternative result choices without loading numerical arrays.
+            choice_definitions = {
+                choice.name: choice
+                for choice in results.collection_diagnostics.choices
+            }
+            for identity in identities:
+                result = results[identity]
+                fields = ", ".join(result.fields)
+                choices = "; ".join(
+                    f"{name}={choice_definitions[name].default} [stored: "
+                    f"{', '.join(dict(choice)[name] for choice in result.available_choices)}]"
+                    for name in result.definition.choices
+                ) or "none"
+                lines.append(
+                    f"    {identity[0]} [{identity[1]}] | fields: {fields} | choices: {choices}"
+                )
+        lines.append(")")
+        return "\n".join(lines)
 
     __str__ = __repr__
 

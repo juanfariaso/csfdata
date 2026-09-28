@@ -17,7 +17,8 @@ only after later changes.
 ## Rebuild The Registry
 
 The SQLite registry indexes every simulation's small `metadata.yaml` and
-`config.yaml` records. It does not open raw snapshots.
+`config.yaml` records plus completed diagnostic declarations. It does not open
+raw snapshots or collection snapshot inventories.
 
 Refresh one changed collection:
 
@@ -36,10 +37,10 @@ records remain the source of truth, so `registry.sqlite` can always be rebuilt.
 
 ## Refresh Snapshot Times
 
-Each collection has one `snapshot-times.yaml` inventory. It maps every usable
+Each collection has one `snapshot-times.sqlite` inventory. It maps every usable
 primary snapshot to its exact model time and source size. Lite catalogues copy
-this small inventory, allowing snapshot selection without running Python on the
-server that stores the raw data.
+this small SQLite file, allowing fast snapshot selection without running Python
+on the server that stores the raw data.
 
 Refresh one collection after adding or replacing snapshots:
 
@@ -74,7 +75,7 @@ tmux attach -t csfdata-maintenance
 ```
 
 The refresh writes only
-`collections/<collection-id>/snapshot-times.yaml`. It does not alter any
+`collections/<collection-id>/snapshot-times.sqlite`. It does not alter any
 simulation's `raw/` directory. If any snapshot cannot be read, the inventory
 still contains all successful entries, the command reports the affected
 simulations, and exits with a nonzero status. Correct the data or rerun the
@@ -83,7 +84,7 @@ refresh when the source becomes readable.
 ## Update Lite Copies
 
 After refreshing a full collection, rerun its compatible lite import to copy
-the updated `snapshot-times.yaml` and any newly available metadata or derived
+the updated `snapshot-times.sqlite` and any newly available metadata or derived
 products:
 
 ```bash
@@ -122,7 +123,7 @@ csfdata list-snapshots /path/to/lite-catalogue \
   --output snapshots.yaml
 ```
 
-The command reads the local `snapshot-times.yaml` inventory and writes
+The command reads the local `snapshot-times.sqlite` inventory and writes
 `snapshots.yaml` in the requested location. It reports simulations for which
 no snapshot is close enough to the requested time. Use
 `--normalization PARAMETER` when `--time` is a multiplier of a Myr-valued

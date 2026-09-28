@@ -54,7 +54,7 @@ optional_parameters: []
     assert (copied / "config.yaml").is_file()
     assert (copied / "derived" / "diagnostics" / "test" / "v1" / "series.h5").is_file()
     assert not (copied / "raw").exists()
-    assert (report.destination / "collections" / "grid" / "snapshot-times.yaml").is_file()
+    assert (report.destination / "collections" / "grid" / "snapshot-times.sqlite").is_file()
     assert (report.destination / "registry.sqlite").is_file()
     assert read_lite_source(report.destination).catalogue_root == source.resolve()
 
