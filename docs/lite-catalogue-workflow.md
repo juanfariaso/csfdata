@@ -69,7 +69,38 @@ csfdata import-lite \
 
 Re-run the same import to fill missing lite-catalogue files. It checks that the
 existing lite catalogue records the same full source catalogue and collection,
-and never overwrites existing files unless `--overwrite` is supplied.
+and never overwrites ordinary existing files unless `--overwrite` is supplied.
+Time-series paths named by a selection are atomically regenerated on every
+selected synchronization.
+
+To retain only selected time-series material, put the collection and requested
+diagnostics in a YAML configuration:
+
+```yaml
+schema_version: 1
+collection: example-collection
+time_series:
+  lagrangian_radii:
+    choices:
+      center: [stellar_com]
+    fields: [r_l10, r_l50, r_l90]
+  bound_fraction:
+    fields: [bound_mass_fraction]
+```
+
+Then use the configuration instead of `--collection`:
+
+```bash
+csfdata import-lite \
+  /path/to/source-catalogue \
+  /path/to/working-directory \
+  --selection derived-selection.yaml
+```
+
+Omitted ordinary fields and choices mean all. Particle-level data are omitted
+by default; request `particle_fields: all` or a field list explicitly when they
+are needed. Scalars remain complete. The normalized configuration is retained
+as `derived-selection.yaml` at the lite root.
 
 To import directly from a remote source, use the normal SSH source syntax:
 
@@ -85,6 +116,8 @@ Raw snapshots are excluded, while any files declared under `lite.include` in
 the source `collection.yaml` are retained. The collection-level
 `snapshot-times.sqlite` inventory is also copied, so the lite catalogue can list
 available remote snapshots locally without starting CSFData on the source host.
+For a selected remote time series, the complete `series.h5` is staged locally
+and filtered there. Unrequested `particles.h5` files never cross the network.
 
 ## 2. Compute On A Worker Node
 
@@ -128,8 +161,9 @@ the resulting collection and simulation counts before confirmation.
 From a node that can write to the full catalogue, import results:
 
 ```bash
-csfdata analysis import-derived /path/to/working-directory/catalogue \
-  --catalogue /path/to/source-catalogue
+csfdata analysis import-derived \
+  /path/to/working-directory/catalogue \
+  /path/to/source-catalogue
 ```
 
 The importer checks every completed HDF5 file against the destination:
@@ -144,6 +178,10 @@ Only files that pass these checks are eligible for copying. A file is complete
 only after the worker has written, validated, and atomically renamed it from a
 temporary file to `series.h5`.
 
+Filtered files created by `import-lite --selection` are source subsets rather
+than new analysis results. Their `csfdata_subset` marker makes
+`import-derived` reject them even when `--overwrite` is supplied.
+
 By default, missing destination files are copied and existing destination
 files are skipped. This makes it safe to import partial results, continue the
 worker computation, and import again later. The command reports missing,
@@ -152,16 +190,18 @@ incomplete, and mismatched results without copying them.
 Preview the import without writing anything:
 
 ```bash
-csfdata analysis import-derived /path/to/working-directory/catalogue \
-  --catalogue /path/to/source-catalogue \
+csfdata analysis import-derived \
+  /path/to/working-directory/catalogue \
+  /path/to/source-catalogue \
   --dry-run
 ```
 
 Replace an existing derived file only when that is an intentional decision:
 
 ```bash
-csfdata analysis import-derived /path/to/working-directory/catalogue \
-  --catalogue /path/to/source-catalogue \
+csfdata analysis import-derived \
+  /path/to/working-directory/catalogue \
+  /path/to/source-catalogue \
   --overwrite
 ```
 
@@ -171,7 +211,9 @@ csfdata analysis import-derived /path/to/working-directory/catalogue \
 - Keep the source catalogue available at the absolute path recorded during
   import. If it is unavailable on the worker, computation stops before reading
   snapshots.
-- Do not copy `raw/` data into the lite catalogue.
+- Do not copy arbitrary files into `raw/` manually. Use `lite.include` for
+  collection-declared support files and the snapshot import command for
+  managed local snapshot caching.
 - Do not use `--overwrite` unless the replacement is deliberate and reviewed.
 - Keep the lite catalogue until imported results have been checked and backed
   up as appropriate.

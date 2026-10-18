@@ -17,7 +17,7 @@ from tqdm import tqdm
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import read_collection_configuration
-from csfdata.catalogue.lite import import_lite_collection
+from csfdata.catalogue.lite import import_lite_collection, read_derived_selection
 from csfdata.catalogue.registry import (
     index_catalogue,
     missing_combinations,
@@ -160,8 +160,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     import_lite_parser.add_argument(
         "--collection",
-        required=True,
-        help="One collection ID to import into the lite catalogue.",
+        help="One collection ID to import; optional when --selection names it.",
+    )
+    import_lite_parser.add_argument(
+        "--selection",
+        type=Path,
+        help=(
+            "YAML selection of one collection's time-series choices and fields. "
+            "Scalars remain complete and particle fields are opt-in."
+        ),
     )
     import_lite_parser.add_argument(
         "destination",
@@ -294,6 +301,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.destination,
             root_name=args.root,
             overwrite=args.overwrite,
+            selection_path=args.selection,
             parser=import_lite_parser,
         )
     if args.command == "refresh-snapshot-times":
@@ -326,20 +334,24 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def import_lite_command(
     source_catalogue: Path | str,
-    collection_id: str,
+    collection_id: str | None,
     destination: Path,
     root_name: str = "catalogue",
     overwrite: bool = False,
+    selection_path: Path | None = None,
     parser: argparse.ArgumentParser | None = None,
 ) -> int:
     """Import one collection as a queryable lite catalogue.
 
     Args:
         source_catalogue: Local or remote full catalogue containing the collection.
-        collection_id: ID of the one collection to import.
+        collection_id: ID of the one collection to import. Optional when the
+            selection configuration names it.
         destination: Parent directory for the lite catalogue root.
         root_name: Lite catalogue root folder name below ``destination``.
         overwrite: Whether existing local lite files may be replaced.
+        selection_path: Optional YAML selection for time-series choices and
+            fields. Particle fields are omitted unless requested there.
         parser: Optional CLI parser used to present filesystem errors.
 
     Returns:
@@ -356,6 +368,11 @@ def import_lite_command(
             or root_name in {".", ".."}
         ):
             raise ValueError("Lite catalogue name must be one safe directory name.")
+        selection = (
+            read_derived_selection(selection_path)
+            if selection_path is not None
+            else None
+        )
         output_path = destination / root_name
         with tqdm(
             total=0,
@@ -376,8 +393,9 @@ def import_lite_command(
                 output_path,
                 overwrite=overwrite,
                 progress=update_progress,
+                selection=selection,
             )
-    except (OSError, ValueError, subprocess.CalledProcessError) as error:
+    except (OSError, ValueError, subprocess.CalledProcessError, yaml.YAMLError) as error:
         if parser is None:
             raise
         parser.error(str(error))

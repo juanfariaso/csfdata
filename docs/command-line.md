@@ -165,9 +165,58 @@ identity so the analysis add-on can read raw snapshots from the original
 catalogue while writing results locally. By
 default it creates `./catalogue`; give an existing directory such as
 `/path/to/working-directory` to create its `catalogue` child. Use `--root NAME` to choose
-a different lite-root folder name. Repeating the import into the same
-compatible lite catalogue copies only missing files
-and never overwrites existing files.
+a different lite-root folder name. Repeating an ordinary import into the same
+compatible lite catalogue copies only missing files and never overwrites
+existing files unless `--overwrite` is supplied. Selection-managed
+time-series files are the exception: they are atomically regenerated from the
+source each time that selection is synchronized.
+
+### Select Derived Data
+
+Use a selection configuration when a lite copy needs only part of the stored
+time-series data:
+
+```bash
+csfdata import-lite \
+  /path/to/source-catalogue \
+  /path/to/working-directory \
+  --selection derived-selection.yaml
+```
+
+The configuration names the one collection represented by the lite catalogue:
+
+```yaml
+schema_version: 1
+collection: example-collection
+time_series:
+  lagrangian_radii:
+    choices:
+      center: [stellar_com]
+    fields: [r_l10, r_l50, r_l90]
+  bound_fraction:
+    fields: [bound_mass_fraction, bound_number_fraction]
+    particle_fields: [bound]
+```
+
+Only listed time-series diagnostics are copied. Omitted `choices` and `fields`
+retain all available choices and ordinary fields. Particle-level data are
+opt-in: omit `particle_fields` or use an empty list to exclude `particles.h5`,
+use `particle_fields: all` for every particle field, or list individual fields.
+Scalar diagnostics are always copied completely. An optional `version: v1`
+selects an exact version; otherwise the latest collection-declared version is
+used. If `--collection` is also supplied, it must match the configuration.
+
+Selected HDF5 files keep their standard catalogue paths and are atomically
+replaced whenever the same selection is synchronized again. Other diagnostic
+paths are untouched. Filtered files carry `csfdata_subset = true`, and
+`csfdata analysis import-derived` refuses to copy them into a full catalogue,
+including under `--overwrite`.
+
+For a local or shared-filesystem source, CSFData reads selected HDF5 datasets
+directly and writes only the filtered destination. For an SSH source, selected
+complete `series.h5` files are staged locally before filtering because `rsync`
+cannot address HDF5 datasets. A particle sidecar is not transferred at all
+unless particle fields were requested.
 
 ## Installation
 
@@ -303,6 +352,7 @@ file; individual filenames are not printed.
 
 ## Current Scope
 
-The current commands understand D-CAF directories only. They do not repair
-simulations, import from remote hosts, submit scheduler jobs, or calculate
-derived products.
+The full-grid validation and import commands currently understand D-CAF
+directories only and do not repair simulations. Remote lite-catalogue and
+snapshot transfers are supported through SSH locations. Scheduler submission
+and derived calculations belong to separate add-ons.
