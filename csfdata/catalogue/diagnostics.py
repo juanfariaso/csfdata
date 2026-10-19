@@ -559,9 +559,10 @@ class SimulationDiagnostic:
         Args:
             choices: Exact scientific choices selecting one stored result.
                 Diagnostics without choices require ``None`` or an empty map.
-            fields: Optional field names to read. ``None`` reads every
-                declared field. Time-series reads always also include
-                ``"time"``.
+            fields: Optional field names to read. For time series, ``None``
+                reads every declared field available in the selected stored
+                group. For scalars, ``None`` reads every declared field.
+                Time-series reads always also include ``"time"``.
 
         Returns:
             Time-series NumPy arrays or scalar canonical values keyed by field
@@ -578,8 +579,8 @@ class SimulationDiagnostic:
                 f"Diagnostic {self.definition.name!r} requires choices "
                 f"{list(self.definition.choices)}."
             )
-        selected_fields = tuple(fields) if fields is not None else tuple(self.fields)
-        unknown_fields = set(selected_fields) - set(self.fields)
+        requested_fields = tuple(fields) if fields is not None else None
+        unknown_fields = set(requested_fields or ()) - set(self.fields)
         if unknown_fields:
             raise KeyError(
                 f"Diagnostic {self.definition.name!r} has no fields: "
@@ -611,6 +612,16 @@ class SimulationDiagnostic:
                         raise KeyError(
                             f"Time-series choice is unavailable: {selected_choices[choice_name]}"
                         ) from error
+                selected_fields = requested_fields
+                if selected_fields is None:
+                    # Lite catalogues may intentionally materialize only part
+                    # of the published schema. Preserve declaration order while
+                    # defaulting to the fields actually available here.
+                    selected_fields = tuple(
+                        field_name
+                        for field_name in self.fields
+                        if field_name in source
+                    )
                 try:
                     return {
                         "time": numpy.asarray(result_file["time"]),
@@ -624,6 +635,11 @@ class SimulationDiagnostic:
 
         if not self.path.is_file():
             raise KeyError(f"Scalar diagnostic is unavailable: {self.path}")
+        selected_fields = (
+            requested_fields
+            if requested_fields is not None
+            else tuple(self.fields)
+        )
         scalar_diagnostics = read_simulation_scalar_diagnostics(
             self.path,
             self.collection_diagnostics,

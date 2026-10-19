@@ -299,3 +299,60 @@ def test_catalogue_simulation_exposes_lazy_diagnostic_results(tmp_path: Path, mo
         f"  path='{simulation_root}'\n"
         ")"
     )
+
+
+def test_time_series_default_read_uses_available_subset_fields(tmp_path: Path) -> None:
+    """A filtered lite result defaults to its stored declared fields."""
+    collection_root = tmp_path / "catalogue" / "collections" / "example-grid"
+    simulation_root = collection_root / "simulations" / "0001"
+    diagnostics = CollectionDiagnostics(
+        choices=(
+            ChoiceDefinition(
+                "center",
+                "Reference centre for position-dependent measurements.",
+                ("origin", "stellar_com"),
+                "stellar_com",
+            ),
+        ),
+        diagnostics=(
+            DiagnosticDefinition(
+                "lagrangian_radii",
+                "v1",
+                "time_series",
+                "Stellar Lagrangian radii through time.",
+                PurePosixPath("derived/diagnostics/lagrangian_radii/v1/series.h5"),
+                (
+                    DiagnosticField("r_l50", "Half-mass radius.", "pc"),
+                    DiagnosticField("n_stars", "Number of stars.", "1"),
+                ),
+                ("center",),
+            ),
+        ),
+    )
+    simulation_root.mkdir(parents=True)
+    write_collection_diagnostics(
+        diagnostics,
+        collection_diagnostics_path(collection_root),
+    )
+    time_series_path = (
+        simulation_root / "derived/diagnostics/lagrangian_radii/v1/series.h5"
+    )
+    time_series_path.parent.mkdir(parents=True)
+    with h5py.File(time_series_path, "w") as result_file:
+        result_file.attrs["complete"] = True
+        result_file.attrs["format_schema_version"] = 2
+        result_file.attrs["diagnostic_name"] = "lagrangian_radii"
+        result_file.attrs["diagnostic_version"] = 1
+        result_file.attrs["csfdata_subset"] = True
+        result_file.create_dataset("time", data=(1.0, 2.0))
+        center_group = result_file.create_group("choices").create_group("stellar_com")
+        center_group.create_dataset("r_l50", data=(1.5, 2.5))
+
+    simulation = CatalogueSimulation("example-grid", "0001", simulation_root, "dcaf")
+    radii = simulation.diagnostics.time_series[("lagrangian_radii", "v1")]
+
+    values = radii.read({"center": "stellar_com"})
+    assert tuple(values) == ("time", "r_l50")
+    assert values["r_l50"].tolist() == [1.5, 2.5]
+    with pytest.raises(KeyError, match="missing a stored field"):
+        radii.read({"center": "stellar_com"}, ("n_stars",))
