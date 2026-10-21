@@ -88,6 +88,27 @@ class SimulationAdapter(ABC):
                 the simulation format does not store it accessibly.
         """
 
+    def stellar_formation_times(self) -> dict[int, float]:
+        """Return stellar formation times keyed by native particle ID.
+
+        Returns:
+            Dictionary mapping particle IDs to formation times in canonical Myr.
+
+        Raises:
+            NotImplementedError: If this simulation format cannot currently
+                recover stellar formation times from its stored data.
+
+        Notes:
+            This is an optional adapter capability. Implementations may use
+            stored particle attributes, event logs, or another documented
+            format-specific source. They must not silently invent missing
+            formation times. Attaching unit-aware ages to analysis particles
+            remains the responsibility of the analysis package.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not provide stellar formation times."
+        )
+
     @abstractmethod
     def validate_simulation(self, detailed: bool = False) -> tuple[str, ...]:
         """Inspect the run for format-specific structural or scientific issues.

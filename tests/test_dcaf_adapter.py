@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import h5py
+import pytest
 
 from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import CollectionConfiguration
@@ -129,6 +130,57 @@ def test_dcaf_adapter_accepts_background_gas_time_rounding(tmp_path: Path) -> No
     _write_segment(run_root, 0, (123.457,), (123.456789,))
 
     assert DcafAdapter(run_root).validate_simulation(detailed=True) == ()
+
+
+def test_dcaf_adapter_reads_stellar_formation_times_from_segment_logs(
+    tmp_path: Path,
+) -> None:
+    """Active D-CAF logs provide exact formation times by particle key."""
+    run_root = tmp_path / "run"
+    output_root = run_root / "dcaf_output"
+    resumed_output_root = run_root / "dcaf_output_1"
+    output_root.mkdir(parents=True)
+    resumed_output_root.mkdir()
+    (output_root / "dcaf.log").write_text(
+        "2026-01-01 00:00:00,000 [INFO] Starting simulation\n"
+        "2026-01-01 00:00:01,000 [INFO] [NEW_STAR] 0.125000 101 1.0 0 0 0 0 0 0\n"
+        "2026-01-01 00:00:02,000 [INFO] [NEW_STAR] 0.500000 102 2.0 0 0 0 0 0 0\n",
+        encoding="utf-8",
+    )
+    (resumed_output_root / "dcaf.log").write_text(
+        "2026-01-02 00:00:00,000 [INFO] Resuming simulation\n",
+        encoding="utf-8",
+    )
+    (resumed_output_root / "dcaf.log.failed").write_text(
+        "2026-01-01 12:00:00,000 [INFO] [NEW_STAR] 0.750000 103\n",
+        encoding="utf-8",
+    )
+
+    formation_times = DcafAdapter(run_root).stellar_formation_times()
+
+    assert formation_times == {101: 0.125, 102: 0.5}
+
+
+def test_dcaf_adapter_rejects_conflicting_stellar_formation_times(
+    tmp_path: Path,
+) -> None:
+    """Conflicting active records cannot define a trustworthy stellar age."""
+    run_root = tmp_path / "run"
+    output_root = run_root / "dcaf_output"
+    resumed_output_root = run_root / "dcaf_output_1"
+    output_root.mkdir(parents=True)
+    resumed_output_root.mkdir()
+    (output_root / "dcaf.log").write_text(
+        "2026-01-01 [INFO] [NEW_STAR] 0.125000 101 1.0\n",
+        encoding="utf-8",
+    )
+    (resumed_output_root / "dcaf.log").write_text(
+        "2026-01-02 [INFO] [NEW_STAR] 0.500000 101 1.0\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="conflicting formation times"):
+        DcafAdapter(run_root).stellar_formation_times()
 
 
 def test_dcaf_adapter_reports_precise_mismatches_and_duplicate_segments(tmp_path: Path) -> None:

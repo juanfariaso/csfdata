@@ -16,6 +16,7 @@ from csfdata.catalogue.configuration import SimulationConfiguration, extract_par
 _BACKGROUND_GAS_PATTERN = re.compile(r"background_gas(?:_(\d+))?\.dat$")
 _OUTPUT_FOLDER_PATTERN = re.compile(r"dcaf_output(?:_(\d+))?$")
 _SNAPSHOT_PATTERN = re.compile(r"stars_\d+\.amuse$")
+_NEW_STAR_PATTERN = re.compile(r"\[NEW_STAR\]\s+(\S+)\s+(\d+)(?:\s|$)")
 _MYR_IN_SECONDS = 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
 _CHECKPOINT_ABSOLUTE_TOLERANCE_MYR = 1.0e-8
 _CHECKPOINT_RELATIVE_TOLERANCE = 1.0e-5
@@ -43,6 +44,8 @@ class DcafAdapter(SimulationAdapter):
             raise ValueError("Validation tolerance must be non-negative.")
         self.run_root = run_root
         self.tolerance = tolerance
+        # Formation logs are shared by every snapshot, so parse them only once.
+        self._stellar_formation_times: dict[int, float] | None = None
 
     def is_simulation(self) -> bool:
         """Return whether this directory has the minimum D-CAF run marker.
@@ -198,6 +201,81 @@ class DcafAdapter(SimulationAdapter):
             return float(model_time) / _MYR_IN_SECONDS
         except (KeyError, OSError, TypeError, ValueError):
             return None
+
+    def stellar_formation_times(self) -> dict[int, float]:
+        """Read exact D-CAF stellar formation events from active run logs.
+
+        Returns:
+            Dictionary mapping AMUSE particle keys to formation times in Myr.
+
+        Raises:
+            FileNotFoundError: If no ``dcaf_output*/dcaf.log`` file exists.
+            ValueError: If an event is malformed, no formation event is found,
+                or one particle key has conflicting formation times.
+
+        Notes:
+            D-CAF writes events as ``[NEW_STAR] time key ...`` inside each
+            numbered output segment's ``dcaf.log``. Archived
+            ``dcaf.log.failed`` files are deliberately ignored because they
+            describe incomplete attempts rather than the accepted run.
+        """
+        if self._stellar_formation_times is not None:
+            return dict(self._stellar_formation_times)
+
+        log_segments: list[tuple[int, Path]] = []
+        for path in self.run_root.iterdir():
+            match = _OUTPUT_FOLDER_PATTERN.fullmatch(path.name)
+            log_path = path / "dcaf.log"
+            if path.is_dir() and match is not None and log_path.is_file():
+                log_segments.append((int(match.group(1) or 0), log_path))
+        if not log_segments:
+            raise FileNotFoundError(
+                f"No D-CAF formation log found below {self.run_root}."
+            )
+
+        formation_times: dict[int, float] = {}
+        for _, log_path in sorted(log_segments):
+            # Stream potentially large runtime logs instead of loading each
+            # complete file while looking for the sparse formation records.
+            with log_path.open(encoding="utf-8") as stream:
+                for line_number, line in enumerate(stream, start=1):
+                    if "[NEW_STAR]" not in line:
+                        continue
+                    match = _NEW_STAR_PATTERN.search(line)
+                    if match is None:
+                        raise ValueError(
+                            f"Malformed [NEW_STAR] record in {log_path} line {line_number}."
+                        )
+                    try:
+                        formation_time = float(match.group(1))
+                    except ValueError as error:
+                        raise ValueError(
+                            f"Invalid formation time in {log_path} line {line_number}."
+                        ) from error
+                    if not math.isfinite(formation_time):
+                        raise ValueError(
+                            f"Invalid formation time in {log_path} line {line_number}."
+                        )
+                    particle_key = int(match.group(2))
+                    previous_time = formation_times.get(particle_key)
+                    if previous_time is not None and not math.isclose(
+                        previous_time,
+                        formation_time,
+                        rel_tol=0.0,
+                        abs_tol=1.0e-12,
+                    ):
+                        raise ValueError(
+                            f"Particle {particle_key} has conflicting formation times "
+                            f"{previous_time:g} and {formation_time:g} Myr."
+                        )
+                    formation_times[particle_key] = formation_time
+
+        if not formation_times:
+            raise ValueError(
+                "D-CAF logs contain no [NEW_STAR] formation records."
+            )
+        self._stellar_formation_times = formation_times
+        return dict(formation_times)
 
     def validate_simulation(self, detailed: bool = False) -> tuple[str, ...]:
         """Validate the D-CAF configuration and raw-output structure.
