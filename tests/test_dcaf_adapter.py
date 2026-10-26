@@ -7,7 +7,7 @@ from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.catalogue.collection import CollectionConfiguration
 
 
-_MYR_IN_SECONDS = 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
+_MYR_IN_SECONDS = 365.242199 * 24.0 * 60.0 * 60.0 * 1.0e6
 
 
 def test_dcaf_adapter_reads_resumed_background_gas_segments(tmp_path: Path) -> None:

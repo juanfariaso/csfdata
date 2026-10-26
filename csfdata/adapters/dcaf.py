@@ -17,7 +17,8 @@ _BACKGROUND_GAS_PATTERN = re.compile(r"background_gas(?:_(\d+))?\.dat$")
 _OUTPUT_FOLDER_PATTERN = re.compile(r"dcaf_output(?:_(\d+))?$")
 _SNAPSHOT_PATTERN = re.compile(r"stars_\d+\.amuse$")
 _NEW_STAR_PATTERN = re.compile(r"\[NEW_STAR\]\s+(\S+)\s+(\d+)(?:\s|$)")
-_MYR_IN_SECONDS = 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
+# D-CAF writes AMUSE time quantities, whose year is 365.242199 days.
+_MYR_IN_SECONDS = 365.242199 * 24.0 * 60.0 * 60.0 * 1.0e6
 _CHECKPOINT_ABSOLUTE_TOLERANCE_MYR = 1.0e-8
 _CHECKPOINT_RELATIVE_TOLERANCE = 1.0e-5
 

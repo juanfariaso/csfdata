@@ -67,7 +67,9 @@ optional_parameters: []
     for index, time in enumerate((0.0, 10.0, 20.0)):
         with h5py.File(raw_output / f"stars_{index:03d}.amuse", "w") as snapshot:
             group = snapshot.create_group("data/0000000001")
-            group.attrs["model_time"] = time * 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
+            group.attrs["model_time"] = (
+                time * 365.242199 * 24.0 * 60.0 * 60.0 * 1.0e6
+            )
     index_catalogue(catalogue)
     progress: list[tuple[int, int, str]] = []
     refresh_snapshot_times(

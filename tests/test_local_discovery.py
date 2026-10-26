@@ -6,7 +6,7 @@ from csfdata.adapters.dcaf import DcafAdapter
 from csfdata.discovery.local import LocalGridDiscoverer
 
 
-_MYR_IN_SECONDS = 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
+_MYR_IN_SECONDS = 365.242199 * 24.0 * 60.0 * 60.0 * 1.0e6
 
 
 def test_local_discoverer_reports_valid_and_invalid_dcaf_runs(tmp_path: Path) -> None:

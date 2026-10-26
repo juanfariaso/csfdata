@@ -10,7 +10,7 @@ from csfdata.cli import main, run_analysis, validate_grid, validation_report_dat
 from csfdata.importer.validation import ValidatedSource
 
 
-_MYR_IN_SECONDS = 365.25 * 24.0 * 60.0 * 60.0 * 1.0e6
+_MYR_IN_SECONDS = 365.242199 * 24.0 * 60.0 * 60.0 * 1.0e6
 
 
 def test_validate_command_writes_a_portable_yaml_report(
